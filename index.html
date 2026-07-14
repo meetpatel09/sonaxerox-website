@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sona Xerox — Valod | સોના ઝેરોક્ષ, વાલોડ</title>
+<meta name="description" content="Sona Xerox, Valod — 25 years of trusted printing. Xerox, CMYK colour printing, lamination, PVC cards, passport photos, spiral binding, rubber stamps. Order on WhatsApp: 7778805780">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Archivo:wght@400;500;600;700&family=Hind+Vadodara:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBFAF6;
+    --ink:#161616;
+    --cyan:#00A3C4;
+    --magenta:#E0218A;
+    --yellow:#FFC400;
+    --gray:#6F6F68;
+    --line:#E4E2D9;
+    --radius:14px;
+    --display:"Bricolage Grotesque","Hind Vadodara",sans-serif;
+    --body:"Archivo","Hind Vadodara",sans-serif;
+    --gu:"Hind Vadodara","Archivo",sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:var(--body);
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    /* faint halftone paper texture across whole site */
+    background-image:radial-gradient(rgba(22,22,22,.045) 1px, transparent 1px);
+    background-size:18px 18px;
+  }
+  body[data-lang="gu"]{font-family:var(--gu)}
+  a{color:inherit}
+
+  /* ===== CMYK colour bar ===== */
+  .cmyk-bar{display:flex;height:8px;width:100%}
+  .cmyk-bar span{flex:1}
+  .cmyk-bar .c{background:var(--cyan)}
+  .cmyk-bar .m{background:var(--magenta)}
+  .cmyk-bar .y{background:var(--yellow)}
+  .cmyk-bar .k{background:var(--ink)}
+
+  /* ===== Header ===== */
+  header{
+    position:sticky;top:0;z-index:50;
+    background:rgba(251,250,246,.92);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{
+    max-width:1120px;margin:0 auto;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:.7rem 1.25rem;
+  }
+  .logo{display:flex;align-items:center;gap:.6rem;font-family:var(--display);font-weight:800;font-size:1.15rem;letter-spacing:-.02em;text-decoration:none}
+  .logo-dots{display:flex;gap:3px}
+  .logo-dots i{width:10px;height:10px;border-radius:50%;display:block}
+  .logo-dots i:nth-child(1){background:var(--cyan)}
+  .logo-dots i:nth-child(2){background:var(--magenta)}
+  .logo-dots i:nth-child(3){background:var(--yellow)}
+  .logo-dots i:nth-child(4){background:var(--ink)}
+  .nav-right{display:flex;align-items:center;gap:.75rem}
+  .lang-toggle{
+    border:1.5px solid var(--ink);background:transparent;border-radius:999px;
+    font-family:var(--body);font-weight:600;font-size:.85rem;
+    padding:.35rem .9rem;cursor:pointer;transition:background .15s,color .15s;
+  }
+  .lang-toggle:hover{background:var(--ink);color:var(--paper)}
+  .lang-toggle:focus-visible,a:focus-visible,button:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+  .nav-call{
+    display:none;text-decoration:none;font-weight:700;font-size:.9rem;
+    background:var(--ink);color:var(--paper);padding:.45rem 1rem;border-radius:999px;
+  }
+  @media(min-width:640px){.nav-call{display:inline-block}}
+
+  /* ===== Hero with machine ===== */
+  .hero{
+    max-width:1120px;margin:0 auto;padding:3.2rem 1.25rem 3rem;
+    display:grid;gap:2.5rem;align-items:center;
+    grid-template-columns:1fr;
+  }
+  @media(min-width:880px){
+    .hero{grid-template-columns:1.1fr .9fr;padding-top:4rem}
+  }
+  .hero-eyebrow{
+    display:inline-flex;align-items:center;gap:.5rem;
+    font-size:.8rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gray);
+    margin-bottom:1rem;
+  }
+  .hero-eyebrow::before{content:"";width:26px;height:2px;background:var(--magenta)}
+  h1{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:clamp(2.3rem,6vw,4rem);
+    line-height:1.05;
+    letter-spacing:-.03em;
+    max-width:14ch;
+  }
+  h1 .hl-c{color:var(--cyan)}
+  h1 .hl-m{color:var(--magenta)}
+  h1 .hl-y{color:#DE9F00}
+  .hero-sub{margin-top:1.25rem;font-size:1.08rem;color:var(--gray);max-width:46ch}
+  .hero-cta{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:2rem}
+  .btn{
+    display:inline-flex;align-items:center;gap:.55rem;
+    text-decoration:none;font-weight:700;font-size:1rem;border:none;cursor:pointer;
+    padding:.85rem 1.5rem;border-radius:999px;transition:transform .12s,box-shadow .15s;
+    position:relative;
+  }
+  /* rubber-stamp press effect on click */
+  .btn:active{transform:translateY(3px) scale(.97);box-shadow:none}
+  .btn:hover{transform:translateY(-2px)}
+  .btn-wa{background:#25D366;color:#fff;box-shadow:0 6px 18px rgba(37,211,102,.35)}
+  .btn-call{background:var(--ink);color:var(--paper)}
+  .btn svg{width:20px;height:20px;flex-shrink:0}
+
+  /* ============ THE MACHINE — floor-standing photocopier ============ */
+  .machine-wrap{width:min(430px,100%);margin:0 auto}
+  .machine{position:relative;width:72%;margin-left:auto;aspect-ratio:440/540}
+  .machine::before{
+    content:"";position:absolute;inset:-5% -8% -5% -52%;z-index:-1;border-radius:24px;
+    background-image:radial-gradient(rgba(0,163,196,.16) 1.6px, transparent 1.6px);
+    background-size:14px 14px;
+  }
+  /* automatic document feeder on top, with original lying in it */
+  .feeder{position:absolute;top:2.5%;left:8%;width:60%;height:4%;background:var(--ink);border-radius:8px 8px 0 0}
+  .feeder::after{
+    content:"";position:absolute;top:-60%;left:20%;width:44%;height:60%;
+    background:#fff;border:2px solid var(--ink);border-bottom:none;border-radius:3px 3px 0 0;
+  }
+  /* scanner deck with sweeping light */
+  .deck{position:absolute;top:6.5%;left:2%;width:96%;height:7%;background:linear-gradient(180deg,#2b2b2b,#1c1c1c);border:2.5px solid var(--ink);border-radius:8px;overflow:hidden}
+  .scanlight{
+    position:absolute;top:0;bottom:0;width:14%;
+    background:linear-gradient(90deg,transparent,rgba(0,229,255,.95),transparent);
+    filter:blur(1px);animation:scan 3.4s ease-in-out infinite;
+  }
+  @keyframes scan{0%{left:-15%}40%{left:101%}52%{left:101%}100%{left:-15%}}
+  /* upper body — solid front with access door */
+  .upper{
+    position:absolute;top:13.5%;left:2%;width:96%;height:39%;
+    background:#fff;border:2.5px solid var(--ink);border-radius:0 0 2px 2px;
+    box-shadow:8px 8px 0 rgba(22,22,22,.08);
+  }
+  .door{position:absolute;right:6%;bottom:8%;width:44%;height:52%;border:2px solid var(--line);border-radius:8px}
+  .vents{position:absolute;left:7%;bottom:12%;display:flex;flex-direction:column;gap:4px}
+  .vents i{width:44px;height:3px;background:var(--line);border-radius:2px;display:block}
+  .mbrand{position:absolute;left:6%;top:18%;font-family:var(--display);font-weight:800;font-size:clamp(.85rem,3vw,1.1rem);letter-spacing:-.01em;line-height:1.15}
+  .mbrand small{display:block;font-size:.55em;font-weight:700;color:#6F6F68;letter-spacing:.18em}
+  /* angled control panel with screen, keypad and green start button */
+  .cpanel{
+    position:absolute;top:10%;right:4%;width:42%;height:7.5%;z-index:2;
+    background:#fff;border:2.5px solid var(--ink);border-radius:8px;
+    display:flex;align-items:center;justify-content:space-evenly;
+    transform:perspective(320px) rotateX(22deg);transform-origin:bottom;
+    box-shadow:0 3px 0 rgba(22,22,22,.25);
+  }
+  .cpanel .screen{width:30%;height:44%;background:#B9F3C9;border:2px solid var(--ink);border-radius:3px}
+  .cpanel .keys{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;width:22%}
+  .cpanel .keys i{aspect-ratio:1;background:var(--line);border-radius:2px;display:block}
+  .cpanel .start{width:13%;aspect-ratio:1;border-radius:50%;background:#2FA84F;border:2px solid var(--ink)}
+  /* copy exits from the LEFT side onto the side output tray */
+  .slot{position:absolute;left:-1.5%;top:33.5%;width:5.5%;height:8%;background:var(--ink);border-radius:4px}
+  .eject{position:absolute;left:-44%;top:33%;width:46%;height:17%;overflow:hidden;z-index:3}
+  .page{
+    position:absolute;left:4%;top:8%;width:92%;height:76%;
+    background:#fff;border:2px solid var(--ink);border-radius:3px;
+    animation:printOut 3.4s ease-in-out infinite;
+    box-shadow:0 5px 10px rgba(22,22,22,.18);
+  }
+  @keyframes printOut{
+    0%,18%{transform:translateX(114%);opacity:1}
+    60%{transform:translateX(0);opacity:1}
+    88%{transform:translateX(0);opacity:1}
+    96%,100%{transform:translateX(0);opacity:0}
+  }
+  /* toner appears as the sheet emerges — leading edge printed first */
+  .pgprint{
+    width:100%;height:100%;padding:9% 8%;
+    display:flex;flex-direction:column;justify-content:center;gap:9%;
+    animation:inkReveal 3.4s ease-in-out infinite;
+  }
+  @keyframes inkReveal{
+    0%,18%{clip-path:inset(0 100% 0 0)}
+    60%,100%{clip-path:inset(0 0 0 0)}
+  }
+  .pgprint span{display:block;height:6%;min-height:3px;border-radius:2px;background:#9a9890}
+  .pgprint span.h{height:11%;min-height:5px;width:50%;background:#3a3a36}
+  .pgprint span.w84{width:84%}
+  .pgprint span.w72{width:72%}
+  .pgprint span.w64{width:64%}
+  /* side output tray the copy lands on */
+  .tray-side{position:absolute;left:-42%;top:47.4%;width:44%;height:2.2%;background:var(--ink);border-radius:3px}
+  .tray-side::before{content:"";position:absolute;left:0;top:-170%;width:5%;height:170%;background:var(--ink);border-radius:2px}
+  /* lower cabinet with paper cassette drawers */
+  .lower{
+    position:absolute;top:52.5%;left:2%;width:96%;height:41%;
+    background:#fff;border:2.5px solid var(--ink);border-radius:0 0 14px 14px;
+    box-shadow:8px 8px 0 rgba(22,22,22,.08);
+  }
+  .drawer{
+    position:absolute;left:5%;width:90%;height:24%;
+    background:var(--paper);border:2px solid var(--ink);border-radius:6px;
+  }
+  .drawer.d1{top:7%}
+  .drawer.d2{top:37%}
+  .drawer::after{ /* handle */
+    content:"";position:absolute;left:50%;top:50%;width:32%;height:20%;
+    transform:translate(-50%,-50%);
+    background:var(--ink);border-radius:99px;
+  }
+  /* CMYK toner level indicator on the cabinet front */
+  .toner{position:absolute;left:6%;bottom:7%;display:flex;gap:5px;align-items:flex-end;height:22%}
+  .toner b{width:11px;border:2px solid var(--ink);border-radius:3px;display:block;position:relative;overflow:hidden;height:100%;background:#fff}
+  .toner b::after{content:"";position:absolute;left:0;right:0;bottom:0;animation:tonerPulse 3.4s ease-in-out infinite}
+  .toner b.c::after{background:var(--cyan);height:78%}
+  .toner b.m::after{background:var(--magenta);height:62%;animation-delay:.4s}
+  .toner b.y::after{background:var(--yellow);height:85%;animation-delay:.8s}
+  .toner b.k::after{background:var(--ink);height:70%;animation-delay:1.2s}
+  @keyframes tonerPulse{0%,100%{opacity:1}50%{opacity:.72}}
+  .tlabel{position:absolute;right:7%;bottom:9%;font-size:.58rem;font-weight:700;letter-spacing:.14em;color:#6F6F68}
+  /* casters */
+  .caster{position:absolute;bottom:0;width:5.5%;aspect-ratio:1;background:var(--ink);border-radius:50%}
+  .caster.l{left:12%} .caster.r{right:12%}
+
+  /* ===== Sections ===== */
+  section{max-width:1120px;margin:0 auto;padding:3rem 1.25rem}
+  .sec-head{margin-bottom:2rem}
+  /* stamped section eyebrow */
+  .sec-eyebrow{
+    display:inline-block;
+    font-size:.74rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--magenta);border:2px solid var(--magenta);border-radius:6px;
+    padding:.18rem .6rem;transform:rotate(-2deg);
+    mask-image:radial-gradient(circle at 35% 45%, black 90%, transparent 96%);
+  }
+  .sec-title{font-family:var(--display);font-weight:800;font-size:clamp(1.7rem,4vw,2.5rem);letter-spacing:-.02em;margin-top:.6rem}
+
+  /* services — styled as paper sheets in an output tray */
+  .svc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:1rem}
+  .svc{
+    background:#fff;border:1.5px solid var(--ink);border-radius:6px;
+    padding:1.4rem 1.3rem;position:relative;
+    box-shadow:4px 4px 0 var(--line);
+    transition:transform .15s,box-shadow .15s;
+  }
+  .svc:hover{transform:translateY(-4px) rotate(-.5deg);box-shadow:6px 8px 0 var(--line)}
+  /* punched-hole + colour tab like a printed sheet */
+  .svc::before{
+    content:"";position:absolute;top:0;left:1rem;width:34%;height:6px;border-radius:0 0 4px 4px;
+  }
+  .svc:nth-child(4n+1)::before{background:var(--cyan)}
+  .svc:nth-child(4n+2)::before{background:var(--magenta)}
+  .svc:nth-child(4n+3)::before{background:var(--yellow)}
+  .svc:nth-child(4n+4)::before{background:var(--ink)}
+  .svc .icon{font-size:1.7rem;line-height:1;margin-bottom:.7rem}
+  .svc h3{font-family:var(--display);font-weight:700;font-size:1.08rem;margin-bottom:.3rem;letter-spacing:-.01em}
+  .svc p{font-size:.9rem;color:var(--gray)}
+
+  /* whatsapp strip — like the dark scanner deck */
+  .wa-strip{
+    background:var(--ink);color:var(--paper);
+    border-radius:calc(var(--radius) + 6px);
+    padding:2.2rem 1.6rem;position:relative;overflow:hidden;
+  }
+  .wa-strip::after{ /* sweeping scan light across the dark strip */
+    content:"";position:absolute;top:0;bottom:0;width:12%;
+    background:linear-gradient(90deg,transparent,rgba(0,229,255,.16),transparent);
+    animation:scan 5s ease-in-out infinite;pointer-events:none;
+  }
+  .wa-strip .sec-title{color:var(--paper)}
+  .wa-strip .sec-eyebrow{color:var(--yellow);border-color:var(--yellow)}
+  .wa-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.4rem;margin-top:1.8rem}
+  .wa-step{border-top:3px solid;padding-top:.9rem}
+  .wa-step:nth-child(1){border-color:var(--cyan)}
+  .wa-step:nth-child(2){border-color:var(--magenta)}
+  .wa-step:nth-child(3){border-color:var(--yellow)}
+  .wa-step h3{font-family:var(--display);font-size:1.05rem;margin-bottom:.25rem}
+  .wa-step p{font-size:.92rem;color:#CFCEC6}
+  .wa-strip .btn{margin-top:1.8rem}
+
+  /* hours + visit */
+  .visit-grid{display:grid;gap:1.2rem;grid-template-columns:1fr}
+  @media(min-width:760px){.visit-grid{grid-template-columns:1fr 1fr}}
+  .card{background:#fff;border:1.5px solid var(--ink);border-radius:6px;padding:1.5rem 1.4rem;box-shadow:4px 4px 0 var(--line)}
+  .card h3{font-family:var(--display);font-weight:700;font-size:1.15rem;margin-bottom:.9rem}
+  .hours-table{width:100%;border-collapse:collapse;font-size:.95rem}
+  .hours-table td{padding:.42rem 0;border-bottom:1px solid var(--line)}
+  .hours-table tr:last-child td{border-bottom:none}
+  .hours-table td:last-child{text-align:right;font-weight:600}
+  .hours-table .today td{color:var(--magenta);font-weight:700}
+  .addr{font-size:1rem;line-height:1.7}
+  .addr a.map-link{display:inline-flex;align-items:center;gap:.4rem;margin-top:1rem;font-weight:700;text-decoration:none;color:var(--cyan)}
+  .wa-ico{width:1.05em;height:1.05em;fill:#25D366;vertical-align:-.18em}
+  .addr a.map-link:hover{text-decoration:underline}
+  .owner-line{margin-top:1.1rem;font-size:.9rem;color:var(--gray)}
+
+  /* footer */
+  footer{border-top:1px solid var(--line);margin-top:2rem}
+  .foot-inner{max-width:1120px;margin:0 auto;padding:1.6rem 1.25rem;display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between;align-items:center;font-size:.88rem;color:var(--gray)}
+
+  /* floating whatsapp */
+  .wa-fab{
+    position:fixed;right:1.1rem;bottom:1.1rem;z-index:60;
+    width:58px;height:58px;border-radius:50%;
+    background:#25D366;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 8px 22px rgba(37,211,102,.45);transition:transform .15s;
+  }
+  .wa-fab:hover{transform:scale(1.08)}
+  .wa-fab:active{transform:scale(.94)}
+  .wa-fab svg{width:30px;height:30px;fill:#fff}
+
+  /* reveal — sections slide up like paper from a tray */
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .5s ease,transform .5s ease}
+  .reveal.in{opacity:1;transform:none}
+
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .reveal{opacity:1;transform:none;transition:none}
+    .btn:hover,.svc:hover,.wa-fab:hover{transform:none}
+    .scanlight,.wa-strip::after{animation:none;left:40%}
+    .page{animation:none;transform:translateX(0)}
+    .pgprint{animation:none;clip-path:none}
+    .toner b::after{animation:none}
+  }
+</style>
+</head>
+<body data-lang="gu">
+
+<div class="cmyk-bar" aria-hidden="true"><span class="c"></span><span class="m"></span><span class="y"></span><span class="k"></span></div>
+
+<header>
+  <nav class="nav">
+    <a class="logo" href="#top">
+      <span class="logo-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      Sona Xerox
+    </a>
+    <div class="nav-right">
+      <a class="nav-call" href="tel:+917778805780">📞 77788 05780</a>
+      <button class="lang-toggle" id="langBtn" aria-label="Switch language">English</button>
+    </div>
+  </nav>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div>
+      <p class="hero-eyebrow" data-gu="વાલોડ, ગુજરાત — ૩૯૪૬૪૦" data-en="Valod, Gujarat — 394640">વાલોડ, ગુજરાત — ૩૯૪૬૪૦</p>
+      <h1>
+        <span data-gu="દરેક પ્રિન્ટ," data-en="Every print,">દરેક પ્રિન્ટ,</span><br>
+        <span class="hl-y" data-gu="સ્વચ્છ," data-en="neat,">સ્વચ્છ,</span> <span class="hl-c" data-gu="ઝડપી" data-en="fast">ઝડપી</span> <span data-gu="અને" data-en="and">અને</span> <span class="hl-m" data-gu="સસ્તી." data-en="affordable.">સસ્તી.</span>
+      </h1>
+      <p class="hero-sub" data-gu="ઝેરોક્ષ, કલર પ્રિન્ટિંગ, લેમિનેશન, PVC કાર્ડ, પાસપોર્ટ ફોટા, સ્પાઇરલ બાઇન્ડિંગ અને રબર સ્ટેમ્પ — બધું એક જ દુકાનમાં. WhatsApp પર ફાઇલ મોકલો, પ્રિન્ટ તૈયાર!" data-en="Xerox, colour printing, lamination, PVC cards, passport photos, spiral binding and rubber stamps — all under one roof. Send your file on WhatsApp, your print is ready!">ઝેરોક્ષ, કલર પ્રિન્ટિંગ, લેમિનેશન, PVC કાર્ડ, પાસપોર્ટ ફોટા, સ્પાઇરલ બાઇન્ડિંગ અને રબર સ્ટેમ્પ — બધું એક જ દુકાનમાં. WhatsApp પર ફાઇલ મોકલો, પ્રિન્ટ તૈયાર!</p>
+      <div class="hero-cta">
+        <a class="btn btn-wa" href="https://wa.me/917778805780?text=Hello%20Sona%20Xerox%2C%20mare%20print%20karavvi%20che." target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.4.2.5.7 1.8.8 1.9.1.2.1.3 0 .5s-.2.4-.3.5l-.5.6c-.2.2-.3.4-.1.7.2.3.8 1.4 1.8 2.2 1.2 1.1 2.3 1.4 2.6 1.6.3.1.5.1.7-.1l1-1.1c.2-.3.4-.2.7-.1l1.9.9c.3.1.5.2.5.3.1.1.1.6-.1 1.2z"/></svg>
+          <span data-gu="WhatsApp પર ઓર્ડર કરો" data-en="Order on WhatsApp">WhatsApp પર ઓર્ડર કરો</span>
+        </a>
+        <a class="btn btn-call" href="tel:+917778805780">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg>
+          <span data-gu="કૉલ કરો" data-en="Call now">કૉલ કરો</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- animated photocopier -->
+    <div class="machine-wrap">
+      <div class="machine" role="img" aria-label="Animated illustration of a floor-standing photocopier printing a fresh copy that says Sona Xerox">
+        <div class="cpanel"><span class="screen"></span><span class="keys"><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="start"></span></div>
+        <div class="feeder"></div>
+        <div class="deck"><div class="scanlight"></div></div>
+        <div class="upper">
+          <div class="mbrand">SONA XEROX<small>VALOD • 25 YRS</small></div>
+          <div class="door"></div>
+          <div class="vents" aria-hidden="true"><i></i><i></i><i></i></div>
+        </div>
+        <div class="slot"></div>
+        <div class="eject">
+          <div class="page">
+            <div class="pgprint" aria-hidden="true">
+              <span class="h"></span>
+              <span class="w84"></span>
+              <span class="w72"></span>
+              <span class="w84"></span>
+              <span class="w64"></span>
+            </div>
+          </div>
+        </div>
+        <div class="tray-side"></div>
+        <div class="lower">
+          <div class="drawer d1"></div>
+          <div class="drawer d2"></div>
+          <div class="toner"><b class="c"></b><b class="m"></b><b class="y"></b><b class="k"></b></div>
+          <span class="tlabel">CMYK</span>
+        </div>
+        <div class="caster l"></div><div class="caster r"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section id="services">
+    <div class="sec-head reveal">
+      <p class="sec-eyebrow" data-gu="અમારી સેવાઓ" data-en="Our services">અમારી સેવાઓ</p>
+      <h2 class="sec-title" data-gu="એક દુકાન, બધાં કામ" data-en="One shop, every job">એક દુકાન, બધાં કામ</h2>
+    </div>
+    <div class="svc-grid">
+      <div class="svc reveal"><div class="icon">📄</div><h3 data-gu="ઝેરોક્ષ" data-en="Xerox / Photocopy">ઝેરોક્ષ</h3><p data-gu="બ્લેક એન્ડ વ્હાઇટ કોપી — એક બાજુ કે બંને બાજુ, ઝડપથી." data-en="Black & white copies — single or double side, done fast.">બ્લેક એન્ડ વ્હાઇટ કોપી — એક બાજુ કે બંને બાજુ, ઝડપથી.</p></div>
+      <div class="svc reveal"><div class="icon">🎨</div><h3 data-gu="CMYK કલર પ્રિન્ટિંગ" data-en="CMYK colour printing">CMYK કલર પ્રિન્ટિંગ</h3><p data-gu="ફુલ-કલર પ્રિન્ટ — પ્રોજેક્ટ, ફોટા, પોસ્ટર માટે ઉત્તમ." data-en="Full-colour prints — great for projects, photos and posters.">ફુલ-કલર પ્રિન્ટ — પ્રોજેક્ટ, ફોટા, પોસ્ટર માટે ઉત્તમ.</p></div>
+      <div class="svc reveal"><div class="icon">📱</div><h3 data-gu="WhatsApp પ્રિન્ટ" data-en="WhatsApp print">WhatsApp પ્રિન્ટ</h3><p data-gu="ઘરેથી ફાઇલ મોકલો, દુકાનેથી પ્રિન્ટ લઈ જાઓ." data-en="Send your file from home, collect your print at the shop.">ઘરેથી ફાઇલ મોકલો, દુકાનેથી પ્રિન્ટ લઈ જાઓ.</p></div>
+      <div class="svc reveal"><div class="icon">🪪</div><h3 data-gu="PVC કાર્ડ" data-en="PVC cards">PVC કાર્ડ</h3><p data-gu="આધાર, ID અને બીજાં કાર્ડ — મજબૂત પ્લાસ્ટિક પ્રિન્ટ." data-en="Aadhaar, ID and other cards printed on durable plastic.">આધાર, ID અને બીજાં કાર્ડ — મજબૂત પ્લાસ્ટિક પ્રિન્ટ.</p></div>
+      <div class="svc reveal"><div class="icon">📷</div><h3 data-gu="પાસપોર્ટ / પોસ્ટકાર્ડ ફોટા" data-en="Passport / postcard photos">પાસપોર્ટ / પોસ્ટકાર્ડ ફોટા</h3><p data-gu="ફોર્મ, વિઝા અને દસ્તાવેજ માટે યોગ્ય સાઇઝના ફોટા." data-en="Correct-size photos for forms, visas and documents.">ફોર્મ, વિઝા અને દસ્તાવેજ માટે યોગ્ય સાઇઝના ફોટા.</p></div>
+      <div class="svc reveal"><div class="icon">✨</div><h3 data-gu="લેમિનેશન" data-en="Lamination">લેમિનેશન</h3><p data-gu="દસ્તાવેજ અને ફોટાને વર્ષો સુધી સુરક્ષિત રાખો." data-en="Protect documents and photos for years.">દસ્તાવેજ અને ફોટાને વર્ષો સુધી સુરક્ષિત રાખો.</p></div>
+      <div class="svc reveal"><div class="icon">📚</div><h3 data-gu="સ્પાઇરલ બાઇન્ડિંગ" data-en="Spiral binding">સ્પાઇરલ બાઇન્ડિંગ</h3><p data-gu="પ્રોજેક્ટ રિપોર્ટ અને નોટ્સ માટે સુઘડ બાઇન્ડિંગ." data-en="Neat binding for project reports and notes.">પ્રોજેક્ટ રિપોર્ટ અને નોટ્સ માટે સુઘડ બાઇન્ડિંગ.</p></div>
+      <div class="svc reveal"><div class="icon">🔖</div><h3 data-gu="રબર સ્ટેમ્પ" data-en="Rubber stamps">રબર સ્ટેમ્પ</h3><p data-gu="દુકાન, ઓફિસ અને સંસ્થા માટે કસ્ટમ સ્ટેમ્પ બનાવી આપીએ." data-en="Custom stamps made for shops, offices and institutions.">દુકાન, ઓફિસ અને સંસ્થા માટે કસ્ટમ સ્ટેમ્પ બનાવી આપીએ.</p></div>
+    </div>
+  </section>
+
+  <!-- WHATSAPP HOW IT WORKS -->
+  <section>
+    <div class="wa-strip reveal">
+      <p class="sec-eyebrow" data-gu="લાઇનમાં ઊભા રહેવાની જરૂર નથી" data-en="No need to wait in line">લાઇનમાં ઊભા રહેવાની જરૂર નથી</p>
+      <h2 class="sec-title" data-gu="WhatsApp થી પ્રિન્ટ — ૩ સરળ સ્ટેપ" data-en="Print via WhatsApp — 3 easy steps">WhatsApp થી પ્રિન્ટ — ૩ સરળ સ્ટેપ</h2>
+      <div class="wa-steps">
+        <div class="wa-step"><h3 data-gu="૧. ફાઇલ મોકલો" data-en="1. Send your file">૧. ફાઇલ મોકલો</h3><p data-gu="PDF, ફોટો કે ડોક્યુમેન્ટ 77788 05780 પર WhatsApp કરો." data-en="WhatsApp your PDF, photo or document to 77788 05780.">PDF, ફોટો કે ડોક્યુમેન્ટ 77788 05780 પર WhatsApp કરો.</p></div>
+        <div class="wa-step"><h3 data-gu="૨. વિગત જણાવો" data-en="2. Tell us the details">૨. વિગત જણાવો</h3><p data-gu="કેટલી કોપી, કલર કે બ્લેક-વ્હાઇટ, એક બાજુ કે બંને બાજુ." data-en="How many copies, colour or B&W, single or double side.">કેટલી કોપી, કલર કે બ્લેક-વ્હાઇટ, એક બાજુ કે બંને બાજુ.</p></div>
+        <div class="wa-step"><h3 data-gu="૩. દુકાનેથી લઈ જાઓ" data-en="3. Collect at the shop">૩. દુકાનેથી લઈ જાઓ</h3><p data-gu="તમે આવો ત્યાં સુધીમાં તમારી પ્રિન્ટ તૈયાર હશે. સીધા દુકાને આવીને પણ કરાવી શકો છો." data-en="Your print will be ready by the time you arrive. Walk-ins are always welcome too.">તમે આવો ત્યાં સુધીમાં તમારી પ્રિન્ટ તૈયાર હશે. સીધા દુકાને આવીને પણ કરાવી શકો છો.</p></div>
+      </div>
+      <a class="btn btn-wa" href="https://wa.me/917778805780?text=Hello%20Sona%20Xerox%2C%20mare%20print%20karavvi%20che." target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.4.2.5.7 1.8.8 1.9.1.2.1.3 0 .5s-.2.4-.3.5l-.5.6c-.2.2-.3.4-.1.7.2.3.8 1.4 1.8 2.2 1.2 1.1 2.3 1.4 2.6 1.6.3.1.5.1.7-.1l1-1.1c.2-.3.4-.2.7-.1l1.9.9c.3.1.5.2.5.3.1.1.1.6-.1 1.2z"/></svg>
+        <span data-gu="હમણાં ફાઇલ મોકલો" data-en="Send your file now">હમણાં ફાઇલ મોકલો</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- VISIT -->
+  <section id="visit">
+    <div class="sec-head reveal">
+      <p class="sec-eyebrow" data-gu="અમારી મુલાકાત લો" data-en="Visit us">અમારી મુલાકાત લો</p>
+      <h2 class="sec-title" data-gu="વાલોડમાં ૨૫ વર્ષથી તમારી સેવામાં" data-en="Serving Valod for 25 years">વાલોડમાં ૨૫ વર્ષથી તમારી સેવામાં</h2>
+    </div>
+    <div class="visit-grid">
+      <div class="card reveal">
+        <h3 data-gu="સરનામું" data-en="Address">સરનામું</h3>
+        <p class="addr">
+          <strong>Sona Xerox</strong><br>
+          <span data-gu="એસ.જી. હાઈસ્કૂલ પાસે, હાઈસ્કૂલ ફળિયું," data-en="Near S.G. Highschool, Highschool Faliyu,">એસ.જી. હાઈસ્કૂલ પાસે, હાઈસ્કૂલ ફળિયું,</span><br>
+          <span data-gu="વાલોડ, ગુજરાત ૩૯૪૬૪૦" data-en="Valod, Gujarat 394640">વાલોડ, ગુજરાત ૩૯૪૬૪૦</span><br><br>
+          📞 <a href="tel:+917778805780">+91 77788 05780</a><br>
+          <svg class="wa-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.4.2.5.7 1.8.8 1.9.1.2.1.3 0 .5s-.2.4-.3.5l-.5.6c-.2.2-.3.4-.1.7.2.3.8 1.4 1.8 2.2 1.2 1.1 2.3 1.4 2.6 1.6.3.1.5.1.7-.1l1-1.1c.2-.3.4-.2.7-.1l1.9.9c.3.1.5.2.5.3.1.1.1.6-.1 1.2z"/></svg> <a href="https://wa.me/917778805780" target="_blank" rel="noopener">WhatsApp: 77788 05780</a>
+        </p>
+        <a class="map-link" href="https://www.google.com/maps/search/?api=1&query=Sona+Xerox+Near+S.G.+Highschool+Valod+Gujarat+394640" target="_blank" rel="noopener">
+          📍 <span data-gu="Google Maps માં જુઓ" data-en="Open in Google Maps">Google Maps માં જુઓ</span>
+        </a>
+        <p class="owner-line" data-gu="માલિક: કમલેશભાઈ પટેલ અને મીત પટેલ" data-en="Owners: Kamleshbhai Patel & Meet Patel">માલિક: કમલેશભાઈ પટેલ અને મીત પટેલ</p>
+      </div>
+      <div class="card reveal">
+        <h3 data-gu="સમય" data-en="Opening hours">સમય</h3>
+        <table class="hours-table" id="hoursTable">
+          <tr class="today"><td data-gu="સોમવાર – રવિવાર" data-en="Monday – Sunday">સોમવાર – રવિવાર</td><td>7:30 AM – 7:00 PM</td></tr>
+        </table>
+        <p class="owner-line" data-gu="અઠવાડિયાના સાતેય દિવસ ખુલ્લું" data-en="Open all 7 days of the week">અઠવાડિયાના સાતેય દિવસ ખુલ્લું</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="cmyk-bar" aria-hidden="true"><span class="c"></span><span class="m"></span><span class="y"></span><span class="k"></span></div>
+  <div class="foot-inner">
+    <span>© <span id="year"></span> Sona Xerox, Valod</span>
+    <span data-gu="ઝડપી સેવા • સસ્તા ભાવ • ૨૫ વર્ષનો વિશ્વાસ" data-en="Fast service • Lowest rates • 25 years of trust">ઝડપી સેવા • સસ્તા ભાવ • ૨૫ વર્ષનો વિશ્વાસ</span>
+  </div>
+</footer>
+
+<a class="wa-fab" href="https://wa.me/917778805780?text=Hello%20Sona%20Xerox%2C%20mare%20print%20karavvi%20che." target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.4.2.5.7 1.8.8 1.9.1.2.1.3 0 .5s-.2.4-.3.5l-.5.6c-.2.2-.3.4-.1.7.2.3.8 1.4 1.8 2.2 1.2 1.1 2.3 1.4 2.6 1.6.3.1.5.1.7-.1l1-1.1c.2-.3.4-.2.7-.1l1.9.9c.3.1.5.2.5.3.1.1.1.6-.1 1.2z"/></svg>
+</a>
+
+<script>
+  // Language toggle
+  const btn = document.getElementById('langBtn');
+  function setLang(lang){
+    document.body.dataset.lang = lang;
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-gu]').forEach(el=>{
+      el.textContent = el.dataset[lang];
+    });
+    btn.textContent = lang === 'gu' ? 'English' : 'ગુજરાતી';
+  }
+  btn.addEventListener('click', ()=> setLang(document.body.dataset.lang === 'gu' ? 'en' : 'gu'));
+
+  // Footer year
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Scroll reveal (paper-tray slide up)
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!prefersReduced && 'IntersectionObserver' in window){
+    const io = new IntersectionObserver(entries=>{
+      entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+    },{threshold:.12});
+    document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+  } else {
+    document.querySelectorAll('.reveal').forEach(el=>el.classList.add('in'));
+  }
+</script>
+</body>
+</html>
