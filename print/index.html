@@ -1,770 +1,697 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sona Xerox — Order Print</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link
-    href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap"
-    rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
-  <style>
-    :root {
-      --bg: #FFFFFF;
-      --panel: #F5F5F3;
-      --panel-2: #EBEBE7;
-      --text: #161513;
-      --text-soft: #726F68;
-      --line: #DEDCD5;
-      --cyan: #00AEEF;
-      --magenta: #EC008C;
-      --yellow: #F5C400;
-      --ok: #2E9A50;
-      --err: #D93025;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Work Sans', sans-serif;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    .app {
-      max-width: 420px;
-      margin: 0 auto;
-      min-height: 100vh;
-      background: var(--bg);
-      position: relative;
-      padding-bottom: 120px;
-    }
-
-    header {
-      padding: 22px 20px 16px;
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .brand-mark {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .cmyk-dots {
-      display: grid;
-      grid-template-columns: repeat(2, 9px);
-      grid-template-rows: repeat(2, 9px);
-      gap: 2px;
-      flex-shrink: 0;
-    }
-
-    .cmyk-dots span {
-      border-radius: 50%;
-    }
-
-    .cmyk-dots span:nth-child(1) {
-      background: var(--cyan);
-    }
-
-    .cmyk-dots span:nth-child(2) {
-      background: var(--magenta);
-    }
-
-    .cmyk-dots span:nth-child(3) {
-      background: var(--yellow);
-    }
-
-    .cmyk-dots span:nth-child(4) {
-      background: var(--text);
-    }
-
-    .brand-mark h1 {
-      font-family: 'Archivo Black', sans-serif;
-      font-size: 16px;
-      margin: 0;
-      letter-spacing: 0.2px;
-      line-height: 1.15;
-    }
-
-    .brand-mark p {
-      margin: 2px 0 0;
-      font-size: 11px;
-      color: var(--text-soft);
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-    }
-
-    .ticket-no {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 11px;
-      color: var(--text-soft);
-      text-align: right;
-    }
-
-    .ticket-no b {
-      display: block;
-      color: var(--text);
-      font-size: 13px;
-    }
-
-    main {
-      padding: 20px;
-    }
-
-    .step {
-      margin-bottom: 26px;
-    }
-
-    .step-label {
-      display: flex;
-      align-items: baseline;
-      gap: 8px;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 12px;
-      color: var(--text-soft);
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-      margin-bottom: 10px;
-    }
-
-    .step-label .n {
-      color: var(--magenta);
-      font-weight: 600;
-    }
-
-    .drop {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      border: 1.5px solid var(--line);
-      border-radius: 10px;
-      background: var(--panel);
-      padding: 18px 16px;
-      cursor: pointer;
-      transition: border-color .15s ease, background .15s ease;
-    }
-
-    .drop:active {
-      background: var(--panel-2);
-    }
-
-    .drop.has-file {
-      border-color: var(--ok);
-    }
-
-    .drop.bad-file {
-      border-color: var(--err);
-    }
-
-    .drop .icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 8px;
-      background: var(--panel-2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .drop .icon svg {
-      width: 22px;
-      height: 22px;
-      stroke: var(--cyan);
-    }
-
-    .drop.has-file .icon svg {
-      stroke: var(--ok);
-    }
-
-    .drop.bad-file .icon svg {
-      stroke: var(--err);
-    }
-
-    .drop-text {
-      min-width: 0;
-    }
-
-    .drop-text p {
-      margin: 0;
-      font-size: 14px;
-      color: var(--text);
-      font-weight: 500;
-    }
-
-    .drop-text p.file-name {
-      color: var(--ok);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .drop-text p.file-bad {
-      color: var(--err);
-    }
-
-    .drop-text span {
-      font-size: 11.5px;
-      color: var(--text-soft);
-    }
-
-    input[type=file] {
-      display: none;
-    }
-
-    .limit-note {
-      font-size: 11.5px;
-      color: var(--text-soft);
-      margin-top: 8px;
-      line-height: 1.5;
-    }
-
-    .limit-note b {
-      color: var(--text);
-      font-weight: 600;
-    }
-
-    .row2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-
-    .choice {
-      border: 1.5px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel);
-      padding: 12px 10px;
-      text-align: center;
-      font-size: 13.5px;
-      font-weight: 500;
-      cursor: pointer;
-      user-select: none;
-      color: var(--text);
-    }
-
-    .choice.active {
-      background: var(--text);
-      color: #FFFFFF;
-      border-color: var(--text);
-    }
-
-    .choice[data-val="color"].active {
-      background: var(--magenta);
-      border-color: var(--magenta);
-      color: #fff;
-    }
-
-    .choice .sub {
-      display: block;
-      font-size: 11px;
-      font-weight: 400;
-      opacity: .7;
-      margin-top: 2px;
-    }
-
-    .stepper {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border: 1.5px solid var(--line);
-      border-radius: 8px;
-      padding: 8px 14px;
-      background: var(--panel);
-    }
-
-    .stepper button {
-      width: 34px;
-      height: 34px;
-      border-radius: 6px;
-      border: 1.5px solid var(--line);
-      background: var(--panel-2);
-      color: var(--text);
-      font-size: 18px;
-      font-family: 'IBM Plex Mono', monospace;
-      cursor: pointer;
-    }
-
-    .stepper button:active {
-      background: var(--cyan);
-      color: #FFFFFF;
-      border-color: var(--cyan);
-    }
-
-    .stepper .count {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 22px;
-      font-weight: 500;
-    }
-
-    .phone-input {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 8px;
-      border: 1.5px solid var(--line);
-      background: var(--panel);
-      font-family: 'Work Sans', sans-serif;
-      font-size: 15px;
-      color: var(--text);
-    }
-
-    .phone-input:focus {
-      outline: none;
-      border-color: var(--cyan);
-    }
-
-    .phone-input::placeholder {
-      color: #A9A6A0;
-    }
-
-    footer {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      max-width: 420px;
-      margin: 0 auto;
-      background: var(--bg);
-      border-top: 1px solid var(--line);
-      padding: 14px 20px 18px;
-    }
-
-    .rate-note {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 11.5px;
-      color: var(--text-soft);
-      margin: 0 0 10px;
-      text-align: center;
-    }
-
-    .err-note {
-      font-size: 12.5px;
-      color: var(--err);
-      margin: 0 0 10px;
-      text-align: center;
-      display: none;
-    }
-
-    .err-note.show {
-      display: block;
-    }
-
-    .send-btn {
-      width: 100%;
-      padding: 16px;
-      background: var(--magenta);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-family: 'Archivo Black', sans-serif;
-      font-size: 14px;
-      letter-spacing: 0.4px;
-      text-transform: uppercase;
-      cursor: pointer;
-    }
-
-    .send-btn:active {
-      background: #c30074;
-    }
-
-    .send-btn:disabled {
-      background: var(--panel-2);
-      color: #A9A6A0;
-      cursor: not-allowed;
-    }
-
-    .send-btn.sending {
-      background: var(--panel-2);
-      color: var(--text-soft);
-      cursor: progress;
-    }
-
-    .overlay {
-      position: absolute;
-      inset: 0;
-      background: var(--bg);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 30px;
-      text-align: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .25s ease;
-      z-index: 20;
-    }
-
-    .overlay.show {
-      opacity: 1;
-      pointer-events: all;
-    }
-
-    .stamp-wrap {
-      border: 3px solid var(--cyan);
-      border-radius: 10px;
-      color: var(--cyan);
-      padding: 18px 26px;
-      transform: rotate(-6deg) scale(0.6);
-      opacity: 0;
-      margin-bottom: 26px;
-    }
-
-    .overlay.show .stamp-wrap {
-      animation: stampdown .45s cubic-bezier(.36, 1.4, .4, 1) .15s forwards;
-    }
-
-    @keyframes stampdown {
-      0% {
-        transform: rotate(-6deg) scale(2.2);
-        opacity: 0;
-      }
-
-      60% {
-        transform: rotate(-6deg) scale(0.92);
-        opacity: 1;
-      }
-
-      100% {
-        transform: rotate(-6deg) scale(1);
-        opacity: 1;
-      }
-    }
-
-    .stamp-wrap h2 {
-      font-family: 'Archivo Black', sans-serif;
-      font-size: 20px;
-      margin: 0 0 4px;
-      letter-spacing: 1px;
-      color: var(--text);
-    }
-
-    .stamp-wrap p {
-      margin: 0;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 13px;
-      letter-spacing: 1px;
-    }
-
-    .overlay-detail {
-      font-size: 14px;
-      color: var(--text-soft);
-      line-height: 1.6;
-      max-width: 280px;
-    }
-
-    .overlay-detail b {
-      color: var(--text);
-    }
-
-    .close-overlay {
-      margin-top: 26px;
-      background: none;
-      border: 1.5px solid var(--line);
-      border-radius: 8px;
-      padding: 10px 22px;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      color: var(--text);
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sona Xerox — Order Print</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --panel:#F5F5F3;
+    --panel-2:#EBEBE7;
+    --text:#161513;
+    --text-soft:#726F68;
+    --line:#DEDCD5;
+    --cyan:#00AEEF;
+    --magenta:#EC008C;
+    --yellow:#F5C400;
+    --ok:#2E9A50;
+    --err:#D93025;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Work Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{
+    max-width:420px;
+    margin:0 auto;
+    min-height:100vh;
+    background:var(--bg);
+    position:relative;
+    padding-bottom:120px;
+  }
+  header{
+    padding:22px 20px 16px;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .brand-mark{display:flex; align-items:center; gap:12px;}
+  .cmyk-dots{
+    display:grid;
+    grid-template-columns:repeat(2,9px);
+    grid-template-rows:repeat(2,9px);
+    gap:2px;
+    flex-shrink:0;
+  }
+  .cmyk-dots span{border-radius:50%;}
+  .cmyk-dots span:nth-child(1){background:var(--cyan);}
+  .cmyk-dots span:nth-child(2){background:var(--magenta);}
+  .cmyk-dots span:nth-child(3){background:var(--yellow);}
+  .cmyk-dots span:nth-child(4){background:var(--text);}
+  .brand-mark h1{
+    font-family:'Archivo Black', sans-serif;
+    font-size:16px;
+    margin:0;
+    letter-spacing:0.2px;
+    line-height:1.15;
+  }
+  .brand-mark p{margin:2px 0 0; font-size:11px; color:var(--text-soft); letter-spacing:0.5px; text-transform:uppercase;}
+  .ticket-no{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--text-soft);
+    text-align:right;
+  }
+  .ticket-no b{display:block; color:var(--text); font-size:13px;}
+
+  main{padding:20px;}
+  .step{margin-bottom:26px;}
+  .step-label{
+    display:flex; align-items:baseline; gap:8px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.6px;
+    margin-bottom:10px;
+  }
+  .step-label .n{color:var(--magenta); font-weight:600;}
+
+  .drop{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    background:var(--panel);
+    padding:18px 16px;
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .drop:active{background:var(--panel-2);}
+  .drop.has-file{border-color:var(--ok);}
+  .drop.bad-file{border-color:var(--err);}
+  .drop .icon{
+    width:44px; height:44px;
+    border-radius:8px;
+    background:var(--panel-2);
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .drop .icon svg{width:22px; height:22px; stroke:var(--cyan);}
+  .drop.has-file .icon svg{stroke:var(--ok);}
+  .drop.bad-file .icon svg{stroke:var(--err);}
+  .drop-text{min-width:0;}
+  .drop-text p{margin:0; font-size:14px; color:var(--text); font-weight:500;}
+  .drop-text p.file-name{color:var(--ok); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .drop-text p.file-bad{color:var(--err);}
+  .drop-text span{font-size:11.5px; color:var(--text-soft);}
+  input[type=file]{display:none;}
+
+  .limit-note{
+    font-size:11.5px; color:var(--text-soft); margin-top:8px; line-height:1.5;
+  }
+  .limit-note b{color:var(--text); font-weight:600;}
+
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .choice{
+    border:1.5px solid var(--line);
+    border-radius:8px;
+    background:var(--panel);
+    padding:12px 10px;
+    text-align:center;
+    font-size:13.5px;
+    font-weight:500;
+    cursor:pointer;
+    user-select:none;
+    color:var(--text);
+  }
+  .choice.active{
+    background:var(--text);
+    color:#FFFFFF;
+    border-color:var(--text);
+  }
+  .choice[data-val="color"].active{background:var(--magenta); border-color:var(--magenta); color:#fff;}
+  .choice .sub{display:block; font-size:11px; font-weight:400; opacity:.7; margin-top:2px;}
+
+  .stepper{
+    display:flex; align-items:center; justify-content:space-between;
+    border:1.5px solid var(--line);
+    border-radius:8px;
+    padding:8px 14px;
+    background:var(--panel);
+  }
+  .stepper button{
+    width:34px;height:34px;
+    border-radius:6px;
+    border:1.5px solid var(--line);
+    background:var(--panel-2);
+    color:var(--text);
+    font-size:18px;
+    font-family:'IBM Plex Mono', monospace;
+    cursor:pointer;
+  }
+  .stepper button:active{background:var(--cyan); color:#FFFFFF; border-color:var(--cyan);}
+  .stepper .count{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:22px; font-weight:500;
+  }
+
+  .phone-input{
+    width:100%;
+    padding:12px 14px;
+    border-radius:8px;
+    border:1.5px solid var(--line);
+    background:var(--panel);
+    font-family:'Work Sans', sans-serif;
+    font-size:15px;
+    color:var(--text);
+  }
+  .phone-input:focus{outline:none; border-color:var(--cyan);}
+  .phone-input::placeholder{color:#A9A6A0;}
+
+  footer{
+    position:fixed;
+    bottom:0; left:0; right:0;
+    max-width:420px;
+    margin:0 auto;
+    background:var(--bg);
+    border-top:1px solid var(--line);
+    padding:14px 20px 18px;
+  }
+  .rate-note{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:var(--text-soft);
+    margin:0 0 10px;
+    text-align:center;
+  }
+  .err-note{
+    font-size:12.5px;
+    color:var(--err);
+    margin:0 0 10px;
+    text-align:center;
+    display:none;
+  }
+  .err-note.show{display:block;}
+  .send-btn{
+    width:100%;
+    padding:16px;
+    background:var(--magenta);
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    font-family:'Archivo Black', sans-serif;
+    font-size:14px;
+    letter-spacing:0.4px;
+    text-transform:uppercase;
+    cursor:pointer;
+  }
+  .send-btn:active{background:#c30074;}
+  .send-btn:disabled{background:var(--panel-2); color:#A9A6A0; cursor:not-allowed;}
+  .send-btn.sending{
+    background:var(--panel-2);
+    color:var(--text-soft);
+    cursor:progress;
+  }
+
+  .overlay{
+    position:absolute; inset:0;
+    background:var(--bg);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:40px 30px;
+    text-align:center;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s ease;
+    z-index:20;
+  }
+  .overlay.show{opacity:1; pointer-events:all;}
+  .stamp-wrap{
+    border:3px solid var(--cyan);
+    border-radius:10px;
+    color:var(--cyan);
+    padding:18px 26px;
+    transform:rotate(-6deg) scale(0.6);
+    opacity:0;
+    margin-bottom:26px;
+  }
+  .overlay.show .stamp-wrap{
+    animation:stampdown .45s cubic-bezier(.36,1.4,.4,1) .15s forwards;
+  }
+  @keyframes stampdown{
+    0%{transform:rotate(-6deg) scale(2.2); opacity:0;}
+    60%{transform:rotate(-6deg) scale(0.92); opacity:1;}
+    100%{transform:rotate(-6deg) scale(1); opacity:1;}
+  }
+  .stamp-wrap h2{
+    font-family:'Archivo Black', sans-serif;
+    font-size:20px;
+    margin:0 0 4px;
+    letter-spacing:1px;
+    color:var(--text);
+  }
+  .stamp-wrap p{
+    margin:0;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    letter-spacing:1px;
+  }
+  .overlay-detail{font-size:14px; color:var(--text-soft); line-height:1.6; max-width:280px;}
+  .overlay-detail b{color:var(--text);}
+  .close-overlay{
+    margin-top:26px;
+    background:none;
+    border:1.5px solid var(--line);
+    border-radius:8px;
+    padding:10px 22px;
+    font-size:13px;
+    font-weight:500;
+    cursor:pointer;
+    color:var(--text);
+  }
+</style>
 </head>
-
 <body>
-  <div class="app">
+<div class="app">
 
-    <header>
-      <div class="brand-mark">
-        <div class="cmyk-dots"><span></span><span></span><span></span><span></span></div>
-        <div>
-          <h1>Sona Xerox</h1>
-          <p>Valod · Online Print</p>
+  <header>
+    <div class="brand-mark">
+      <div class="cmyk-dots"><span></span><span></span><span></span><span></span></div>
+      <div>
+        <h1>Sona Xerox</h1>
+        <p>Valod · Online Print</p>
+      </div>
+    </div>
+    <div class="ticket-no">Token<b id="tokenNo">#—</b></div>
+  </header>
+
+  <main>
+
+    <div class="step">
+      <div class="step-label"><span class="n">01</span> Upload PDF</div>
+      <label class="drop" id="dropZone">
+        <input type="file" id="fileInput" accept=".pdf,application/pdf">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
         </div>
-      </div>
-      <div class="ticket-no">Token<b id="tokenNo">#—</b></div>
-    </header>
-
-    <main>
-
-      <div class="step">
-        <div class="step-label"><span class="n">01</span> Upload PDF</div>
-        <label class="drop" id="dropZone">
-          <input type="file" id="fileInput" accept=".pdf,application/pdf">
-          <div class="icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              <path d="M14 2v6h6" />
-            </svg>
-          </div>
-          <div class="drop-text">
-            <p id="dropText">Tap to choose a PDF file</p>
-            <span id="dropSub">Photos/JPG not accepted yet — ask at counter</span>
-          </div>
-        </label>
-        <p class="limit-note">Max <b>30 pages</b> and <b>15 MB</b> per order. Larger jobs — please call the shop
-          directly.</p>
-      </div>
-
-      <div class="step">
-        <div class="step-label"><span class="n">02</span> Colour</div>
-        <div class="row2">
-          <div class="choice active" data-group="color" data-val="bw">Black &amp; white<span class="sub">₹2/page</span>
-          </div>
-          <div class="choice" data-group="color" data-val="color">Colour<span class="sub">₹10/page</span></div>
+        <div class="drop-text">
+          <p id="dropText">Tap to choose a PDF file</p>
+          <span id="dropSub">Photos/JPG not accepted yet — ask at counter</span>
         </div>
-      </div>
-
-      <div class="step">
-        <div class="step-label"><span class="n">03</span> Sides</div>
-        <div class="row2">
-          <div class="choice active" data-group="side" data-val="single">Single side</div>
-          <div class="choice" data-group="side" data-val="double">Double side</div>
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-label"><span class="n">04</span> Copies</div>
-        <div class="stepper">
-          <button id="minus" aria-label="Decrease copies">–</button>
-          <span class="count" id="copyCount">1</span>
-          <button id="plus" aria-label="Increase copies">+</button>
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-label"><span class="n">05</span> Your phone number</div>
-        <input class="phone-input" id="phoneInput" type="tel" placeholder="10-digit mobile number" maxlength="10">
-      </div>
-
-    </main>
-
-    <footer>
-      <p class="err-note" id="errNote"></p>
-      <p class="rate-note">Pay in cash at pickup · rate shown per page above</p>
-      <button class="send-btn" id="sendBtn" disabled>Send to shop printer</button>
-    </footer>
-
-    <div class="overlay" id="overlay">
-      <div class="stamp-wrap">
-        <h2>Order received</h2>
-        <p id="overlayToken">TOKEN #—</p>
-      </div>
-      <div class="overlay-detail">
-        Sent straight to the counter at <b>Sona Xerox, Valod</b>. Show your token number at pickup and pay in cash.
-      </div>
-      <button class="close-overlay" id="closeOverlay">New order</button>
+      </label>
+      <p class="limit-note">Max <b>30 pages</b> and <b>15 MB</b> per order. Larger jobs — please call the shop directly.</p>
+      <p class="limit-note">📱 <b>PDF on WhatsApp?</b> Open the PDF once inside WhatsApp, then come back and tap upload — it will appear in <b>“Recent”</b> at the top.</p>
     </div>
 
+    <div class="step">
+      <div class="step-label"><span class="n">02</span> Pages</div>
+      <div class="row2">
+        <div class="choice active" data-group="pagemode" data-val="all">All pages</div>
+        <div class="choice" data-group="pagemode" data-val="select">Select pages</div>
+      </div>
+      <div id="rangeBox" style="display:none; margin-top:10px;">
+        <input class="phone-input" id="rangeInput" type="text" placeholder="e.g. 1-5, 8, 11">
+      </div>
+      <p class="limit-note" id="rangeHint">Upload a PDF first</p>
+    </div>
+
+    <div class="step">
+      <div class="step-label"><span class="n">03</span> Colour</div>
+      <div class="row2">
+        <div class="choice active" data-group="color" data-val="bw">Black &amp; white<span class="sub">₹2/page</span></div>
+        <div class="choice" data-group="color" data-val="color">Colour<span class="sub">₹10/page</span></div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-label"><span class="n">04</span> Sides</div>
+      <div class="row2">
+        <div class="choice active" data-group="side" data-val="single">Single side</div>
+        <div class="choice" data-group="side" data-val="double">Double side</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-label"><span class="n">05</span> Copies</div>
+      <div class="stepper">
+        <button id="minus" aria-label="Decrease copies">–</button>
+        <span class="count" id="copyCount">1</span>
+        <button id="plus" aria-label="Increase copies">+</button>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-label"><span class="n">06</span> Your phone number</div>
+      <input class="phone-input" id="phoneInput" type="tel" placeholder="10-digit mobile number" maxlength="10">
+    </div>
+
+  </main>
+
+  <footer>
+    <p class="err-note" id="errNote"></p>
+    <p class="rate-note">Pay in cash at pickup · rate shown per page above</p>
+    <button class="send-btn" id="sendBtn" disabled>Send to shop printer</button>
+  </footer>
+
+  <div class="overlay" id="overlay">
+    <div class="stamp-wrap">
+      <h2>Order received</h2>
+      <p id="overlayToken">TOKEN #—</p>
+    </div>
+    <div class="overlay-detail">
+      Sent straight to the counter at <b>Sona Xerox, Valod</b>. Show your token number at pickup and pay in cash.
+    </div>
+    <button class="close-overlay" id="closeOverlay">New order</button>
   </div>
 
-  <script>
-    (function () {
+</div>
 
-      /* ============================================================
-         PASTE YOUR BACKEND URL BELOW
-         (from Google Apps Script -> Deploy -> Web app -> URL)
-         It looks like: https://script.google.com/macros/s/AKfycb.../exec
-         ============================================================ */
-      var BACKEND_URL = "https://script.google.com/macros/s/AKfycbwoNpxnHM8PwyGV90xdcgkut8md988byKOvALWYWFX3pdaSD7NqHWQdN0Jexnxr-hHw/exec";
+<script>
+(function(){
 
-      var MAX_PAGES = 30;
-      var MAX_MB = 15;
+  /* ============================================================
+     PASTE YOUR BACKEND URL BELOW
+     (from Google Apps Script -> Deploy -> Web app -> URL)
+     It looks like: https://script.google.com/macros/s/AKfycb.../exec
+     ============================================================ */
+  var BACKEND_URL = "https://script.google.com/macros/s/AKfycbwoNpxnHM8PwyGV90xdcgkut8md988byKOvALWYWFX3pdaSD7NqHWQdN0Jexnxr-hHw/exec";
 
-      var state = { file: null, fileB64: null, pages: 0, color: 'bw', side: 'single', copies: 1, phone: '' };
+  var MAX_PAGES = 30;
+  var MAX_MB = 15;
 
-      var dropZone = document.getElementById('dropZone');
-      var fileInput = document.getElementById('fileInput');
-      var dropText = document.getElementById('dropText');
-      var dropSub = document.getElementById('dropSub');
-      var errNote = document.getElementById('errNote');
-      var sendBtn = document.getElementById('sendBtn');
+  var state = { file:null, origBuf:null, fileB64All:null, totalPages:0, pagemode:'all', selection:'all', rangeOk:false, pages:0, color:'bw', side:'single', copies:1, phone:'' };
 
-      function showFileError(msg) {
-        state.file = null; state.fileB64 = null; state.pages = 0;
-        dropZone.classList.remove('has-file');
-        dropZone.classList.add('bad-file');
-        dropText.textContent = msg;
-        dropText.className = 'file-bad';
-        dropSub.textContent = 'Tap to choose a different PDF';
-        checkReady();
+  var dropZone = document.getElementById('dropZone');
+  var fileInput = document.getElementById('fileInput');
+  var dropText = document.getElementById('dropText');
+  var dropSub = document.getElementById('dropSub');
+  var errNote = document.getElementById('errNote');
+  var sendBtn = document.getElementById('sendBtn');
+  var rangeBox = document.getElementById('rangeBox');
+  var rangeInput = document.getElementById('rangeInput');
+  var rangeHint = document.getElementById('rangeHint');
+
+  function showFileError(msg){
+    state.file = null; state.origBuf = null; state.fileB64All = null;
+    state.totalPages = 0; state.pages = 0; state.rangeOk = false;
+    rangeInput.value = '';
+    rangeHint.textContent = 'Upload a PDF first';
+    rangeHint.style.color = '';
+    dropZone.classList.remove('has-file');
+    dropZone.classList.add('bad-file');
+    dropText.textContent = msg;
+    dropText.className = 'file-bad';
+    dropSub.textContent = 'Tap to choose a different PDF';
+    checkReady();
+  }
+
+  fileInput.addEventListener('change', function(){
+    if(!(fileInput.files && fileInput.files[0])) return;
+    var f = fileInput.files[0];
+
+    if(f.type !== 'application/pdf' && !/\.pdf$/i.test(f.name)){
+      showFileError('That file isn\'t a PDF');
+      return;
+    }
+    if(f.size > MAX_MB * 1024 * 1024){
+      showFileError('File too big (max ' + MAX_MB + ' MB)');
+      return;
+    }
+
+    dropText.textContent = 'Checking PDF…';
+    dropText.className = '';
+    dropZone.classList.remove('bad-file','has-file');
+
+    var reader = new FileReader();
+    reader.onload = function(){
+      var buf = reader.result;
+      PDFLib.PDFDocument.load(buf)
+        .then(function(doc){
+          var pages = doc.getPageCount();
+          state.file = f;
+          state.origBuf = buf;
+          state.totalPages = pages;
+          // convert full file to base64 (used when printing all pages)
+          var bytes = new Uint8Array(buf);
+          var bin = '';
+          var chunk = 0x8000;
+          for(var i = 0; i < bytes.length; i += chunk){
+            bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+          }
+          state.fileB64All = btoa(bin);
+
+          dropText.textContent = f.name;
+          dropText.className = 'file-name';
+          dropSub.textContent = pages + ' page' + (pages>1?'s':'') + ' · ' + (f.size/1024/1024).toFixed(2) + ' MB';
+          dropZone.classList.add('has-file');
+
+          rangeInput.value = '';
+          updateRange();
+          checkReady();
+        })
+        .catch(function(){
+          showFileError('Can\'t open this PDF (password-protected or damaged)');
+        });
+    };
+    reader.onerror = function(){ showFileError('Could not read the file — try again'); };
+    reader.readAsArrayBuffer(f);
+  });
+
+  /* ---- page range selection ---- */
+
+  function parsePageRange(text, total){
+    text = text.trim();
+    if(!text) return { all:true };
+    var parts = text.split(',');
+    var set = [], seen = {};
+    for(var i = 0; i < parts.length; i++){
+      var p = parts[i].trim();
+      if(!p) continue;
+      var m = p.match(/^(\d+)\s*-\s*(\d+)$/);
+      var a, b;
+      if(m){ a = +m[1]; b = +m[2]; }
+      else if(/^\d+$/.test(p)){ a = b = +p; }
+      else return { error: 'Use numbers like 1-5, 8' };
+      if(a < 1 || b > total || a > b) return { error: 'Pages must be between 1 and ' + total };
+      for(var n = a; n <= b; n++){
+        if(!seen[n]){ seen[n] = 1; set.push(n); }
       }
+    }
+    if(!set.length) return { all:true };
+    return { pages:set };
+  }
 
-      fileInput.addEventListener('change', function () {
-        if (!(fileInput.files && fileInput.files[0])) return;
-        var f = fileInput.files[0];
+  function updateRange(){
+    // show/hide the page-numbers box based on mode
+    rangeBox.style.display = state.pagemode === 'select' ? 'block' : 'none';
 
-        if (f.type !== 'application/pdf' && !/\.pdf$/i.test(f.name)) {
-          showFileError('That file isn\'t a PDF');
-          return;
-        }
-        if (f.size > MAX_MB * 1024 * 1024) {
-          showFileError('File too big (max ' + MAX_MB + ' MB)');
-          return;
-        }
+    if(!state.origBuf){
+      state.rangeOk = false;
+      rangeHint.textContent = 'Upload a PDF first';
+      rangeHint.style.color = '';
+      checkReady();
+      return;
+    }
 
-        dropText.textContent = 'Checking PDF…';
-        dropText.className = '';
-        dropZone.classList.remove('bad-file', 'has-file');
+    if(state.pagemode === 'all'){
+      state.selection = 'all';
+      state.pages = state.totalPages;
+      if(state.totalPages > MAX_PAGES){
+        state.rangeOk = false;
+        rangeHint.textContent = 'PDF has ' + state.totalPages + ' pages — use "Select pages" to choose up to ' + MAX_PAGES;
+        rangeHint.style.color = 'var(--err)';
+      } else {
+        state.rangeOk = true;
+        rangeHint.textContent = 'Printing all ' + state.totalPages + ' page' + (state.totalPages>1?'s':'');
+        rangeHint.style.color = '';
+      }
+      checkReady();
+      return;
+    }
 
-        var reader = new FileReader();
-        reader.onload = function () {
-          var buf = reader.result;
-          PDFLib.PDFDocument.load(buf)
-            .then(function (doc) {
-              var pages = doc.getPageCount();
-              if (pages > MAX_PAGES) {
-                showFileError('PDF has ' + pages + ' pages (max ' + MAX_PAGES + ')');
-                return;
-              }
-              state.file = f;
-              state.pages = pages;
-              // convert to base64 for sending
-              var bytes = new Uint8Array(buf);
-              var bin = '';
-              var chunk = 0x8000;
-              for (var i = 0; i < bytes.length; i += chunk) {
-                bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
-              }
-              state.fileB64 = btoa(bin);
+    // select mode
+    if(!rangeInput.value.trim()){
+      state.rangeOk = false;
+      rangeHint.textContent = 'Type page numbers, e.g. 1-5, 8, 11';
+      rangeHint.style.color = '';
+      checkReady();
+      return;
+    }
 
-              dropText.textContent = f.name;
-              dropText.className = 'file-name';
-              dropSub.textContent = pages + ' page' + (pages > 1 ? 's' : '') + ' · ' + (f.size / 1024 / 1024).toFixed(2) + ' MB';
-              dropZone.classList.add('has-file');
-              checkReady();
-            })
-            .catch(function () {
-              showFileError('Can\'t open this PDF (password-protected or damaged)');
-            });
-        };
-        reader.onerror = function () { showFileError('Could not read the file — try again'); };
-        reader.readAsArrayBuffer(f);
-      });
+    var res = parsePageRange(rangeInput.value, state.totalPages);
+    if(res.error){
+      state.rangeOk = false;
+      rangeHint.textContent = res.error;
+      rangeHint.style.color = 'var(--err)';
+    } else if(res.all){
+      state.rangeOk = false;
+      rangeHint.textContent = 'Type page numbers, e.g. 1-5, 8, 11';
+      rangeHint.style.color = '';
+    } else if(res.pages.length > MAX_PAGES){
+      state.rangeOk = false;
+      rangeHint.textContent = res.pages.length + ' pages selected — max ' + MAX_PAGES;
+      rangeHint.style.color = 'var(--err)';
+    } else {
+      state.selection = res.pages;
+      state.pages = res.pages.length;
+      state.rangeOk = true;
+      rangeHint.textContent = 'Printing ' + res.pages.length + ' of ' + state.totalPages + ' pages';
+      rangeHint.style.color = '';
+    }
+    checkReady();
+  }
 
-      document.querySelectorAll('.choice').forEach(function (el) {
-        el.addEventListener('click', function () {
-          var group = el.getAttribute('data-group');
-          document.querySelectorAll('.choice[data-group="' + group + '"]').forEach(function (sib) {
-            sib.classList.remove('active');
-          });
-          el.classList.add('active');
-          state[group] = el.getAttribute('data-val');
+  rangeInput.addEventListener('input', updateRange);
+
+  function buildFinalB64(){
+    if(state.selection === 'all') return Promise.resolve(state.fileB64All);
+    var indices = state.selection.map(function(n){ return n - 1; });
+    return PDFLib.PDFDocument.load(state.origBuf).then(function(src){
+      return PDFLib.PDFDocument.create().then(function(out){
+        return out.copyPages(src, indices).then(function(copied){
+          for(var i = 0; i < copied.length; i++){ out.addPage(copied[i]); }
+          return out.save();
         });
       });
-
-      var copyCount = document.getElementById('copyCount');
-      document.getElementById('plus').addEventListener('click', function () {
-        if (state.copies < 30) { state.copies++; copyCount.textContent = state.copies; }
-      });
-      document.getElementById('minus').addEventListener('click', function () {
-        if (state.copies > 1) { state.copies--; copyCount.textContent = state.copies; }
-      });
-
-      var phoneInput = document.getElementById('phoneInput');
-      phoneInput.addEventListener('input', function () {
-        phoneInput.value = phoneInput.value.replace(/\D/g, '').slice(0, 10);
-        state.phone = phoneInput.value;
-        checkReady();
-      });
-
-      function checkReady() {
-        var ready = state.fileB64 && state.phone.length === 10 && !sending;
-        sendBtn.disabled = !ready;
+    }).then(function(bytes){
+      var bin = '', chunk = 0x8000;
+      for(var i = 0; i < bytes.length; i += chunk){
+        bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
       }
+      return btoa(bin);
+    });
+  }
 
-      function showError(msg) {
-        errNote.textContent = msg;
-        errNote.classList.add('show');
-      }
-      function clearError() {
-        errNote.textContent = '';
-        errNote.classList.remove('show');
-      }
-
-      var sending = false;
-
-      sendBtn.addEventListener('click', function () {
-        if (sending) return;
-        clearError();
-
-        if (BACKEND_URL.indexOf('script.google.com') === -1) {
-          showError('Backend not connected yet — BACKEND_URL missing in the page code.');
-          return;
-        }
-
-        sending = true;
-        sendBtn.classList.add('sending');
-        sendBtn.textContent = 'Sending…';
-        sendBtn.disabled = true;
-
-        var payload = {
-          fileName: state.file.name,
-          fileData: state.fileB64,
-          pages: state.pages,
-          color: state.color,
-          side: state.side,
-          copies: state.copies,
-          phone: state.phone
-        };
-
-        fetch(BACKEND_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
-        })
-          .then(function (res) { return res.json(); })
-          .then(function (out) {
-            if (out && out.ok && out.token) {
-              document.getElementById('tokenNo').textContent = '#' + out.token;
-              document.getElementById('overlayToken').textContent = 'TOKEN #' + out.token;
-              document.getElementById('overlay').classList.add('show');
-            } else {
-              showError((out && out.error) ? out.error : 'Order failed — please try again');
-            }
-          })
-          .catch(function () {
-            showError('No connection — check internet and try again');
-          })
-          .finally(function () {
-            sending = false;
-            sendBtn.classList.remove('sending');
-            sendBtn.textContent = 'Send to shop printer';
-            checkReady();
-          });
+  document.querySelectorAll('.choice').forEach(function(el){
+    el.addEventListener('click', function(){
+      var group = el.getAttribute('data-group');
+      document.querySelectorAll('.choice[data-group="'+group+'"]').forEach(function(sib){
+        sib.classList.remove('active');
       });
+      el.classList.add('active');
+      state[group] = el.getAttribute('data-val');
+      if(group === 'pagemode') updateRange();
+    });
+  });
 
-      document.getElementById('closeOverlay').addEventListener('click', function () {
-        // full reset for a new order
-        state = { file: null, fileB64: null, pages: 0, color: 'bw', side: 'single', copies: 1, phone: '' };
-        fileInput.value = '';
-        dropText.textContent = 'Tap to choose a PDF file';
-        dropText.className = '';
-        dropSub.textContent = 'Photos/JPG not accepted yet — ask at counter';
-        dropZone.classList.remove('has-file', 'bad-file');
-        copyCount.textContent = '1';
-        phoneInput.value = '';
-        document.querySelectorAll('.choice').forEach(function (el) { el.classList.remove('active'); });
-        document.querySelector('.choice[data-val="bw"]').classList.add('active');
-        document.querySelector('.choice[data-val="single"]').classList.add('active');
-        document.getElementById('tokenNo').textContent = '#—';
-        clearError();
-        checkReady();
-        document.getElementById('overlay').classList.remove('show');
+  var copyCount = document.getElementById('copyCount');
+  document.getElementById('plus').addEventListener('click', function(){
+    if(state.copies < 30){ state.copies++; copyCount.textContent = state.copies; }
+  });
+  document.getElementById('minus').addEventListener('click', function(){
+    if(state.copies > 1){ state.copies--; copyCount.textContent = state.copies; }
+  });
+
+  var phoneInput = document.getElementById('phoneInput');
+  phoneInput.addEventListener('input', function(){
+    phoneInput.value = phoneInput.value.replace(/\D/g,'').slice(0,10);
+    state.phone = phoneInput.value;
+    checkReady();
+  });
+
+  function checkReady(){
+    var ready = state.fileB64All && state.rangeOk && state.pages >= 1 && state.phone.length === 10 && !sending;
+    sendBtn.disabled = !ready;
+  }
+
+  function showError(msg){
+    errNote.textContent = msg;
+    errNote.classList.add('show');
+  }
+  function clearError(){
+    errNote.textContent = '';
+    errNote.classList.remove('show');
+  }
+
+  var sending = false;
+
+  sendBtn.addEventListener('click', function(){
+    if(sending) return;
+    clearError();
+
+    if(BACKEND_URL.indexOf('script.google.com') === -1){
+      showError('Backend not connected yet — BACKEND_URL missing in the page code.');
+      return;
+    }
+
+    sending = true;
+    sendBtn.classList.add('sending');
+    sendBtn.textContent = 'Sending…';
+    sendBtn.disabled = true;
+
+    buildFinalB64()
+    .then(function(finalB64){
+      var payload = {
+        fileName: state.file.name,
+        fileData: finalB64,
+        pages: state.pages,
+        color: state.color,
+        side: state.side,
+        copies: state.copies,
+        phone: state.phone
+      };
+      return fetch(BACKEND_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
       });
+    })
+    .then(function(res){ return res.json(); })
+    .then(function(out){
+      if(out && out.ok && out.token){
+        document.getElementById('tokenNo').textContent = '#' + out.token;
+        document.getElementById('overlayToken').textContent = 'TOKEN #' + out.token;
+        document.getElementById('overlay').classList.add('show');
+      } else {
+        showError((out && out.error) ? out.error : 'Order failed — please try again');
+      }
+    })
+    .catch(function(){
+      showError('No connection — check internet and try again');
+    })
+    .finally(function(){
+      sending = false;
+      sendBtn.classList.remove('sending');
+      sendBtn.textContent = 'Send to shop printer';
+      checkReady();
+    });
+  });
 
-    })();
-  </script>
+  document.getElementById('closeOverlay').addEventListener('click', function(){
+    // full reset for a new order
+    state = { file:null, origBuf:null, fileB64All:null, totalPages:0, pagemode:'all', selection:'all', rangeOk:false, pages:0, color:'bw', side:'single', copies:1, phone:'' };
+    fileInput.value = '';
+    rangeInput.value = '';
+    rangeBox.style.display = 'none';
+    rangeHint.textContent = 'Upload a PDF first';
+    rangeHint.style.color = '';
+    dropText.textContent = 'Tap to choose a PDF file';
+    dropText.className = '';
+    dropSub.textContent = 'Photos/JPG not accepted yet — ask at counter';
+    dropZone.classList.remove('has-file','bad-file');
+    copyCount.textContent = '1';
+    phoneInput.value = '';
+    document.querySelectorAll('.choice').forEach(function(el){ el.classList.remove('active'); });
+    document.querySelector('.choice[data-val="all"]').classList.add('active');
+    document.querySelector('.choice[data-val="bw"]').classList.add('active');
+    document.querySelector('.choice[data-val="single"]').classList.add('active');
+    document.getElementById('tokenNo').textContent = '#—';
+    clearError();
+    checkReady();
+    document.getElementById('overlay').classList.remove('show');
+  });
+
+})();
+</script>
 </body>
-
 </html>
