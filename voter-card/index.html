@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voter ID Card Tool · Sona Xerox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hind+Vadodara:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="./pdf.min.js"></script>
+<style>
+  :root{
+    --paper:#FBFAF6; --ink:#161616; --cyan:#00A3C4; --magenta:#E0218A;
+    --yellow:#FFC400; --gray:#6F6F68; --line:#E4E2D9; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"Archivo","Hind Vadodara",sans-serif;line-height:1.5}
+  h1,h2,h3,.logo{font-family:"Bricolage Grotesque","Hind Vadodara",sans-serif}
+
+  /* header (matches sonaxerox.in) */
+  header{border-bottom:1.5px solid var(--ink);background:var(--paper);position:sticky;top:0;z-index:10}
+  .nav{max-width:1120px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;gap:14px}
+  .logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:1.15rem;color:var(--ink);text-decoration:none}
+  .logo-dots{display:inline-grid;grid-template-columns:10px 10px;gap:3px}
+  .logo-dots i{width:10px;height:10px;border-radius:50%;display:block}
+  .logo-dots i:nth-child(1){background:var(--cyan)} .logo-dots i:nth-child(2){background:var(--magenta)}
+  .logo-dots i:nth-child(3){background:var(--yellow)} .logo-dots i:nth-child(4){background:var(--ink)}
+  .nav-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .nav-call{color:var(--ink);text-decoration:none;font-weight:600;font-size:.95rem}
+  .nav-back{border:1.5px solid var(--ink);border-radius:999px;padding:.45rem 1rem;font-weight:600;font-size:.9rem;
+    text-decoration:none;color:var(--ink);background:#fff;box-shadow:3px 3px 0 var(--line)}
+  .nav-back:hover{transform:translateY(-2px)} .nav-back:active{transform:translateY(2px) scale(.98)}
+
+  main{max-width:1120px;margin:0 auto;padding:30px 22px 70px}
+  .page-head{margin-bottom:22px}
+  .kicker{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:.72rem;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--gray);margin-bottom:8px}
+  .cmyk-bar{display:inline-flex;height:12px;border:1.5px solid var(--ink);border-radius:3px;overflow:hidden;vertical-align:-1px}
+  .cmyk-bar span{width:9px} .cmyk-bar .c{background:var(--cyan)} .cmyk-bar .m{background:var(--magenta)}
+  .cmyk-bar .y{background:var(--yellow)} .cmyk-bar .k{background:var(--ink)}
+  h1{margin:.1rem 0;font-size:1.9rem;font-weight:800}
+  .page-head p{margin:.3rem 0 0;color:var(--gray);max-width:640px}
+
+  /* card / panel look */
+  .card{background:#fff;border:1.5px solid var(--ink);border-radius:6px;box-shadow:5px 5px 0 var(--line)}
+
+  /* upload */
+  .drop{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+    border:2px dashed var(--ink);border-radius:8px;background:#fff;padding:54px 24px;cursor:pointer;box-shadow:5px 5px 0 var(--line)}
+  .drop:hover,.drop.drag{background:#FFFDF5;border-color:var(--magenta)}
+  .drop .ic{font-size:34px} .drop h2{margin:12px 0 5px;font-size:1.2rem;font-weight:700}
+  .drop p{margin:0;color:var(--gray);font-size:.92rem}
+  input[type=file]{display:none}
+  .status{margin:16px 0 0;text-align:center;color:var(--gray);font-size:.92rem;min-height:20px}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--magenta);
+    border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px;margin-right:7px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .err{color:var(--magenta);font-weight:600}
+
+  /* editor */
+  .editor{display:none}
+  .topbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+  .tabs{display:flex;gap:5px;background:#fff;border:1.5px solid var(--ink);border-radius:8px;padding:4px;box-shadow:3px 3px 0 var(--line)}
+  .tab{padding:7px 16px;border-radius:5px;font-weight:700;font-size:.9rem;color:var(--gray);cursor:pointer;border:none;background:transparent}
+  .tab.active{background:var(--ink);color:var(--paper)}
+  .fname{color:var(--gray);font-size:.88rem} .spacer{flex:1}
+
+  .btn{background:var(--ink);color:var(--paper);border:1.5px solid var(--ink);border-radius:999px;padding:.6rem 1.2rem;
+    font-weight:700;font-size:.9rem;cursor:pointer;text-decoration:none;display:inline-block;box-shadow:3px 3px 0 var(--line)}
+  .btn:hover{transform:translateY(-2px)} .btn:active{transform:translateY(2px) scale(.98)}
+  .btn.ghost{background:#fff;color:var(--ink)}
+  .btn.sm{padding:.42rem .85rem;font-size:.82rem}
+  .btn:disabled{opacity:.4;cursor:default;box-shadow:none;transform:none}
+
+  .work{display:grid;grid-template-columns:1fr 330px;gap:20px;align-items:start}
+  @media(max-width:900px){.work{grid-template-columns:1fr}}
+  .stage{background:#fff;border:1.5px solid var(--ink);border-radius:6px;padding:16px;display:flex;justify-content:center;box-shadow:5px 5px 0 var(--line)}
+  #canvas{max-width:100%;height:auto;cursor:crosshair;border:1px solid var(--line);border-radius:4px;touch-action:none}
+
+  .panel{padding:16px}
+  .panel h3{margin:0 0 12px;font-size:.72rem;letter-spacing:.12em;color:var(--gray);text-transform:uppercase;font-weight:700}
+  .tools{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+  .tool{padding:9px 8px;border-radius:6px;border:1.5px solid var(--ink);background:#fff;color:var(--ink);
+    font-size:.82rem;font-weight:700;cursor:pointer;text-align:center;box-shadow:2px 2px 0 var(--line)}
+  .tool.active{background:var(--cyan);color:#fff;border-color:var(--ink)}
+  .tool[data-tool=ai].active{background:var(--magenta)}
+  .ctl{margin-bottom:12px}
+  .ctl label{display:flex;justify-content:space-between;font-size:.82rem;color:var(--gray);margin-bottom:5px}
+  .ctl label b{color:var(--ink);font-weight:700}
+  input[type=range]{width:100%;accent-color:var(--magenta)}
+  .presets{display:flex;gap:6px;margin-bottom:10px}
+  .preset{flex:1;padding:7px 0;border-radius:6px;border:1.5px solid var(--ink);background:#fff;color:var(--ink);font-size:.8rem;font-weight:700;cursor:pointer}
+  .preset:hover{background:var(--yellow)}
+  .hint{font-size:.8rem;color:var(--gray);line-height:1.5;background:#FFFDF5;border:1.5px solid var(--line);border-radius:6px;padding:9px 11px;margin-bottom:12px}
+  .applybar,.dlbar{display:flex;gap:8px;margin-top:8px}
+  .applybar .btn,.dlbar .btn{flex:1;text-align:center}
+  .dlbar{margin-top:12px}
+  .miniload{font-size:.8rem;color:var(--magenta);font-weight:600;margin-top:8px;display:none}
+  .boot{position:fixed;inset:0;background:var(--paper);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:50}
+  .boot p{color:var(--gray)}
+</style>
+</head>
+<body>
+<header>
+  <nav class="nav">
+    <a class="logo" href="/"><span class="logo-dots"><i></i><i></i><i></i><i></i></span>Sona Xerox</a>
+    <div class="nav-right">
+      <a class="nav-call" href="tel:+917778805780">📞 77788 05780</a>
+      <a class="nav-back" href="/">← Back to site</a>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <div class="page-head">
+    <span class="kicker"><span class="cmyk-bar"><span class="c"></span><span class="m"></span><span class="y"></span><span class="k"></span></span> Voter ID · e-EPIC</span>
+    <h1>Voter ID Card Tool</h1>
+    <p>Upload an official e-EPIC PDF and get a clean, print-ready plastic card — front &amp; back, cropped to exact card size and ready to print. Everything runs in your browser; nothing is uploaded.</p>
+  </div>
+
+  <!-- UPLOAD -->
+  <div id="uploadWrap">
+    <label class="drop" id="drop">
+      <div class="ic">📄</div>
+      <h2>Drop an e-EPIC PDF here</h2>
+      <p>or click to choose a file · official Voter ID PDF</p>
+      <input type="file" id="file" accept="application/pdf">
+    </label>
+    <div class="status" id="status"></div>
+  </div>
+
+  <!-- EDITOR -->
+  <section class="editor" id="editor">
+    <div class="topbar">
+      <div class="tabs">
+        <button class="tab active" data-side="front">Front</button>
+        <button class="tab" data-side="back">Back</button>
+      </div>
+      <span class="fname" id="fname"></span>
+      <span class="spacer"></span>
+      <button class="btn ghost sm" id="newBtn">New PDF</button>
+    </div>
+
+    <div class="work">
+      <div class="stage"><canvas id="canvas"></canvas></div>
+
+      <div class="card panel">
+        <h3>Edit selected area</h3>
+        <div class="hint" id="hint">Drag on the card to select an area (photo, name, address), then pick a tool. Only your selection changes.</div>
+
+        <div class="tools">
+          <div class="tool active" data-tool="sharpen">Sharpen</div>
+          <div class="tool" data-tool="bc">Bright / Contrast</div>
+          <div class="tool" data-tool="sat">Saturation</div>
+          <div class="tool" data-tool="ai">Photo Enhance</div>
+        </div>
+
+        <div class="toolctl" data-for="sharpen">
+          <div class="presets"><button class="preset" data-p="60">Light</button><button class="preset" data-p="120">Medium</button><button class="preset" data-p="220">Strong</button></div>
+          <div class="ctl"><label>Amount <b id="sharpVal">0.0</b></label><input type="range" id="sharp" min="0" max="300" value="0"></div>
+        </div>
+        <div class="toolctl" data-for="bc" style="display:none">
+          <div class="presets"><button class="preset" data-b="12" data-c="10">Light</button><button class="preset" data-b="22" data-c="22">Medium</button><button class="preset" data-b="35" data-c="40">Strong</button></div>
+          <div class="ctl"><label>Brightness <b id="briVal">0</b></label><input type="range" id="bri" min="-100" max="100" value="0"></div>
+          <div class="ctl"><label>Contrast <b id="conVal">0</b></label><input type="range" id="con" min="-100" max="100" value="0"></div>
+        </div>
+        <div class="toolctl" data-for="sat" style="display:none">
+          <div class="presets"><button class="preset" data-s="20">Light</button><button class="preset" data-s="45">Medium</button><button class="preset" data-s="80">Strong</button></div>
+          <div class="ctl"><label>Saturation <b id="satVal">0</b></label><input type="range" id="sat" min="-100" max="100" value="0"></div>
+        </div>
+        <div class="toolctl" data-for="ai" style="display:none">
+          <div class="hint">Best for the low-res portrait photo. Select the photo, then choose a strength — it upscales, denoises and sharpens.</div>
+          <div class="presets"><button class="preset" data-ai="light">Light</button><button class="preset" data-ai="medium">Medium</button><button class="preset" data-ai="strong">Strong</button></div>
+          <div class="miniload" id="aiLoad"><span class="spinner"></span>Enhancing…</div>
+        </div>
+
+        <div class="applybar">
+          <button class="btn" id="applyBtn" disabled>Apply</button>
+          <button class="btn ghost" id="undoBtn" disabled>Undo</button>
+          <button class="btn ghost" id="resetBtn">Reset</button>
+        </div>
+        <div class="dlbar">
+          <button class="btn" id="dlSide">Download side</button>
+          <button class="btn ghost" id="dlBoth">Both</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="boot" id="boot"><div class="spinner" style="width:22px;height:22px"></div><p>Loading…</p></div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='./pdf.worker.min.js';
+window.addEventListener('load',()=>{ document.getElementById('boot').style.display='none'; });
+
+const OUT_W=1011, OUT_H=638;   // CR80 landscape @ 300 DPI
+const $=id=>document.getElementById(id);
+
+// ---------- upload / pipeline ----------
+const drop=$('drop'), fileEl=$('file'), status=$('status'), uploadWrap=$('uploadWrap'), editor=$('editor');
+['dragenter','dragover'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.add('drag')}));
+['dragleave','drop'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.remove('drag')}));
+drop.addEventListener('drop',ev=>{ if(ev.dataTransfer.files.length) handle(ev.dataTransfer.files[0]); });
+fileEl.addEventListener('change',()=>{ if(fileEl.files.length) handle(fileEl.files[0]); });
+
+async function handle(f){
+  if(!f.name.toLowerCase().endsWith('.pdf')){ status.innerHTML='<span class="err">Please choose a PDF file.</span>'; return; }
+  status.innerHTML='<span class="spinner"></span>Reading &amp; cropping “'+f.name+'”…';
+  try{
+    const pageCanvas=await pdfToCanvas(f);
+    const [front,back]=detectCards(pageCanvas);
+    const fCanvas=cropTo(pageCanvas,front), bCanvas=cropTo(pageCanvas,back);
+    status.textContent='';
+    startEditor(f.name.replace(/\.pdf$/i,''), fCanvas, bCanvas);
+  }catch(e){ console.error(e); status.innerHTML='<span class="err">Could not read this PDF. Is it an official e-EPIC?</span>'; }
+}
+
+async function pdfToCanvas(file){
+  const buf=await file.arrayBuffer();
+  const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+  const page=await pdf.getPage(1);
+  const vp=page.getViewport({scale:1.6});
+  const c=document.createElement('canvas'); c.width=Math.ceil(vp.width); c.height=Math.ceil(vp.height);
+  await page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
+  return c;
+}
+
+// Detect front card via colour projection (left half), derive back from fixed template geometry.
+function detectCards(src){
+  const W=src.width,H=src.height, topH=Math.round(H*0.36), mid=Math.floor(W/2);
+  const data=src.getContext('2d').getImageData(0,0,W,topH).data;
+  const col=new Int32Array(mid), row=new Int32Array(topH);
+  for(let y=0;y<topH;y++){ const base=y*W;
+    for(let x=0;x<mid;x++){ const i=(base+x)*4, r=data[i],g=data[i+1],b=data[i+2];
+      const mx=Math.max(r,g,b),mn=Math.min(r,g,b), s=mx?((mx-mn)/mx*255):0;
+      if(s>40){ col[x]++; row[y]++; } } }
+  const colT=topH*0.05, rowT=mid*0.03;
+  let x0=-1,x1=-1; for(let x=0;x<mid;x++) if(col[x]>colT){ if(x0<0)x0=x; x1=x; }
+  let y0=-1,y1=-1; for(let y=0;y<topH;y++) if(row[y]>rowT){ if(y0<0)y0=y; y1=y; }
+  let front, back;
+  const ar=(x1-x0)/Math.max(1,(y1-y0));
+  if(x0>=0 && y0>=0 && ar>1.3 && ar<1.9){
+    const fw=x1-x0, fh=y1-y0;
+    front={x:x0,y:y0,w:fw,h:fh};
+    back ={x:Math.min(W-fw, Math.round(x0+1.198*fw)), y:y0, w:fw, h:fh};
+  }else{ // fallback: fixed template ratios
+    front={x:Math.round(W*0.054),y:Math.round(H*0.112),w:Math.round(W*0.4133),h:Math.round(H*0.1842)};
+    back ={x:Math.round(W*0.549), y:Math.round(H*0.112),w:Math.round(W*0.4133),h:Math.round(H*0.1842)};
+  }
+  return [front,back];
+}
+
+function cropTo(src, b){
+  const o=document.createElement('canvas'); o.width=OUT_W; o.height=OUT_H;
+  const ox=o.getContext('2d'); ox.imageSmoothingEnabled=true; ox.imageSmoothingQuality='high';
+  ox.drawImage(src, b.x,b.y,b.w,b.h, 0,0,OUT_W,OUT_H);
+  return o;
+}
+
+// ---------- editor ----------
+const canvas=$('canvas'), ctx=canvas.getContext('2d');
+const sides={}; let cur='front', stem='card';
+let sel=null, dragging=false, dragStart=null, tool='sharpen', preview=null;
+const work=()=>sides[cur].work, wctx=()=>work().getContext('2d');
+
+function startEditor(name,fCanvas,bCanvas){
+  stem=name; $('fname').textContent=name;
+  uploadWrap.style.display='none'; editor.style.display='block';
+  sides.front={work:fCanvas,history:[],orig:fCanvas.toDataURL()};
+  sides.back ={work:bCanvas,history:[],orig:bCanvas.toDataURL()};
+  selectSide('front');
+}
+function selectSide(side){
+  cur=side; sel=null; preview=null;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.side===side));
+  canvas.width=work().width; canvas.height=work().height;
+  resetControls(); refreshButtons(); render();
+}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>selectSide(t.dataset.side));
+
+function render(){
+  ctx.drawImage(work(),0,0);
+  if(preview) ctx.putImageData(preview.data,preview.x,preview.y);
+  if(sel){ ctx.save(); ctx.strokeStyle='#E0218A'; ctx.lineWidth=Math.max(2,canvas.width/500);
+    ctx.setLineDash([canvas.width/80,canvas.width/80]); ctx.strokeRect(sel.x+.5,sel.y+.5,sel.w,sel.h); ctx.restore(); }
+}
+function toImg(e){ const r=canvas.getBoundingClientRect();
+  const cx=(e.touches?e.touches[0].clientX:e.clientX)-r.left, cy=(e.touches?e.touches[0].clientY:e.clientY)-r.top;
+  return {x:Math.round(cx*canvas.width/r.width), y:Math.round(cy*canvas.height/r.height)}; }
+function startSel(e){ e.preventDefault(); dragging=true; dragStart=toImg(e); preview=null; sel=null; render(); }
+function moveSel(e){ if(!dragging)return; e.preventDefault(); const p=toImg(e);
+  const x=Math.max(0,Math.min(dragStart.x,p.x)), y=Math.max(0,Math.min(dragStart.y,p.y));
+  const w=Math.min(canvas.width,Math.max(dragStart.x,p.x))-x, h=Math.min(canvas.height,Math.max(dragStart.y,p.y))-y;
+  sel={x,y,w,h}; render(); }
+function endSel(){ if(!dragging)return; dragging=false;
+  if(!sel||sel.w<6||sel.h<6){ sel=null; render(); refreshButtons(); return; }
+  resetControls(); preview=null; render(); refreshButtons(); }
+canvas.addEventListener('mousedown',startSel); canvas.addEventListener('mousemove',moveSel); window.addEventListener('mouseup',endSel);
+canvas.addEventListener('touchstart',startSel); canvas.addEventListener('touchmove',moveSel); window.addEventListener('touchend',endSel);
+function resetControls(){ $('sharp').value=0;$('sharpVal').textContent='0.0'; $('bri').value=0;$('briVal').textContent='0'; $('con').value=0;$('conVal').textContent='0'; $('sat').value=0;$('satVal').textContent='0'; }
+
+document.querySelectorAll('.tool').forEach(t=>t.onclick=()=>{ tool=t.dataset.tool;
+  document.querySelectorAll('.tool').forEach(x=>x.classList.toggle('active',x===t));
+  document.querySelectorAll('.toolctl').forEach(c=>c.style.display=(c.dataset.for===tool)?'block':'none');
+  if(tool!=='ai') updatePreview(); });
+
+function bind(id,valId,fmt){ $(id).addEventListener('input',()=>{ $(valId).textContent=fmt($(id).value); if(tool!=='ai')updatePreview(); }); }
+bind('sharp','sharpVal',v=>(v/100).toFixed(1)); bind('bri','briVal',v=>v); bind('con','conVal',v=>v); bind('sat','satVal',v=>v);
+document.querySelectorAll('[data-for=sharpen] .preset').forEach(b=>b.onclick=()=>{$('sharp').value=b.dataset.p;$('sharpVal').textContent=(b.dataset.p/100).toFixed(1);updatePreview();});
+document.querySelectorAll('[data-for=bc] .preset').forEach(b=>b.onclick=()=>{$('bri').value=b.dataset.b;$('con').value=b.dataset.c;$('briVal').textContent=b.dataset.b;$('conVal').textContent=b.dataset.c;updatePreview();});
+document.querySelectorAll('[data-for=sat] .preset').forEach(b=>b.onclick=()=>{$('sat').value=b.dataset.s;$('satVal').textContent=b.dataset.s;updatePreview();});
+document.querySelectorAll('[data-for=ai] .preset').forEach(b=>b.onclick=()=>aiEnhance(b.dataset.ai));
+
+function getRegion(){ return wctx().getImageData(sel.x,sel.y,sel.w,sel.h); }
+const clamp=v=>v<0?0:v>255?255:v;
+function opBrightnessContrast(d,b,c){ const f=(259*(c+255))/(255*(259-c)),D=d.data;
+  for(let i=0;i<D.length;i+=4){ D[i]=clamp(f*(D[i]-128)+128+b); D[i+1]=clamp(f*(D[i+1]-128)+128+b); D[i+2]=clamp(f*(D[i+2]-128)+128+b); } }
+function opSaturation(d,s){ const f=1+s/100,D=d.data;
+  for(let i=0;i<D.length;i+=4){ const g=.299*D[i]+.587*D[i+1]+.114*D[i+2];
+    D[i]=clamp(g+(D[i]-g)*f); D[i+1]=clamp(g+(D[i+1]-g)*f); D[i+2]=clamp(g+(D[i+2]-g)*f); } }
+function opSharpen(d,amount){ if(amount<=0)return; const w=d.width,h=d.height,src=d.data,blur=new Float32Array(src.length);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){ for(let ch=0;ch<3;ch++){ let sum=0,n=0;
+    for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){ const xx=x+dx,yy=y+dy; if(xx<0||yy<0||xx>=w||yy>=h)continue; sum+=src[(yy*w+xx)*4+ch]; n++; }
+    blur[(y*w+x)*4+ch]=sum/n; } }
+  for(let i=0;i<src.length;i+=4)for(let ch=0;ch<3;ch++) src[i+ch]=clamp(src[i+ch]+amount*(src[i+ch]-blur[i+ch])); }
+function updatePreview(){ if(!sel||tool==='ai'){ preview=null; render(); refreshButtons(); return; }
+  const sharpA=$('sharp').value/100, bri=+$('bri').value, con=+$('con').value, satv=+$('sat').value;
+  const neutral=(tool==='sharpen'&&sharpA<=0)||(tool==='bc'&&bri===0&&con===0)||(tool==='sat'&&satv===0);
+  if(neutral){ preview=null; render(); refreshButtons(); return; }
+  const d=getRegion();
+  if(tool==='sharpen') opSharpen(d,sharpA); else if(tool==='bc') opBrightnessContrast(d,bri,con); else if(tool==='sat') opSaturation(d,satv);
+  preview={x:sel.x,y:sel.y,data:d}; render(); refreshButtons(); }
+
+// AI-style photo enhance (fully client-side: upscale/denoise + sharpen + contrast + saturation)
+function enhanceData(region, strength){
+  const P={light:{sharp:.6,con:8,sat:8,soft:1},medium:{sharp:1.0,con:14,sat:12,soft:2},strong:{sharp:1.5,con:22,sat:18,soft:3}}[strength];
+  const w=region.width,h=region.height;
+  let c=document.createElement('canvas'); c.width=w;c.height=h; let cx=c.getContext('2d'); cx.putImageData(region,0,0);
+  for(let i=0;i<P.soft;i++){ const t=document.createElement('canvas'); t.width=Math.max(1,Math.round(w*.7));t.height=Math.max(1,Math.round(h*.7));
+    const tx=t.getContext('2d'); tx.imageSmoothingEnabled=true;tx.imageSmoothingQuality='high'; tx.drawImage(c,0,0,t.width,t.height);
+    cx.imageSmoothingEnabled=true;cx.imageSmoothingQuality='high'; cx.clearRect(0,0,w,h); cx.drawImage(t,0,0,w,h); }
+  const d=cx.getImageData(0,0,w,h);
+  opSharpen(d,P.sharp); opBrightnessContrast(d,0,P.con); opSaturation(d,P.sat);
+  return d;
+}
+function aiEnhance(strength){ if(!sel){ flashHint('Select the photo first, then pick a strength.'); return; }
+  $('aiLoad').style.display='block';
+  setTimeout(()=>{ const d=enhanceData(getRegion(),strength); preview={x:sel.x,y:sel.y,data:d}; $('aiLoad').style.display='none'; render(); refreshButtons(); },30);
+}
+
+$('applyBtn').onclick=()=>{ if(!preview)return;
+  sides[cur].history.push(wctx().getImageData(0,0,work().width,work().height)); if(sides[cur].history.length>20) sides[cur].history.shift();
+  wctx().putImageData(preview.data,preview.x,preview.y); preview=null; sel=null; render(); refreshButtons(); };
+$('undoBtn').onclick=()=>{ const hs=sides[cur].history; if(!hs.length)return; wctx().putImageData(hs.pop(),0,0); preview=null; sel=null; render(); refreshButtons(); };
+$('resetBtn').onclick=()=>{ const im=new Image(); im.onload=()=>{ const c=work(); const g=c.getContext('2d'); g.clearRect(0,0,c.width,c.height); g.drawImage(im,0,0); sides[cur].history=[]; preview=null; sel=null; render(); refreshButtons(); }; im.src=sides[cur].orig; };
+function refreshButtons(){ $('applyBtn').disabled=!preview; $('undoBtn').disabled=!sides[cur].history.length; }
+function flashHint(msg){ const h=$('hint'); const old=h.textContent; h.textContent=msg; h.style.borderColor='var(--magenta)'; setTimeout(()=>{h.textContent=old;h.style.borderColor='';},2600); }
+
+function dl(side){ sides[side].work.toBlob(b=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=stem+'_'+side+'.png'; document.body.appendChild(a); a.click(); a.remove(); },'image/png'); }
+$('dlSide').onclick=()=>dl(cur); $('dlBoth').onclick=()=>{ dl('front'); setTimeout(()=>dl('back'),400); };
+$('newBtn').onclick=()=>{ editor.style.display='none'; uploadWrap.style.display='block'; fileEl.value=''; status.textContent=''; };
+</script>
+</body>
+</html>
