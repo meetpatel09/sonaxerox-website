@@ -277,12 +277,36 @@ function detectCards(src){
   return [front,back];
 }
 
+// Shave off any solid near-black frame line sitting just inside an edge.
+// Only trims lines that are BLACK and span most of the edge (the card's cut-frame);
+// leaves red accents (high R) and text (has gaps) untouched. Max ~4% per side.
+function trimFrame(cv){
+  const w=cv.width, h=cv.height, d=cv.getContext('2d').getImageData(0,0,w,h).data;
+  const nb=i=> d[i]<75 && d[i+1]<75 && d[i+2]<75;
+  const maxT=Math.round(Math.min(w,h)*0.04);
+  const colDark=x=>{let c=0;for(let y=0;y<h;y++) if(nb((y*w+x)*4)) c++; return c/h;};
+  const rowDark=y=>{let c=0;for(let x=0;x<w;x++) if(nb((y*w+x)*4)) c++; return c/w;};
+  let L=0,R=w-1,T=0,B=h-1;
+  while(L<maxT && colDark(L)>0.5) L++;
+  while((w-1-R)<maxT && colDark(R)>0.5) R--;
+  while(T<maxT && rowDark(T)>0.5) T++;
+  while((h-1-B)<maxT && rowDark(B)>0.5) B--;
+  return {x:L,y:T,w:R-L+1,h:B-T+1};
+}
+
 function cropTo(src, b){
   // Extract the card region at full render resolution.
   let cur=document.createElement('canvas'); cur.width=b.w; cur.height=b.h;
   cur.getContext('2d').drawImage(src, b.x,b.y,b.w,b.h, 0,0,b.w,b.h);
+  // Remove the card's near-black cut-frame if present.
+  const t0=trimFrame(cur);
+  if(t0.w>0 && t0.h>0 && (t0.w<cur.width || t0.h<cur.height)){
+    const t=document.createElement('canvas'); t.width=t0.w; t.height=t0.h;
+    t.getContext('2d').drawImage(cur, t0.x,t0.y,t0.w,t0.h, 0,0,t0.w,t0.h);
+    cur=t;
+  }
   // Step the size down by halving (supersampling) until close to target — keeps text sharp.
-  let cw=b.w, ch=b.h;
+  let cw=cur.width, ch=cur.height;
   while(cw>OUT_W*2 && ch>OUT_H*2){
     const nw=Math.round(cw/2), nh=Math.round(ch/2);
     const t=document.createElement('canvas'); t.width=nw; t.height=nh;
