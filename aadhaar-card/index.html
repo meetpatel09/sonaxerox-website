@@ -57,13 +57,17 @@
     border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px;margin-right:7px}
   @keyframes spin{to{transform:rotate(360deg)}}
   .err{color:var(--magenta);font-weight:600}
-  .pwdrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px;
-    background:#fff;border:1.5px solid var(--ink);border-radius:8px;padding:12px 14px;box-shadow:3px 3px 0 var(--line)}
-  .pwdrow label{font-weight:700;font-size:.9rem}
-  .pwdrow input{font-family:inherit;font-size:1rem;font-weight:700;letter-spacing:.05em;
-    border:1.5px solid var(--line);border-radius:6px;padding:.5rem .7rem;width:180px;text-transform:uppercase;outline:none}
-  .pwdrow input:focus{border-color:var(--magenta)}
-  .pwdhint{color:var(--gray);font-size:.8rem}
+  .pwdprompt{display:none;margin-top:14px;background:#FFFDF5;border:1.5px solid var(--ink);
+    border-radius:8px;padding:16px 18px;box-shadow:5px 5px 0 var(--line)}
+  .pwdprompt.show{display:block}
+  .lockrow{font-size:.95rem;margin-bottom:12px}
+  .lockrow b{font-weight:700}
+  .pwdinputrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .pwdprompt input{font-family:inherit;font-size:1rem;font-weight:700;letter-spacing:.05em;
+    border:1.5px solid var(--ink);border-radius:6px;padding:.55rem .8rem;width:200px;text-transform:uppercase;outline:none;background:#fff}
+  .pwdprompt input:focus{border-color:var(--magenta)}
+  .pwdhint{display:block;color:var(--gray);font-size:.8rem;margin-top:8px}
+  .pwderr{color:var(--magenta);font-weight:600;font-size:.85rem;margin-top:8px;min-height:1px}
 
   /* editor */
   .editor{display:none}
@@ -128,17 +132,24 @@
 
   <!-- UPLOAD -->
   <div id="uploadWrap">
-    <div class="pwdrow">
-      <label for="pwd">PDF password</label>
-      <input type="text" id="pwd" placeholder="e.g. PATE1996" autocomplete="off" autocapitalize="characters" spellcheck="false">
-      <span class="pwdhint">First 4 letters of the name in CAPITALS + birth year</span>
-    </div>
     <label class="drop" id="drop">
       <div class="ic">📄</div>
       <h2>Drop an e-Aadhaar PDF here</h2>
-      <p>or click to choose a file · official Aadhaar PDF (password-protected)</p>
+      <p>or click to choose a file · official Aadhaar PDF</p>
       <input type="file" id="file" accept="application/pdf">
     </label>
+
+    <!-- password prompt: shown only after uploading a locked PDF -->
+    <div class="pwdprompt" id="pwdPrompt">
+      <div class="lockrow">🔒 <b id="pwdFile">file.pdf</b> is password-protected</div>
+      <div class="pwdinputrow">
+        <input type="text" id="pwd" placeholder="e.g. PATE1996" autocomplete="off" autocapitalize="characters" spellcheck="false">
+        <button class="btn" id="unlockBtn">Unlock &amp; crop</button>
+      </div>
+      <span class="pwdhint">First 4 letters of the name in CAPITALS + birth year</span>
+      <div class="pwderr" id="pwdErr"></div>
+    </div>
+
     <div class="status" id="status"></div>
   </div>
 
@@ -221,27 +232,44 @@ const $=id=>document.getElementById(id);
 const drop=$('drop'), fileEl=$('file'), status=$('status'), uploadWrap=$('uploadWrap'), editor=$('editor');
 ['dragenter','dragover'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.add('drag')}));
 ['dragleave','drop'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.remove('drag')}));
-drop.addEventListener('drop',ev=>{ if(ev.dataTransfer.files.length) handle(ev.dataTransfer.files[0]); });
-fileEl.addEventListener('change',()=>{ if(fileEl.files.length) handle(fileEl.files[0]); });
+drop.addEventListener('drop',ev=>{ if(ev.dataTransfer.files.length) pickFile(ev.dataTransfer.files[0]); });
+fileEl.addEventListener('change',()=>{ if(fileEl.files.length) pickFile(fileEl.files[0]); });
 
-async function handle(f){
+let pendingFile=null;
+const pwdPrompt=$('pwdPrompt'), pwdErr=$('pwdErr'), pwdEl=$('pwd');
+
+// Step 1: a PDF was chosen. Try to open it; only ask for a password if it's locked.
+function pickFile(f){
   if(!f.name.toLowerCase().endsWith('.pdf')){ status.innerHTML='<span class="err">Please choose a PDF file.</span>'; return; }
-  const pwd=($('pwd').value||'').trim();
-  status.innerHTML='<span class="spinner"></span>Reading &amp; cropping “'+f.name+'”…';
+  pendingFile=f;
+  pwdPrompt.classList.remove('show'); pwdErr.textContent=''; pwdEl.value='';
+  process('');
+}
+
+// Step 2 (only if locked): user typed the password.
+$('unlockBtn').addEventListener('click', ()=>process((pwdEl.value||'').trim()));
+pwdEl.addEventListener('keydown', e=>{ if(e.key==='Enter') process((pwdEl.value||'').trim()); });
+
+async function process(pwd){
+  if(!pendingFile) return;
+  status.innerHTML='<span class="spinner"></span>Reading &amp; cropping “'+pendingFile.name+'”…';
   try{
-    const pageCanvas=await pdfToCanvas(f, pwd);
+    const pageCanvas=await pdfToCanvas(pendingFile, pwd);
     const [front,back]=detectCards(pageCanvas);
     const fCanvas=cropTo(pageCanvas,front), bCanvas=cropTo(pageCanvas,back);
-    status.textContent='';
-    startEditor(f.name.replace(/\.pdf$/i,''), fCanvas, bCanvas);
+    status.textContent=''; pwdPrompt.classList.remove('show');
+    startEditor(pendingFile.name.replace(/\.pdf$/i,''), fCanvas, bCanvas);
   }catch(e){
     console.error(e);
     if(e && e.needPassword){
-      $('pwd').focus();
-      status.innerHTML='<span class="err">'+(e.wrong
-        ? 'Password incorrect — check it and choose the file again.'
-        : 'This PDF is password-protected. Type the password above (first 4 letters of the name in CAPITALS + birth year), then choose the file again.')+'</span>';
+      // reveal the password prompt (or show an error if the try was wrong)
+      status.textContent='';
+      $('pwdFile').textContent=pendingFile.name;
+      pwdPrompt.classList.add('show');
+      pwdErr.textContent = e.wrong ? 'Password incorrect — please try again.' : '';
+      pwdEl.focus();
     } else {
+      pwdPrompt.classList.remove('show');
       status.innerHTML='<span class="err">Could not read this PDF. Is it an official e-Aadhaar?</span>';
     }
   }
@@ -421,7 +449,7 @@ function flashHint(msg){ const h=$('hint'); const old=h.textContent; h.textConte
 
 function dl(side){ sides[side].work.toBlob(b=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=stem+'_'+side+'.png'; document.body.appendChild(a); a.click(); a.remove(); },'image/png'); }
 $('dlSide').onclick=()=>dl(cur); $('dlBoth').onclick=()=>{ dl('front'); setTimeout(()=>dl('back'),400); };
-$('newBtn').onclick=()=>{ editor.style.display='none'; uploadWrap.style.display='block'; fileEl.value=''; status.textContent=''; };
+$('newBtn').onclick=()=>{ editor.style.display='none'; uploadWrap.style.display='block'; fileEl.value=''; status.textContent=''; pendingFile=null; pwdPrompt.classList.remove('show'); pwdErr.textContent=''; pwdEl.value=''; };
 </script>
 </body>
 </html>
