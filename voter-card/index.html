@@ -129,7 +129,6 @@
     </label>
     <div class="status" id="status"></div>
   </div>
-  
 
   <!-- EDITOR -->
   <section class="editor" id="editor">
@@ -194,7 +193,14 @@
 
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='./pdf.worker.min.js';
-window.addEventListener('load',()=>{ document.getElementById('boot').style.display='none'; });
+// Hide the loading overlay as soon as the page/scripts are ready — do NOT wait for
+// external resources (fonts), which can hang offline and leave it stuck "loading".
+(function hideBoot(){
+  const go=()=>{ const el=document.getElementById('boot'); if(el) el.style.display='none'; };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',go);
+  else go();
+  setTimeout(go, 1500); // safety fallback
+})();
 
 const OUT_W=1011, OUT_H=638;   // CR80 landscape @ 300 DPI
 const $=id=>document.getElementById(id);
@@ -222,7 +228,11 @@ async function pdfToCanvas(file){
   const buf=await file.arrayBuffer();
   const pdf=await pdfjsLib.getDocument({data:buf}).promise;
   const page=await pdf.getPage(1);
-  const vp=page.getViewport({scale:1.6});
+  // Render large so the card is heavily supersampled -> crisp text after downscale.
+  // Cap the scale so the canvas stays within browser limits on big PDFs.
+  const base=page.getViewport({scale:1});
+  const scale=Math.min(3.2, 7000/base.width);
+  const vp=page.getViewport({scale});
   const c=document.createElement('canvas'); c.width=Math.ceil(vp.width); c.height=Math.ceil(vp.height);
   await page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
   return c;
@@ -254,9 +264,21 @@ function detectCards(src){
 }
 
 function cropTo(src, b){
+  // Extract the card region at full render resolution.
+  let cur=document.createElement('canvas'); cur.width=b.w; cur.height=b.h;
+  cur.getContext('2d').drawImage(src, b.x,b.y,b.w,b.h, 0,0,b.w,b.h);
+  // Step the size down by halving (supersampling) until close to target — keeps text sharp.
+  let cw=b.w, ch=b.h;
+  while(cw>OUT_W*2 && ch>OUT_H*2){
+    const nw=Math.round(cw/2), nh=Math.round(ch/2);
+    const t=document.createElement('canvas'); t.width=nw; t.height=nh;
+    const tx=t.getContext('2d'); tx.imageSmoothingEnabled=true; tx.imageSmoothingQuality='high';
+    tx.drawImage(cur, 0,0,cw,ch, 0,0,nw,nh);
+    cur=t; cw=nw; ch=nh;
+  }
   const o=document.createElement('canvas'); o.width=OUT_W; o.height=OUT_H;
   const ox=o.getContext('2d'); ox.imageSmoothingEnabled=true; ox.imageSmoothingQuality='high';
-  ox.drawImage(src, b.x,b.y,b.w,b.h, 0,0,OUT_W,OUT_H);
+  ox.drawImage(cur, 0,0,cw,ch, 0,0,OUT_W,OUT_H);
   return o;
 }
 
