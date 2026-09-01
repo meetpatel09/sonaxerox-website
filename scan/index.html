@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sona Xerox — Scan to PDF</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --panel:#F5F5F3;
+    --panel-2:#EBEBE7;
+    --text:#161513;
+    --text-soft:#726F68;
+    --line:#DEDCD5;
+    --cyan:#00AEEF;
+    --magenta:#EC008C;
+    --yellow:#F5C400;
+    --ok:#2E9A50;
+    --err:#D93025;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Work Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{
+    max-width:460px;
+    margin:0 auto;
+    min-height:100vh;
+    background:var(--bg);
+    position:relative;
+    padding-bottom:110px;
+  }
+  header{
+    padding:22px 20px 16px;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .brand-mark{display:flex; align-items:center; gap:12px; text-decoration:none; color:inherit;}
+  .cmyk-dots{
+    display:grid;
+    grid-template-columns:repeat(2,9px);
+    grid-template-rows:repeat(2,9px);
+    gap:2px;
+    flex-shrink:0;
+  }
+  .cmyk-dots span{border-radius:50%;}
+  .cmyk-dots span:nth-child(1){background:var(--cyan);}
+  .cmyk-dots span:nth-child(2){background:var(--magenta);}
+  .cmyk-dots span:nth-child(3){background:var(--yellow);}
+  .cmyk-dots span:nth-child(4){background:var(--text);}
+  .brand-mark h1{
+    font-family:'Archivo Black', sans-serif;
+    font-size:16px;
+    margin:0;
+    letter-spacing:0.2px;
+    line-height:1.15;
+  }
+  .brand-mark p{margin:2px 0 0; font-size:11px; color:var(--text-soft); letter-spacing:0.5px; text-transform:uppercase;}
+  .home-link{
+    font-size:12px; color:var(--text-soft); text-decoration:none;
+    border:1.5px solid var(--line); border-radius:20px; padding:6px 12px;
+  }
+
+  main{padding:20px;}
+  .step-title{
+    font-family:'Archivo Black', sans-serif;
+    font-size:18px;
+    margin:0 0 6px;
+    letter-spacing:0.2px;
+  }
+  .step-sub{font-size:13px; color:var(--text-soft); margin:0 0 20px; line-height:1.5;}
+
+  /* ---- upload ---- */
+  .drop{
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+    border:1.5px dashed var(--line);
+    border-radius:14px;
+    background:var(--panel);
+    padding:40px 20px;
+    cursor:pointer;
+    text-align:center;
+  }
+  .drop:active{background:var(--panel-2);}
+  .drop .icon{
+    width:56px; height:56px; border-radius:50%;
+    background:var(--panel-2);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .drop .icon svg{width:26px; height:26px; stroke:var(--cyan);}
+  .drop p{margin:0; font-size:14.5px; font-weight:600;}
+  .drop span{font-size:12px; color:var(--text-soft);}
+  input[type=file]{display:none;}
+
+  .privacy-note{
+    display:flex; gap:8px; align-items:flex-start;
+    font-size:11.5px; color:var(--text-soft); line-height:1.6;
+    margin-top:14px; padding:12px 14px;
+    background:var(--panel); border-radius:10px;
+  }
+
+  /* ---- corner editor ---- */
+  .editor-frame{display:flex; justify-content:center;}
+  .editor-wrap{
+    position:relative;
+    display:inline-block;
+    background:#111;
+    border-radius:12px;
+    overflow:hidden;
+    touch-action:none;
+    user-select:none;
+    max-width:100%;
+  }
+  .editor-wrap img{display:block; height:auto; width:auto; max-width:100%; max-height:64vh; pointer-events:none;}
+  .editor-wrap svg{position:absolute; inset:0; width:100%; height:100%;}
+  .corner-poly{fill:rgba(0,174,239,0.22); stroke:var(--cyan); stroke-width:2;}
+  .corner-handle{fill:#fff; stroke:var(--cyan); stroke-width:3; cursor:grab;}
+  .corner-handle:active{cursor:grabbing; fill:var(--cyan);}
+  .editor-actions{display:flex; gap:10px; margin-top:14px;}
+  .btn-ghost{
+    flex:1; padding:13px; border-radius:9px; border:1.5px solid var(--line);
+    background:var(--bg); font-weight:600; font-size:13.5px; color:var(--text);
+    cursor:pointer;
+  }
+
+  /* ---- adjustments ---- */
+  .adjust-preview{
+    background:var(--panel); border-radius:12px; padding:10px;
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:18px;
+  }
+  .adjust-preview canvas{max-width:100%; max-height:52vh; border-radius:4px; box-shadow:0 2px 10px rgba(0,0,0,.12);}
+  .adjust-group{margin-bottom:18px;}
+  .adjust-group h3{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px; text-transform:uppercase; letter-spacing:0.8px;
+    color:var(--text-soft); margin:0 0 10px;
+  }
+  .slider-row{margin-bottom:14px;}
+  .slider-row .lbl{
+    display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:6px;
+  }
+  .slider-row .lbl b{font-weight:600;}
+  .slider-row .lbl span{font-family:'IBM Plex Mono', monospace; color:var(--text-soft); font-size:12px;}
+  .slider-row input[type=range]{
+    width:100%; height:4px; border-radius:2px; background:var(--line);
+    -webkit-appearance:none; appearance:none;
+  }
+  .slider-row input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:18px; height:18px; border-radius:50%;
+    background:var(--cyan); border:2px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.25);
+    margin-top:-7px; cursor:pointer;
+  }
+  .slider-row input[type=range]::-webkit-slider-runnable-track{height:4px; border-radius:2px;}
+  .reset-link{
+    display:block; text-align:center; font-size:12.5px; color:var(--text-soft);
+    background:none; border:none; text-decoration:underline; cursor:pointer; padding:8px; width:100%;
+  }
+
+  /* ---- pages review ---- */
+  .page-grid{display:flex; flex-wrap:wrap; gap:12px; margin-bottom:6px;}
+  .page-thumb{
+    position:relative; width:90px; border-radius:8px; overflow:hidden;
+    border:1.5px solid var(--line); background:var(--panel);
+  }
+  .page-thumb img{display:block; width:100%; height:120px; object-fit:cover;}
+  .page-thumb .num{
+    position:absolute; left:5px; bottom:5px; background:rgba(22,21,19,.72); color:#fff;
+    font-family:'IBM Plex Mono', monospace; font-size:10px; padding:2px 6px; border-radius:4px;
+  }
+  .page-thumb .del{
+    position:absolute; top:4px; right:4px; width:20px; height:20px; border-radius:50%;
+    background:rgba(22,21,19,.72); color:#fff; border:none; font-size:13px;
+    display:flex; align-items:center; justify-content:center; cursor:pointer; line-height:1;
+  }
+  .add-more{
+    width:90px; height:120px; border-radius:8px; border:1.5px dashed var(--line);
+    background:var(--panel); display:flex; align-items:center; justify-content:center;
+    font-size:26px; color:var(--text-soft); cursor:pointer;
+  }
+  .add-more:active{background:var(--panel-2);}
+
+  .format-title{
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; text-transform:uppercase;
+    letter-spacing:0.8px; color:var(--text-soft); margin:26px 0 10px;
+  }
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .choice{
+    border:1.5px solid var(--line); border-radius:8px; background:var(--panel);
+    padding:14px 10px; text-align:center; font-size:13.5px; font-weight:600;
+    cursor:pointer; user-select:none; color:var(--text);
+  }
+  .choice .sub{display:block; font-size:11px; font-weight:400; opacity:.7; margin-top:2px;}
+  .choice.active{background:var(--text); color:#fff; border-color:var(--text);}
+
+  /* ---- footer / primary action ---- */
+  footer{
+    position:fixed; bottom:0; left:0; right:0;
+    max-width:460px; margin:0 auto;
+    background:var(--bg); border-top:1px solid var(--line);
+    padding:14px 20px 18px;
+  }
+  .err-note{font-size:12.5px; color:var(--err); margin:0 0 10px; text-align:center; display:none;}
+  .err-note.show{display:block;}
+  .send-btn{
+    width:100%; padding:16px; background:var(--magenta); color:#fff; border:none;
+    border-radius:8px; font-family:'Archivo Black', sans-serif; font-size:14px;
+    letter-spacing:0.4px; text-transform:uppercase; cursor:pointer;
+  }
+  .send-btn:active{background:#c30074;}
+  .send-btn:disabled{background:var(--panel-2); color:#A9A6A0; cursor:not-allowed;}
+
+  /* ---- processing overlay ---- */
+  .overlay{
+    position:fixed; inset:0; background:rgba(255,255,255,.94); z-index:50;
+    display:none; align-items:center; justify-content:center; flex-direction:column; gap:14px;
+  }
+  .overlay.show{display:flex;}
+  .spinner{
+    width:40px; height:40px; border-radius:50%;
+    border:3px solid var(--panel-2); border-top-color:var(--magenta);
+    animation:spin .8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .overlay p{font-size:13.5px; color:var(--text-soft); margin:0;}
+
+  /* ---- responsive: sliders + live preview side-by-side on wider screens ---- */
+  .step-wrap{max-width:460px; margin:0 auto;}
+  @media (min-width:860px){
+    .app{max-width:980px;}
+    .step-wrap.wide{max-width:100%;}
+    .adjust-layout{display:grid; grid-template-columns:1fr 440px; gap:40px; align-items:start;}
+    .adjust-controls{order:1;}
+    .adjust-preview-col{order:2; position:sticky; top:24px;}
+    .adjust-preview canvas{max-height:68vh;}
+
+    .corners-layout{display:grid; grid-template-columns:1fr 250px; gap:32px; align-items:start;}
+    .corners-editor-col{order:1;}
+    .corners-side-col{order:2; position:sticky; top:24px; padding-top:6px;}
+    .corners-side-col .editor-actions{flex-direction:column;}
+    .editor-wrap img{max-height:74vh;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <a class="brand-mark" href="/">
+      <div class="cmyk-dots"><span></span><span></span><span></span><span></span></div>
+      <div>
+        <h1>Sona Xerox</h1>
+        <p>Scan to PDF</p>
+      </div>
+    </a>
+    <a class="home-link" href="/print/">Order print →</a>
+  </header>
+
+  <main id="main"></main>
+
+  <footer>
+    <p class="err-note" id="errNote"></p>
+    <button class="send-btn" id="primaryBtn"></button>
+  </footer>
+
+  <div class="overlay" id="overlay">
+    <div class="spinner"></div>
+    <p id="overlayText">Processing your page…</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+
+  /* ============================================================
+     CONSTANTS
+     ============================================================ */
+  var SRC_MAX = 2800;      // working resolution cap for the uploaded photo
+  var OUTPUT_MAX = 2400;   // cap for the perspective-corrected rectangle (~300dpi-class for A4)
+  var PREVIEW_MAX = 480;   // cap for the live-adjustment preview (display only, not exported)
+  var THUMB_MAX = 240;     // cap for the small thumbnail image (display only, not exported)
+  var JPEG_QUALITY = 0.95;
+
+  var defaultAdjust = { brightness:0, exposure:0, contrast:0, highlights:0, shadows:0,
+                         vignette:0, saturation:0, warmth:0, tint:0, sharpness:0 };
+
+  var state = {
+    mode: 'upload',            // upload | corners | adjust | pages
+    pages: [],                 // finished pages: {id, thumbUrl, blob, w, h}
+    cur: null                  // in-progress page being scanned
+  };
+
+  var main = document.getElementById('main');
+  var footerBtn = document.getElementById('primaryBtn');
+  var errNote = document.getElementById('errNote');
+  var overlay = document.getElementById('overlay');
+  var overlayText = document.getElementById('overlayText');
+  var fileInput = null;
+
+  function showError(msg){ errNote.textContent = msg; errNote.classList.add('show'); }
+  function clearError(){ errNote.textContent = ''; errNote.classList.remove('show'); }
+  function showOverlay(msg){ overlayText.textContent = msg; overlay.classList.add('show'); }
+  function hideOverlay(){ overlay.classList.remove('show'); }
+  function nextTick(fn){ setTimeout(fn, 30); } // let the overlay paint before heavy work
+
+  /* ============================================================
+     IMAGE MATH — perspective warp + adjustments
+     ============================================================ */
+
+  // Maps unit square (0,0)-(1,0)-(1,1)-(0,1) onto the given quad (Heckbert's method)
+  function computeSquareToQuad(x0,y0,x1,y1,x2,y2,x3,y3){
+    var dx1=x1-x2, dx2=x3-x2, dx3=x0-x1+x2-x3;
+    var dy1=y1-y2, dy2=y3-y2, dy3=y0-y1+y2-y3;
+    var a,b,c,d,e,f,g,h;
+    if(Math.abs(dx3) < 1e-9 && Math.abs(dy3) < 1e-9){
+      a=x1-x0; b=x2-x1; c=x0;
+      d=y1-y0; e=y2-y1; f=y0;
+      g=0; h=0;
+    } else {
+      var denom = dx1*dy2 - dx2*dy1;
+      g = (dx3*dy2 - dx2*dy3) / denom;
+      h = (dx1*dy3 - dx3*dy1) / denom;
+      a = x1-x0+g*x1; b = x3-x0+h*x3; c = x0;
+      d = y1-y0+g*y1; e = y3-y0+h*y3; f = y0;
+    }
+    return {a:a,b:b,c:c,d:d,e:e,f:f,g:g,h:h};
+  }
+
+  function sampleBilinear(data, w, h, x, y){
+    if(x<0) x=0; if(x>w-1.001) x=w-1.001;
+    if(y<0) y=0; if(y>h-1.001) y=h-1.001;
+    var x0=x|0, y0=y|0, x1=x0+1, y1=y0+1;
+    var fx=x-x0, fy=y-y0;
+    var i00=(y0*w+x0)*4, i10=(y0*w+x1)*4, i01=(y1*w+x0)*4, i11=(y1*w+x1)*4;
+    var r = (data[i00]*(1-fx)+data[i10]*fx)*(1-fy) + (data[i01]*(1-fx)+data[i11]*fx)*fy;
+    var g = (data[i00+1]*(1-fx)+data[i10+1]*fx)*(1-fy) + (data[i01+1]*(1-fx)+data[i11+1]*fx)*fy;
+    var b = (data[i00+2]*(1-fx)+data[i10+2]*fx)*(1-fy) + (data[i01+2]*(1-fx)+data[i11+2]*fx)*fy;
+    return [r,g,b];
+  }
+
+  function warpPerspective(srcData, srcW, srcH, corners, outW, outH){
+    var m = computeSquareToQuad(
+      corners[0].x, corners[0].y, corners[1].x, corners[1].y,
+      corners[2].x, corners[2].y, corners[3].x, corners[3].y
+    );
+    var out = new Uint8ClampedArray(outW*outH*4);
+    for(var py=0; py<outH; py++){
+      var v = (py+0.5)/outH;
+      for(var px=0; px<outW; px++){
+        var u = (px+0.5)/outW;
+        var denom = m.g*u + m.h*v + 1;
+        var X = (m.a*u + m.b*v + m.c) / denom;
+        var Y = (m.d*u + m.e*v + m.f) / denom;
+        var rgb = sampleBilinear(srcData, srcW, srcH, X, Y);
+        var idx = (py*outW+px)*4;
+        out[idx]=rgb[0]; out[idx+1]=rgb[1]; out[idx+2]=rgb[2]; out[idx+3]=255;
+      }
+    }
+    return new ImageData(out, outW, outH);
+  }
+
+  function boxBlur(imgData, radius){
+    if(radius<=0) return imgData;
+    var w=imgData.width, h=imgData.height, src=imgData.data;
+    var tmp=new Uint8ClampedArray(src.length), out=new Uint8ClampedArray(src.length);
+    var x,y,dx,dy,xx,yy,idx,oidx,r,g,b,cnt;
+    for(y=0;y<h;y++){
+      for(x=0;x<w;x++){
+        r=0;g=0;b=0;cnt=0;
+        for(dx=-radius;dx<=radius;dx++){
+          xx = x+dx; if(xx<0) xx=0; if(xx>w-1) xx=w-1;
+          idx=(y*w+xx)*4; r+=src[idx]; g+=src[idx+1]; b+=src[idx+2]; cnt++;
+        }
+        oidx=(y*w+x)*4; tmp[oidx]=r/cnt; tmp[oidx+1]=g/cnt; tmp[oidx+2]=b/cnt; tmp[oidx+3]=255;
+      }
+    }
+    for(x=0;x<w;x++){
+      for(y=0;y<h;y++){
+        r=0;g=0;b=0;cnt=0;
+        for(dy=-radius;dy<=radius;dy++){
+          yy = y+dy; if(yy<0) yy=0; if(yy>h-1) yy=h-1;
+          idx=(yy*w+x)*4; r+=tmp[idx]; g+=tmp[idx+1]; b+=tmp[idx+2]; cnt++;
+        }
+        oidx=(y*w+x)*4; out[oidx]=r/cnt; out[oidx+1]=g/cnt; out[oidx+2]=b/cnt; out[oidx+3]=255;
+      }
+    }
+    return new ImageData(out, w, h);
+  }
+
+  function unsharpMask(imgData, amount){
+    var blurred = boxBlur(imgData, 1).data;
+    var src = imgData.data, w=imgData.width, h=imgData.height;
+    var out = new Uint8ClampedArray(src.length);
+    var k = amount*3;
+    for(var i=0;i<src.length;i+=4){
+      out[i]  =src[i]  +(src[i]  -blurred[i]  )*k;
+      out[i+1]=src[i+1]+(src[i+1]-blurred[i+1])*k;
+      out[i+2]=src[i+2]+(src[i+2]-blurred[i+2])*k;
+      out[i+3]=255;
+    }
+    return new ImageData(out, w, h);
+  }
+
+  // Full Windows-Photos-style adjustment pipeline. Returns a NEW ImageData.
+  function applyAdjustments(srcImageData, p){
+    var w=srcImageData.width, h=srcImageData.height;
+    var src=srcImageData.data;
+    var data=new Uint8ClampedArray(src);
+    var n=w*h;
+
+    var expF = Math.pow(2, (p.exposure||0)/100);
+    var cAmt = (p.contrast||0)*2.55;
+    var cF = (259*(cAmt+255))/(255*(259-cAmt));
+    var brA = (p.brightness||0)*1.28;
+    var warmR=(p.warmth||0)*0.6, warmB=-(p.warmth||0)*0.6;
+    var tintG=(p.tint||0)*0.6, tintRB=-(p.tint||0)*0.3;
+    var satF = 1+(p.saturation||0)/100;
+    var hiAmt=(p.highlights||0), shAmt=(p.shadows||0);
+
+    for(var i=0;i<n;i++){
+      var idx=i*4;
+      var r=data[idx], g=data[idx+1], b=data[idx+2];
+
+      r*=expF; g*=expF; b*=expF;
+      r=cF*(r-128)+128; g=cF*(g-128)+128; b=cF*(b-128)+128;
+
+      var lum = 0.299*r+0.587*g+0.114*b;
+      if(hiAmt){
+        var wgtH = Math.max(0,(lum-128)/127);
+        r+=hiAmt*wgtH; g+=hiAmt*wgtH; b+=hiAmt*wgtH;
+      }
+      if(shAmt){
+        var wgtS = Math.max(0,(128-lum)/128);
+        r+=shAmt*wgtS; g+=shAmt*wgtS; b+=shAmt*wgtS;
+      }
+
+      r+=brA; g+=brA; b+=brA;
+      r+=warmR+tintRB; b+=warmB+tintRB; g+=tintG;
+
+      lum = 0.299*r+0.587*g+0.114*b;
+      r = lum+(r-lum)*satF; g = lum+(g-lum)*satF; b = lum+(b-lum)*satF;
+
+      data[idx]=r; data[idx+1]=g; data[idx+2]=b;
+    }
+
+    if(p.vignette){
+      var cx=w/2, cy=h/2, maxD=Math.sqrt(cx*cx+cy*cy), amt=p.vignette/100;
+      for(var y=0;y<h;y++){
+        for(var x=0;x<w;x++){
+          var dx=x-cx, dy=y-cy;
+          var dist = Math.sqrt(dx*dx+dy*dy)/maxD;
+          var f = amt>=0 ? (1-amt*Math.pow(dist,2.2)) : (1+(-amt)*Math.pow(1-dist,2.2)*0.5);
+          var vi=(y*w+x)*4;
+          data[vi]*=f; data[vi+1]*=f; data[vi+2]*=f;
+        }
+      }
+    }
+
+    var result = new ImageData(data, w, h);
+    if(p.sharpness){
+      result = p.sharpness>0 ? unsharpMask(result, p.sharpness/100)
+                              : boxBlur(result, Math.round(Math.abs(p.sharpness)/100*4));
+    }
+    return result;
+  }
+
+  function imageDataToCanvas(imgData){
+    var c=document.createElement('canvas'); c.width=imgData.width; c.height=imgData.height;
+    c.getContext('2d').putImageData(imgData,0,0);
+    return c;
+  }
+
+  function scaleCanvas(srcCanvas, maxDim){
+    var w=srcCanvas.width, h=srcCanvas.height;
+    var scale = Math.min(1, maxDim/Math.max(w,h));
+    var outW=Math.max(1,Math.round(w*scale)), outH=Math.max(1,Math.round(h*scale));
+    var c=document.createElement('canvas'); c.width=outW; c.height=outH;
+    c.getContext('2d').drawImage(srcCanvas,0,0,outW,outH);
+    return c;
+  }
+
+  /* ============================================================
+     STEP 1 — UPLOAD
+     ============================================================ */
+
+  function renderUpload(){
+    state.mode='upload';
+    footerBtn.style.display='none';
+    clearError();
+    main.innerHTML = '<div class="step-wrap">' +
+      '<p class="step-title">' + (state.pages.length ? 'Add another page' : 'Scan a document') + '</p>' +
+      '<p class="step-sub">Take a photo or choose one from your gallery. We\u2019ll help you straighten it and clean it up before printing.</p>' +
+      '<label class="drop" id="dropZone">' +
+        '<input type="file" id="fileInput" accept="image/*">' +
+        '<div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h3l2-2h6l2 2h3v13H4z"/><circle cx="12" cy="13" r="4"/></svg></div>' +
+        '<p>Tap to add a photo</p>' +
+        '<span>Camera or gallery \u00b7 JPG / PNG</span>' +
+      '</label>' +
+      '<div class="privacy-note">\ud83d\udd12 <span>Everything happens on your own phone or computer. Your photo is never uploaded anywhere.</span></div>' +
+      (state.pages.length ? '<div class="editor-actions"><button class="btn-ghost" id="goPages">\u2190 Back to your pages (' + state.pages.length + ')</button></div>' : '') +
+    '</div>';
+
+    fileInput = document.getElementById('fileInput');
+    fileInput.addEventListener('change', onFileChosen);
+    if(state.pages.length){
+      document.getElementById('goPages').addEventListener('click', renderPages);
+    }
+  }
+
+  function onFileChosen(){
+    if(!(fileInput.files && fileInput.files[0])) return;
+    var f = fileInput.files[0];
+    clearError();
+    var img = new Image();
+    var url = URL.createObjectURL(f);
+    img.onload = function(){
+      URL.revokeObjectURL(url);
+      var srcCanvas = scaleCanvas((function(){
+        var c=document.createElement('canvas'); c.width=img.width; c.height=img.height;
+        c.getContext('2d').drawImage(img,0,0);
+        return c;
+      })(), SRC_MAX);
+      state.cur = { srcCanvas: srcCanvas, corners: null, adjustments: null };
+      renderCorners();
+    };
+    img.onerror = function(){
+      URL.revokeObjectURL(url);
+      showError('Could not open that image \u2014 try a different photo');
+    };
+    img.src = url;
+  }
+
+  /* ============================================================
+     STEP 2 — CORNER SELECTION
+     ============================================================ */
+
+  function renderCorners(){
+    state.mode='corners';
+    footerBtn.style.display='block';
+    footerBtn.textContent='Confirm corners';
+    footerBtn.disabled=false;
+    footerBtn.onclick=confirmCorners;
+    clearError();
+
+    main.innerHTML = '<div class="step-wrap wide"><div class="corners-layout">' +
+      '<div class="corners-editor-col">' +
+        '<p class="step-title">Line up the corners</p>' +
+        '<p class="step-sub">Drag the four dots so they sit exactly on the edges of your document.</p>' +
+        '<div class="editor-frame"><div class="editor-wrap" id="editorWrap"><img id="editorImg"></div></div>' +
+      '</div>' +
+      '<div class="corners-side-col">' +
+        '<div class="editor-actions">' +
+          '<button class="btn-ghost" id="resetCorners">Reset corners</button>' +
+          '<button class="btn-ghost" id="cancelUpload">Choose different photo</button>' +
+        '</div>' +
+      '</div>' +
+    '</div></div>';
+
+    var wrap = document.getElementById('editorWrap');
+    var imgEl = document.getElementById('editorImg');
+    imgEl.src = state.cur.srcCanvas.toDataURL('image/jpeg', 0.85);
+
+    document.getElementById('cancelUpload').addEventListener('click', renderUpload);
+    document.getElementById('resetCorners').addEventListener('click', function(){
+      setupCornerHandles(wrap, imgEl, true);
+    });
+
+    imgEl.onload = function(){ setupCornerHandles(wrap, imgEl, false); };
+    if(imgEl.complete) setupCornerHandles(wrap, imgEl, false);
+  }
+
+  function setupCornerHandles(wrap, imgEl, forceReset){
+    var dispW = imgEl.clientWidth, dispH = imgEl.clientHeight;
+    if(!dispW || !dispH){ setTimeout(function(){ setupCornerHandles(wrap, imgEl, forceReset); }, 50); return; }
+
+    if(!state.cur.dispCorners || forceReset){
+      var mx = dispW*0.08, my = dispH*0.08;
+      state.cur.dispCorners = [
+        {x:mx, y:my}, {x:dispW-mx, y:my}, {x:dispW-mx, y:dispH-my}, {x:mx, y:dispH-my}
+      ];
+    }
+    state.cur.dispW = dispW; state.cur.dispH = dispH;
+
+    var svgNS = 'http://www.w3.org/2000/svg';
+    var old = wrap.querySelector('svg'); if(old) old.remove();
+    var svg = document.createElementNS(svgNS,'svg');
+    svg.setAttribute('viewBox','0 0 '+dispW+' '+dispH);
+    var poly = document.createElementNS(svgNS,'polygon');
+    poly.setAttribute('class','corner-poly');
+    svg.appendChild(poly);
+
+    var handles = state.cur.dispCorners.map(function(pt){
+      var c = document.createElementNS(svgNS,'circle');
+      c.setAttribute('class','corner-handle');
+      c.setAttribute('r','11');
+      svg.appendChild(c);
+      return c;
+    });
+
+    function redraw(){
+      var pts = state.cur.dispCorners;
+      poly.setAttribute('points', pts.map(function(p){return p.x+','+p.y;}).join(' '));
+      handles.forEach(function(h,i){ h.setAttribute('cx',pts[i].x); h.setAttribute('cy',pts[i].y); });
+    }
+    redraw();
+    wrap.appendChild(svg);
+
+    handles.forEach(function(h,i){
+      h.addEventListener('pointerdown', function(ev){
+        ev.preventDefault();
+        h.setPointerCapture(ev.pointerId);
+        function move(mv){
+          var rect = svg.getBoundingClientRect();
+          var scaleX = dispW/rect.width, scaleY = dispH/rect.height;
+          var x = (mv.clientX-rect.left)*scaleX, y=(mv.clientY-rect.top)*scaleY;
+          x = Math.max(0, Math.min(dispW, x));
+          y = Math.max(0, Math.min(dispH, y));
+          state.cur.dispCorners[i] = {x:x,y:y};
+          redraw();
+        }
+        function up(){
+          window.removeEventListener('pointermove', move);
+          window.removeEventListener('pointerup', up);
+        }
+        window.addEventListener('pointermove', move);
+        window.addEventListener('pointerup', up);
+      });
+    });
+  }
+
+  function confirmCorners(){
+    var cur = state.cur;
+    var scale = cur.srcCanvas.width / cur.dispW;
+    var corners = cur.dispCorners.map(function(p){ return {x:p.x*scale, y:p.y*scale}; });
+
+    var top = Math.hypot(corners[1].x-corners[0].x, corners[1].y-corners[0].y);
+    var bottom = Math.hypot(corners[2].x-corners[3].x, corners[2].y-corners[3].y);
+    var left = Math.hypot(corners[3].x-corners[0].x, corners[3].y-corners[0].y);
+    var right = Math.hypot(corners[2].x-corners[1].x, corners[2].y-corners[1].y);
+
+    var outW = Math.max(top, bottom), outH = Math.max(left, right);
+    var capScale = Math.min(1, OUTPUT_MAX/Math.max(outW, outH));
+    outW = Math.max(60, Math.round(outW*capScale));
+    outH = Math.max(60, Math.round(outH*capScale));
+
+    showOverlay('Straightening your page\u2026');
+    nextTick(function(){
+      var srcCtx = cur.srcCanvas.getContext('2d');
+      var srcData = srcCtx.getImageData(0,0,cur.srcCanvas.width,cur.srcCanvas.height).data;
+      var warped = warpPerspective(srcData, cur.srcCanvas.width, cur.srcCanvas.height, corners, outW, outH);
+
+      cur.baseFull = warped;
+      var fullCanvas = imageDataToCanvas(warped);
+      var pc = scaleCanvas(fullCanvas, PREVIEW_MAX);
+      cur.basePreview = pc.getContext('2d').getImageData(0,0,pc.width,pc.height);
+      cur.adjustments = Object.assign({}, defaultAdjust);
+
+      hideOverlay();
+      renderAdjust();
+    });
+  }
+
+  /* ============================================================
+     STEP 3 — ADJUSTMENTS
+     ============================================================ */
+
+  var sliderDefs = [
+    { group:'Light', items:[
+      {key:'brightness', label:'Brightness'},
+      {key:'exposure',   label:'Exposure'},
+      {key:'contrast',   label:'Contrast'},
+      {key:'highlights', label:'Highlights'},
+      {key:'shadows',    label:'Shadows'},
+      {key:'vignette',   label:'Vignette'}
+    ]},
+    { group:'Color', items:[
+      {key:'saturation', label:'Saturation'},
+      {key:'warmth',     label:'Warmth'},
+      {key:'tint',       label:'Tint'},
+      {key:'sharpness',  label:'Sharpness'}
+    ]}
+  ];
+
+  function renderAdjust(){
+    state.mode='adjust';
+    footerBtn.style.display='block';
+    footerBtn.textContent = 'Add this page';
+    footerBtn.disabled=false;
+    footerBtn.onclick=finishPage;
+    clearError();
+
+    var html = '<div class="step-wrap wide"><div class="adjust-layout">' +
+      '<div class="adjust-preview-col"><div class="adjust-preview"><canvas id="adjCanvas"></canvas></div></div>' +
+      '<div class="adjust-controls">' +
+      '<p class="step-title">Fine-tune the page</p>' +
+      '<p class="step-sub">Adjust light and color, just like editing a photo.</p>';
+
+    sliderDefs.forEach(function(sec){
+      html += '<div class="adjust-group"><h3>'+sec.group+'</h3>';
+      sec.items.forEach(function(it){
+        html += '<div class="slider-row">' +
+          '<div class="lbl"><b>'+it.label+'</b><span id="val-'+it.key+'">0</span></div>' +
+          '<input type="range" min="-100" max="100" value="0" id="sl-'+it.key+'">' +
+        '</div>';
+      });
+      html += '</div>';
+    });
+    html += '<button class="reset-link" id="resetAdj">Reset all adjustments</button>' +
+      '<div class="editor-actions"><button class="btn-ghost" id="backCorners">\u2190 Redo corners</button></div>' +
+      '</div>' +
+    '</div></div>';
+
+    main.innerHTML = html;
+
+    document.getElementById('backCorners').addEventListener('click', renderCorners);
+    document.getElementById('resetAdj').addEventListener('click', function(){
+      state.cur.adjustments = Object.assign({}, defaultAdjust);
+      sliderDefs.forEach(function(sec){ sec.items.forEach(function(it){
+        document.getElementById('sl-'+it.key).value = 0;
+        document.getElementById('val-'+it.key).textContent = '0';
+      });});
+      schedulePreview();
+    });
+
+    sliderDefs.forEach(function(sec){ sec.items.forEach(function(it){
+      var el = document.getElementById('sl-'+it.key);
+      el.addEventListener('input', function(){
+        state.cur.adjustments[it.key] = parseInt(el.value,10);
+        document.getElementById('val-'+it.key).textContent = el.value;
+        schedulePreview();
+      });
+    });});
+
+    renderPreviewNow();
+  }
+
+  var previewPending=false;
+  function schedulePreview(){
+    if(previewPending) return;
+    previewPending=true;
+    requestAnimationFrame(function(){ previewPending=false; renderPreviewNow(); });
+  }
+  function renderPreviewNow(){
+    var adjusted = applyAdjustments(state.cur.basePreview, state.cur.adjustments);
+    var canvas = document.getElementById('adjCanvas');
+    if(!canvas) return;
+    canvas.width = adjusted.width; canvas.height = adjusted.height;
+    canvas.getContext('2d').putImageData(adjusted,0,0);
+  }
+
+  function finishPage(){
+    showOverlay('Saving this page\u2026');
+    nextTick(function(){
+      var finalData = applyAdjustments(state.cur.baseFull, state.cur.adjustments);
+      var fullCanvas = imageDataToCanvas(finalData);
+      var thumbCanvas = scaleCanvas(fullCanvas, THUMB_MAX);
+
+      fullCanvas.toBlob(function(blob){
+        var page = {
+          id: 'p'+Date.now()+Math.random().toString(36).slice(2),
+          blob: blob,
+          thumbUrl: thumbCanvas.toDataURL('image/jpeg', 0.8),
+          w: fullCanvas.width, h: fullCanvas.height
+        };
+        state.pages.push(page);
+        state.cur = null;
+        hideOverlay();
+        renderPages();
+      }, 'image/jpeg', JPEG_QUALITY);
+    });
+  }
+
+  /* ============================================================
+     STEP 4 — PAGES REVIEW + EXPORT
+     ============================================================ */
+
+  var exportFormat = 'pdf';
+
+  function renderPages(){
+    state.mode='pages';
+    clearError();
+
+    var html = '<div class="step-wrap">' +
+      '<p class="step-title">Your pages (' + state.pages.length + ')</p>' +
+      '<p class="step-sub">Check everything looks right, then choose how to save it.</p>' +
+      '<div class="page-grid" id="pageGrid">';
+    state.pages.forEach(function(p, i){
+      html += '<div class="page-thumb" data-id="'+p.id+'">' +
+        '<img src="'+p.thumbUrl+'">' +
+        '<span class="num">'+(i+1)+'</span>' +
+        '<button class="del" data-id="'+p.id+'" aria-label="Remove page">\u00d7</button>' +
+      '</div>';
+    });
+    html += '<div class="add-more" id="addMore">+</div></div>';
+
+    html += '<p class="format-title">Save as</p>' +
+      '<div class="row2">' +
+        '<div class="choice'+(exportFormat==='pdf'?' active':'')+'" data-fmt="pdf">PDF<span class="sub">One file, all pages</span></div>' +
+        '<div class="choice'+(exportFormat==='jpeg'?' active':'')+'" data-fmt="jpeg">JPEG<span class="sub">Image per page</span></div>' +
+      '</div>' +
+    '</div>';
+
+    main.innerHTML = html;
+
+    document.getElementById('addMore').addEventListener('click', renderUpload);
+    main.querySelectorAll('.del').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        state.pages = state.pages.filter(function(p){ return p.id !== btn.getAttribute('data-id'); });
+        if(state.pages.length===0){ renderUpload(); } else { renderPages(); }
+      });
+    });
+    main.querySelectorAll('.choice').forEach(function(el){
+      el.addEventListener('click', function(){
+        exportFormat = el.getAttribute('data-fmt');
+        main.querySelectorAll('.choice').forEach(function(c){c.classList.remove('active');});
+        el.classList.add('active');
+      });
+    });
+
+    footerBtn.style.display='block';
+    footerBtn.textContent='Download';
+    footerBtn.disabled = state.pages.length===0;
+    footerBtn.onclick = doExport;
+  }
+
+  /* ============================================================
+     EXPORT
+     ============================================================ */
+
+  function downloadBlob(blob, filename){
+    var a = document.createElement('a');
+    var url = URL.createObjectURL(blob);
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+  }
+
+  function blobToArrayBuffer(blob){
+    return new Promise(function(resolve,reject){
+      var r = new FileReader();
+      r.onload = function(){ resolve(r.result); };
+      r.onerror = reject;
+      r.readAsArrayBuffer(blob);
+    });
+  }
+
+  function doExport(){
+    clearError();
+    if(state.pages.length===0) return;
+
+    if(exportFormat==='jpeg'){
+      showOverlay('Preparing your download\u2026');
+      nextTick(function(){
+        if(state.pages.length===1){
+          downloadBlob(state.pages[0].blob, 'SonaXerox-Scan.jpg');
+          hideOverlay();
+        } else {
+          var zip = new JSZip();
+          var promises = state.pages.map(function(p,i){
+            return blobToArrayBuffer(p.blob).then(function(buf){
+              zip.file('page-'+(i+1)+'.jpg', buf);
+            });
+          });
+          Promise.all(promises).then(function(){
+            return zip.generateAsync({type:'blob'});
+          }).then(function(zipBlob){
+            downloadBlob(zipBlob, 'SonaXerox-Scan.zip');
+            hideOverlay();
+          }).catch(function(){
+            hideOverlay();
+            showError('Could not create the zip \u2014 please try again');
+          });
+        }
+      });
+      return;
+    }
+
+    // PDF export
+    showOverlay('Building your PDF\u2026');
+    nextTick(function(){
+      buildPdf().then(function(bytes){
+        downloadBlob(new Blob([bytes], {type:'application/pdf'}), 'SonaXerox-Scan.pdf');
+        hideOverlay();
+      }).catch(function(err){
+        hideOverlay();
+        showError('Could not create the PDF \u2014 please try again');
+      });
+    });
+  }
+
+  function buildPdf(){
+    var A4W = 595.28, A4H = 841.89, MARGIN = 24;
+    return PDFLib.PDFDocument.create().then(function(doc){
+      var chain = Promise.resolve();
+      state.pages.forEach(function(p){
+        chain = chain.then(function(){
+          return blobToArrayBuffer(p.blob).then(function(buf){
+            return doc.embedJpg(buf).then(function(img){
+              var page = doc.addPage([A4W, A4H]);
+              var maxW = A4W - MARGIN*2, maxH = A4H - MARGIN*2;
+              var scale = Math.min(maxW/p.w, maxH/p.h);
+              var drawW = p.w*scale, drawH = p.h*scale;
+              page.drawImage(img, {
+                x:(A4W-drawW)/2, y:(A4H-drawH)/2, width:drawW, height:drawH
+              });
+            });
+          });
+        });
+      });
+      return chain.then(function(){ return doc.save(); });
+    });
+  }
+
+  /* ============================================================
+     GO
+     ============================================================ */
+  renderUpload();
+
+})();
+</script>
+</body>
+</html>
