@@ -139,7 +139,38 @@
     display:flex; align-items:center; justify-content:center;
     margin-bottom:18px;
   }
-  .adjust-preview canvas{max-width:100%; max-height:52vh; border-radius:4px; box-shadow:0 2px 10px rgba(0,0,0,.12);}
+  .adjust-preview{padding:0; overflow:hidden; display:block; margin-bottom:0;}
+  .zoom-wrap{position:relative;}
+  .zoom-viewport{
+    position:relative; width:100%; height:52vh; min-height:260px;
+    overflow:hidden; cursor:grab; user-select:none; -webkit-user-select:none;
+    touch-action:pan-y;
+  }
+  .zoom-viewport.dragging{cursor:grabbing;}
+  .zoom-stage{
+    position:absolute; left:0; top:0; transform-origin:0 0;
+    background:#fff; box-shadow:0 2px 10px rgba(0,0,0,.18);
+  }
+  .zoom-stage canvas{position:absolute; display:block; pointer-events:none;}
+  #adjCanvas{left:0; top:0; width:100%; height:100%;}
+  #detailCanvas{display:none;}
+  .zoom-controls{
+    position:absolute; left:50%; bottom:10px; transform:translateX(-50%);
+    display:flex; align-items:center; gap:2px; padding:4px;
+    background:rgba(22,21,19,.82); border-radius:999px; z-index:5;
+  }
+  .zoom-controls button{
+    min-width:34px; height:34px; border:none; border-radius:999px;
+    background:transparent; color:#fff; font-size:18px; line-height:1; cursor:pointer;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .zoom-controls button.txt{font-size:12px; padding:0 10px; letter-spacing:.3px;}
+  .zoom-controls button:active{background:rgba(255,255,255,.2);}
+  .zoom-controls .zlabel{
+    min-width:50px; text-align:center; color:#fff; font-size:12px;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .zoom-hint{font-size:11.5px; color:var(--text-soft); text-align:center; margin:8px 0 18px;}
   .adjust-group{margin-bottom:18px;}
   .adjust-group h3{
     font-family:'IBM Plex Mono', monospace;
@@ -173,7 +204,7 @@
     position:relative; width:90px; border-radius:8px; overflow:hidden;
     border:1.5px solid var(--line); background:var(--panel);
   }
-  .page-thumb img{display:block; width:100%; height:120px; object-fit:cover;}
+  .page-thumb img{display:block; width:100%; height:120px; object-fit:contain; background:var(--panel-2);}
   .page-thumb .num{
     position:absolute; left:5px; bottom:5px; background:rgba(22,21,19,.72); color:#fff;
     font-family:'IBM Plex Mono', monospace; font-size:10px; padding:2px 6px; border-radius:4px;
@@ -242,13 +273,80 @@
     .adjust-layout{display:grid; grid-template-columns:1fr 440px; gap:40px; align-items:start;}
     .adjust-controls{order:1;}
     .adjust-preview-col{order:2; position:sticky; top:24px;}
-    .adjust-preview canvas{max-height:68vh;}
+    .zoom-viewport{height:68vh;}
 
     .corners-layout{display:grid; grid-template-columns:1fr 250px; gap:32px; align-items:start;}
     .corners-editor-col{order:1;}
     .corners-side-col{order:2; position:sticky; top:24px; padding-top:6px;}
     .corners-side-col .editor-actions{flex-direction:column;}
     .editor-wrap img{max-height:74vh;}
+
+    .pages-layout{
+      display:grid; grid-template-columns:1fr 440px; column-gap:40px; align-items:start;
+      grid-template-areas:"head preview" "opts preview";
+    }
+    .pages-head{grid-area:head;}
+    .pages-opts{grid-area:opts;}
+    .pages-preview{grid-area:preview; position:sticky; top:24px;}
+  }
+
+  /* ---- footer with two buttons (Print + Download) ---- */
+  .foot-row{display:flex; gap:10px;}
+  .foot-row .send-btn{width:auto; flex:1;}
+  .send-btn.alt{background:var(--text);}
+  .send-btn.alt:active{background:#000;}
+
+  /* ---- ID card layout controls ---- */
+  .switch-row{
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    padding:14px; border:1.5px solid var(--line); border-radius:10px;
+    background:var(--panel); cursor:pointer; margin-top:22px;
+  }
+  .switch-row b{display:block; font-size:14px; font-weight:600;}
+  .switch-row small{display:block; font-size:11.5px; color:var(--text-soft); margin-top:2px; line-height:1.4;}
+  .switch{position:relative; width:46px; height:26px; flex-shrink:0;}
+  .switch input{position:absolute; inset:0; width:100%; height:100%; margin:0; opacity:0; cursor:pointer; z-index:2;}
+  .switch span{position:absolute; inset:0; background:#CFCDC6; border-radius:13px; transition:background .15s; pointer-events:none;}
+  .switch span::after{
+    content:''; position:absolute; top:3px; left:3px; width:20px; height:20px;
+    border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.3); transition:transform .15s;
+  }
+  .switch input:checked + span{background:var(--magenta);}
+  .switch input:checked + span::after{transform:translateX(20px);}
+
+  .id-opts{margin-top:4px;}
+  .slot-row{display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:end;}
+  .slot-row label{display:block; font-size:12px; color:var(--text-soft);}
+  .sel{
+    display:block; width:100%; margin-top:6px; padding:12px 10px; border-radius:8px;
+    border:1.5px solid var(--line); background:var(--panel); color:var(--text);
+    font-family:'Work Sans', sans-serif; font-size:14px;
+  }
+  .swap-btn{
+    width:42px; height:44px; border-radius:8px; border:1.5px solid var(--line);
+    background:var(--bg); font-size:18px; cursor:pointer; color:var(--text);
+  }
+  .check-row{display:flex; align-items:center; gap:10px; margin-top:20px; font-size:14px; cursor:pointer;}
+  .check-row input{width:20px; height:20px; accent-color:var(--magenta); margin:0;}
+
+  /* ---- final A4 sheet preview ---- */
+  .pages-preview .format-title{margin-top:26px;}
+  @media (min-width:860px){ .pages-preview .format-title{margin-top:4px;} }
+  .sheet-preview{
+    position:relative; width:100%; aspect-ratio:210/297; background:#fff;
+    box-shadow:0 2px 14px rgba(0,0,0,.2); overflow:hidden;
+  }
+  .sheet-frame{background:var(--panel); border-radius:12px; padding:14px;}
+  .sheet-pager{display:flex; align-items:center; justify-content:center; gap:14px; margin-top:12px;}
+  .sheet-pager button{
+    width:34px; height:34px; border-radius:6px; border:1.5px solid var(--line);
+    background:var(--panel-2); color:var(--text); font-size:16px; cursor:pointer;
+  }
+  .sheet-pager button:disabled{opacity:.35; cursor:default;}
+  .sheet-pager span{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--text-soft);}
+  .print-tip{
+    font-size:11.5px; color:var(--text-soft); line-height:1.6; margin:12px 0 0;
+    padding:10px 12px; background:var(--panel); border-radius:8px;
   }
 </style>
 </head>
@@ -270,7 +368,10 @@
 
   <footer>
     <p class="err-note" id="errNote"></p>
-    <button class="send-btn" id="primaryBtn"></button>
+    <div class="foot-row">
+      <button class="send-btn alt" id="secondaryBtn" style="display:none"></button>
+      <button class="send-btn" id="primaryBtn"></button>
+    </div>
   </footer>
 
   <div class="overlay" id="overlay">
@@ -301,8 +402,22 @@
     cur: null                  // in-progress page being scanned
   };
 
+  // ID-card layout: two cards on one A4 sheet (upper + lower half)
+  var A4_W_MM = 210, A4_H_MM = 297;
+  var PAGE_MARGIN_MM = 24*25.4/72;          // same 24pt margin used for normal pages
+  var ID_SIZES = {
+    orig:  { label:'Original',  sub:'85.6 \u00d7 54 mm',        w:85.6,  h:54    },
+    '6x4': { label:'4 \u00d7 6 in', sub:'6 in wide \u00b7 4 in tall', w:152.4, h:101.6 },
+    '7x5': { label:'5 \u00d7 7 in', sub:'7 in wide \u00b7 5 in tall', w:177.8, h:127   },
+    large: { label:'Large',     sub:'Fills the half page',      w:186,   h:124.5 }
+  };
+  var ID_SIZE_ORDER = ['orig','6x4','7x5','large'];
+  var idLayout = { on:false, size:'6x4', border:false, upper:'', lower:'' };
+  var sheetIndex = 0;                       // which A4 sheet the preview is showing
+
   var main = document.getElementById('main');
   var footerBtn = document.getElementById('primaryBtn');
+  var footerBtn2 = document.getElementById('secondaryBtn');
   var errNote = document.getElementById('errNote');
   var overlay = document.getElementById('overlay');
   var overlayText = document.getElementById('overlayText');
@@ -413,7 +528,11 @@
   }
 
   // Full Windows-Photos-style adjustment pipeline. Returns a NEW ImageData.
-  function applyAdjustments(srcImageData, p){
+  // geo (optional): describes where this ImageData sits inside the whole page, so the
+  // vignette stays anchored to the page centre when only a zoomed region is rendered.
+  //   u = geo.u0 + (x+0.5)*geo.du ,  v = geo.v0 + (y+0.5)*geo.dv  (0..1 across the page)
+  //   geo.aspect = pageWidth / pageHeight
+  function applyAdjustments(srcImageData, p, geo){
     var w=srcImageData.width, h=srcImageData.height;
     var src=srcImageData.data;
     var data=new Uint8ClampedArray(src);
@@ -455,11 +574,14 @@
     }
 
     if(p.vignette){
-      var cx=w/2, cy=h/2, maxD=Math.sqrt(cx*cx+cy*cy), amt=p.vignette/100;
+      var g0 = geo || { u0:0.5/w, v0:0.5/h, du:1/w, dv:1/h, aspect:w/h };
+      var asp = g0.aspect;
+      var maxD = Math.sqrt(0.25*asp*asp + 0.25), amt=p.vignette/100;
       for(var y=0;y<h;y++){
+        var dyN = (g0.v0 + y*g0.dv) - 0.5;
         for(var x=0;x<w;x++){
-          var dx=x-cx, dy=y-cy;
-          var dist = Math.sqrt(dx*dx+dy*dy)/maxD;
+          var dxN = ((g0.u0 + x*g0.du) - 0.5)*asp;
+          var dist = Math.sqrt(dxN*dxN + dyN*dyN)/maxD;
           var f = amt>=0 ? (1-amt*Math.pow(dist,2.2)) : (1+(-amt)*Math.pow(1-dist,2.2)*0.5);
           var vi=(y*w+x)*4;
           data[vi]*=f; data[vi+1]*=f; data[vi+2]*=f;
@@ -497,6 +619,7 @@
   function renderUpload(){
     state.mode='upload';
     footerBtn.style.display='none';
+    footerBtn2.style.display='none';
     clearError();
     main.innerHTML = '<div class="step-wrap">' +
       '<p class="step-title">' + (state.pages.length ? 'Add another page' : 'Scan a document') + '</p>' +
@@ -548,6 +671,7 @@
   function renderCorners(){
     state.mode='corners';
     footerBtn.style.display='block';
+    footerBtn2.style.display='none';
     footerBtn.textContent='Confirm corners';
     footerBtn.disabled=false;
     footerBtn.onclick=confirmCorners;
@@ -662,6 +786,7 @@
 
       cur.baseFull = warped;
       var fullCanvas = imageDataToCanvas(warped);
+      cur.baseFullCanvas = fullCanvas;
       var pc = scaleCanvas(fullCanvas, PREVIEW_MAX);
       cur.basePreview = pc.getContext('2d').getImageData(0,0,pc.width,pc.height);
       cur.adjustments = Object.assign({}, defaultAdjust);
@@ -695,13 +820,27 @@
   function renderAdjust(){
     state.mode='adjust';
     footerBtn.style.display='block';
+    footerBtn2.style.display='none';
     footerBtn.textContent = 'Add this page';
     footerBtn.disabled=false;
     footerBtn.onclick=finishPage;
     clearError();
 
     var html = '<div class="step-wrap wide"><div class="adjust-layout">' +
-      '<div class="adjust-preview-col"><div class="adjust-preview"><canvas id="adjCanvas"></canvas></div></div>' +
+      '<div class="adjust-preview-col">' +
+        '<div class="adjust-preview"><div class="zoom-wrap">' +
+          '<div class="zoom-viewport" id="zoomVp"><div class="zoom-stage" id="zoomStage">' +
+            '<canvas id="adjCanvas"></canvas><canvas id="detailCanvas"></canvas>' +
+          '</div></div>' +
+          '<div class="zoom-controls">' +
+            '<button id="zoomOut" aria-label="Zoom out">\u2212</button>' +
+            '<span class="zlabel" id="zoomLabel">100%</span>' +
+            '<button id="zoomIn" aria-label="Zoom in">+</button>' +
+            '<button id="zoomFit" class="txt" aria-label="Fit page to view">Fit</button>' +
+          '</div>' +
+        '</div></div>' +
+        '<p class="zoom-hint">Scroll or pinch to zoom \u00b7 drag to move</p>' +
+      '</div>' +
       '<div class="adjust-controls">' +
       '<p class="step-title">Fine-tune the page</p>' +
       '<p class="step-sub">Adjust light and color, just like editing a photo.</p>';
@@ -742,11 +881,15 @@
       });
     });});
 
+    initZoom();
     renderPreviewNow();
   }
 
   var previewPending=false;
   function schedulePreview(){
+    // settings changed: drop the sharp view, show the fast one, re-sharpen when idle
+    hideDetail();
+    scheduleDetail();
     if(previewPending) return;
     previewPending=true;
     requestAnimationFrame(function(){ previewPending=false; renderPreviewNow(); });
@@ -757,6 +900,240 @@
     if(!canvas) return;
     canvas.width = adjusted.width; canvas.height = adjusted.height;
     canvas.getContext('2d').putImageData(adjusted,0,0);
+  }
+
+  /* ============================================================
+     ZOOMABLE PREVIEW  (wheel / trackpad / pinch / drag / buttons)
+     ============================================================ */
+
+  var ZOOM_MAX = 8;
+  var DETAIL_MAX_PIXELS = 1600000;   // keeps the sharp re-render quick
+  var zoom = { z:1, tx:0, ty:0, dispW:0, dispH:0, vw:0, vh:0 };
+  var zEls = null;
+  var zoomPointers = {};
+  var zoomRO = null;
+  var detailTimer = null;
+  var gestureStartZ = 1;
+
+  function zoomClamp(){
+    var sw = zoom.dispW*zoom.z, sh = zoom.dispH*zoom.z;
+    zoom.tx = sw <= zoom.vw ? (zoom.vw - sw)/2 : Math.min(0, Math.max(zoom.vw - sw, zoom.tx));
+    zoom.ty = sh <= zoom.vh ? (zoom.vh - sh)/2 : Math.min(0, Math.max(zoom.vh - sh, zoom.ty));
+  }
+
+  function zoomApply(){
+    if(!zEls) return;
+    zoomClamp();
+    zEls.stage.style.transform = 'translate('+zoom.tx+'px,'+zoom.ty+'px) scale('+zoom.z+')';
+    zEls.label.textContent = Math.round(zoom.z*100) + '%';
+    // phones: at "fit" one finger still scrolls the page; once zoomed in, one finger pans the page image
+    zEls.vp.style.touchAction = zoom.z > 1.001 ? 'none' : 'pan-y';
+    scheduleDetail();
+  }
+
+  function zoomLayout(){
+    if(!zEls || !state.cur) return;
+    var vw = zEls.vp.clientWidth, vh = zEls.vp.clientHeight;
+    if(!vw || !vh) return;
+    var W = state.cur.baseFull.width, H = state.cur.baseFull.height;
+    var fit = Math.min((vw-16)/W, (vh-16)/H);
+    var dw = Math.max(1, W*fit), dh = Math.max(1, H*fit);
+
+    // keep whatever point was in the middle of the view when the size changes
+    var cu = 0.5, cv = 0.5;
+    if(zoom.dispW){
+      cu = (zoom.vw/2 - zoom.tx)/(zoom.dispW*zoom.z);
+      cv = (zoom.vh/2 - zoom.ty)/(zoom.dispH*zoom.z);
+    }
+    zoom.vw = vw; zoom.vh = vh; zoom.dispW = dw; zoom.dispH = dh;
+    zoom.tx = vw/2 - cu*dw*zoom.z;
+    zoom.ty = vh/2 - cv*dh*zoom.z;
+    zEls.stage.style.width = dw + 'px';
+    zEls.stage.style.height = dh + 'px';
+  }
+
+  function zoomAt(px, py, factor){
+    var nz = Math.min(ZOOM_MAX, Math.max(1, zoom.z*factor));
+    var r = nz/zoom.z;
+    zoom.tx = px - (px - zoom.tx)*r;
+    zoom.ty = py - (py - zoom.ty)*r;
+    zoom.z = nz;
+    zoomApply();
+  }
+
+  function vpPoint(clientX, clientY){
+    var rect = zEls.vp.getBoundingClientRect();
+    return { x: clientX - rect.left, y: clientY - rect.top };
+  }
+
+  function onZoomWheel(e){
+    e.preventDefault();
+    var pt = vpPoint(e.clientX, e.clientY);
+    var dy = e.deltaY;
+    if(e.deltaMode === 1) dy *= 16; else if(e.deltaMode === 2) dy *= 300;
+    dy = Math.max(-120, Math.min(120, dy));
+    // pinch on a trackpad arrives as a wheel event with ctrlKey set (smaller deltas)
+    var k = e.ctrlKey ? 0.012 : 0.002;
+    zoomAt(pt.x, pt.y, Math.exp(-dy*k));
+  }
+
+  function onZoomPointerDown(e){
+    if(e.pointerType === 'mouse' && e.button !== 0) return;
+    try{ zEls.vp.setPointerCapture(e.pointerId); }catch(err){}
+    zoomPointers[e.pointerId] = { x:e.clientX, y:e.clientY };
+    if(Object.keys(zoomPointers).length === 1) zEls.vp.classList.add('dragging');
+  }
+
+  function onZoomPointerMove(e){
+    var p = zoomPointers[e.pointerId];
+    if(!p) return;
+    var ids = Object.keys(zoomPointers);
+    if(ids.length === 1){
+      zoom.tx += e.clientX - p.x;
+      zoom.ty += e.clientY - p.y;
+      p.x = e.clientX; p.y = e.clientY;
+      zoomApply();
+    } else if(ids.length === 2){
+      var a = zoomPointers[ids[0]], b = zoomPointers[ids[1]];
+      var oldDist = Math.hypot(a.x-b.x, a.y-b.y);
+      var oldMid = { x:(a.x+b.x)/2, y:(a.y+b.y)/2 };
+      p.x = e.clientX; p.y = e.clientY;
+      var newDist = Math.hypot(a.x-b.x, a.y-b.y);
+      var newMid = { x:(a.x+b.x)/2, y:(a.y+b.y)/2 };
+      zoom.tx += newMid.x - oldMid.x;
+      zoom.ty += newMid.y - oldMid.y;
+      if(oldDist > 0){
+        var pt = vpPoint(newMid.x, newMid.y);
+        zoomAt(pt.x, pt.y, newDist/oldDist);
+      } else { zoomApply(); }
+    }
+  }
+
+  function onZoomPointerEnd(e){
+    delete zoomPointers[e.pointerId];
+    if(Object.keys(zoomPointers).length === 0) zEls.vp.classList.remove('dragging');
+  }
+
+  // Safari trackpad pinch (it uses gesture events instead of ctrl+wheel)
+  function onGestureStart(e){ e.preventDefault(); gestureStartZ = zoom.z; }
+  function onGestureChange(e){
+    e.preventDefault();
+    if(Object.keys(zoomPointers).length >= 2) return;   // touch pinch is handled above
+    var rect = zEls.vp.getBoundingClientRect();
+    var px = typeof e.clientX === 'number' ? e.clientX - rect.left : rect.width/2;
+    var py = typeof e.clientY === 'number' ? e.clientY - rect.top : rect.height/2;
+    var target = Math.min(ZOOM_MAX, Math.max(1, gestureStartZ*e.scale));
+    zoomAt(px, py, target/zoom.z);
+  }
+  function onGestureEnd(e){ e.preventDefault(); }
+
+  function initZoom(){
+    var vp = document.getElementById('zoomVp');
+    if(!vp) return;
+    zEls = {
+      vp: vp,
+      stage: document.getElementById('zoomStage'),
+      detail: document.getElementById('detailCanvas'),
+      label: document.getElementById('zoomLabel')
+    };
+    zoom = { z:1, tx:0, ty:0, dispW:0, dispH:0, vw:0, vh:0 };
+    zoomPointers = {};
+    clearTimeout(detailTimer);
+    if(zoomRO){ zoomRO.disconnect(); zoomRO = null; }
+
+    vp.addEventListener('wheel', onZoomWheel, { passive:false });
+    vp.addEventListener('pointerdown', onZoomPointerDown);
+    vp.addEventListener('pointermove', onZoomPointerMove);
+    vp.addEventListener('pointerup', onZoomPointerEnd);
+    vp.addEventListener('pointercancel', onZoomPointerEnd);
+    vp.addEventListener('gesturestart', onGestureStart, { passive:false });
+    vp.addEventListener('gesturechange', onGestureChange, { passive:false });
+    vp.addEventListener('gestureend', onGestureEnd, { passive:false });
+
+    document.getElementById('zoomIn').addEventListener('click', function(){ zoomAt(zoom.vw/2, zoom.vh/2, 1.4); });
+    document.getElementById('zoomOut').addEventListener('click', function(){ zoomAt(zoom.vw/2, zoom.vh/2, 1/1.4); });
+    document.getElementById('zoomFit').addEventListener('click', function(){ zoom.z = 1; zoomApply(); });
+
+    zoomLayout();
+    zoomApply();
+
+    // re-fit if the window / phone orientation changes
+    if(window.ResizeObserver){
+      zoomRO = new ResizeObserver(function(){
+        if(!zEls || !document.body.contains(zEls.vp)) return;
+        if(zEls.vp.clientWidth === zoom.vw && zEls.vp.clientHeight === zoom.vh) return;
+        zoomLayout();
+        zoomApply();
+      });
+      zoomRO.observe(vp);
+    }
+  }
+
+  function hideDetail(){
+    if(zEls && zEls.detail) zEls.detail.style.display = 'none';
+  }
+
+  function scheduleDetail(){
+    clearTimeout(detailTimer);
+    detailTimer = setTimeout(renderDetail, 260);
+  }
+
+  // Draws just the part of the page you are looking at, straight from the full-resolution
+  // image, with the current adjustments applied. This is what makes zoomed text look sharp.
+  function renderDetail(){
+    var cur = state.cur;
+    if(state.mode !== 'adjust' || !cur || !cur.baseFullCanvas || !zEls || !document.body.contains(zEls.vp)) return;
+    if(!zoom.dispW) return;
+
+    var W = cur.baseFull.width, H = cur.baseFull.height;
+    var sw = zoom.dispW*zoom.z, sh = zoom.dispH*zoom.z;
+
+    // visible part of the page, as 0..1 fractions
+    var u0 = Math.max(0, -zoom.tx/sw), v0 = Math.max(0, -zoom.ty/sh);
+    var u1 = Math.min(1, (zoom.vw - zoom.tx)/sw), v1 = Math.min(1, (zoom.vh - zoom.ty)/sh);
+    if(u1 <= u0 || v1 <= v0) return;
+
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var s = Math.min(1, sw*dpr/W);              // output pixels per full-resolution pixel
+    var padN = Math.ceil(5/s);                  // extra border so blur/sharpen has no edge artefacts
+    var px0 = Math.max(0, Math.floor(u0*W) - padN), py0 = Math.max(0, Math.floor(v0*H) - padN);
+    var px1 = Math.min(W, Math.ceil(u1*W) + padN),  py1 = Math.min(H, Math.ceil(v1*H) + padN);
+    var rw = px1 - px0, rh = py1 - py0;
+
+    var tw = Math.max(1, Math.round(rw*s)), th = Math.max(1, Math.round(rh*s));
+    if(tw*th > DETAIL_MAX_PIXELS){
+      var shrink = Math.sqrt(DETAIL_MAX_PIXELS/(tw*th));
+      s *= shrink;
+      tw = Math.max(1, Math.round(rw*s)); th = Math.max(1, Math.round(rh*s));
+    }
+
+    var tmp = document.createElement('canvas');
+    tmp.width = tw; tmp.height = th;
+    var tctx = tmp.getContext('2d');
+    tctx.imageSmoothingEnabled = true;
+    tctx.imageSmoothingQuality = 'high';
+    tctx.drawImage(cur.baseFullCanvas, px0, py0, rw, rh, 0, 0, tw, th);
+
+    var geo = {
+      u0: (px0 + 0.5/s)/W, v0: (py0 + 0.5/s)/H,
+      du: 1/(s*W),         dv: 1/(s*H),
+      aspect: W/H
+    };
+    var adjusted = applyAdjustments(tctx.getImageData(0, 0, tw, th), cur.adjustments, geo);
+
+    var dc = zEls.detail;
+    dc.width = tw; dc.height = th;
+    dc.getContext('2d').putImageData(adjusted, 0, 0);
+    dc.style.left   = (px0/W*zoom.dispW) + 'px';
+    dc.style.top    = (py0/H*zoom.dispH) + 'px';
+    dc.style.width  = (rw/W*zoom.dispW) + 'px';
+    dc.style.height = (rh/H*zoom.dispH) + 'px';
+    dc.style.display = 'block';
+  }
+
+  function findPage(id){
+    for(var i=0;i<state.pages.length;i++){ if(state.pages[i].id === id) return state.pages[i]; }
+    return null;
   }
 
   function finishPage(){
@@ -770,10 +1147,16 @@
         var page = {
           id: 'p'+Date.now()+Math.random().toString(36).slice(2),
           blob: blob,
+          url: URL.createObjectURL(blob),
           thumbUrl: thumbCanvas.toDataURL('image/jpeg', 0.8),
           w: fullCanvas.width, h: fullCanvas.height
         };
         state.pages.push(page);
+        // ID layout is on: a newly added page goes into the first empty half
+        if(idLayout.on){
+          if(!idLayout.upper) idLayout.upper = page.id;
+          else if(!idLayout.lower) idLayout.lower = page.id;
+        }
         state.cur = null;
         hideOverlay();
         renderPages();
@@ -782,56 +1165,291 @@
   }
 
   /* ============================================================
-     STEP 4 — PAGES REVIEW + EXPORT
+     STEP 4 — PAGES REVIEW, A4 SHEET PREVIEW, PRINT + EXPORT
      ============================================================ */
 
   var exportFormat = 'pdf';
 
+  function fixIdSlots(){
+    if(!findPage(idLayout.upper)) idLayout.upper = '';
+    if(!findPage(idLayout.lower)) idLayout.lower = '';
+    if(idLayout.upper && idLayout.upper === idLayout.lower) idLayout.lower = '';
+  }
+
+  function setSlot(which, id){
+    var other = which === 'upper' ? 'lower' : 'upper';
+    if(id && idLayout[other] === id){ idLayout[other] = idLayout[which]; }   // swap places
+    idLayout[which] = id;
+  }
+
+  function fitBox(pw, ph, bw, bh){
+    var s = Math.min(bw/pw, bh/ph);
+    return { w: pw*s, h: ph*s };
+  }
+
+  // Works out exactly where everything sits on each A4 sheet (all measurements in mm).
+  // The preview, the print dialog, the PDF and the JPEG all use this one layout.
+  function layoutSheets(){
+    var sheets = [];
+    if(!idLayout.on){
+      var mw = A4_W_MM - 2*PAGE_MARGIN_MM, mh = A4_H_MM - 2*PAGE_MARGIN_MM;
+      state.pages.forEach(function(p){
+        var f = fitBox(p.w, p.h, mw, mh);
+        sheets.push({ border:false, items:[{ page:p, x:(A4_W_MM-f.w)/2, y:(A4_H_MM-f.h)/2, w:f.w, h:f.h }] });
+      });
+      return sheets;
+    }
+    fixIdSlots();
+    var box = ID_SIZES[idLayout.size];
+    var items = [];
+    [idLayout.upper, idLayout.lower].forEach(function(id, i){
+      var p = findPage(id);
+      if(!p) return;
+      var f = fitBox(p.w, p.h, box.w, box.h);
+      var cy = (i === 0 ? 0.25 : 0.75) * A4_H_MM;      // centre of the upper / lower half
+      items.push({ page:p, x:(A4_W_MM-f.w)/2, y:cy - f.h/2, w:f.w, h:f.h });
+    });
+    return [{ border:idLayout.border, items:items }];
+  }
+
+  function sheetsHaveContent(sheets){
+    return sheets.length > 0 && sheets[0].items.length > 0;
+  }
+
+  function buildSheetEl(sheet, forPrint){
+    var el = document.createElement('div');
+    el.className = forPrint ? 'print-sheet' : 'sheet-preview';
+    sheet.items.forEach(function(it){
+      var img = document.createElement('img');
+      img.alt = ''; img.src = it.page.url; img.draggable = false;
+      var s = img.style;
+      s.position = 'absolute';
+      if(forPrint){
+        s.left = it.x+'mm'; s.top = it.y+'mm'; s.width = it.w+'mm'; s.height = it.h+'mm';
+        if(sheet.border) s.outline = '0.3mm solid #000';
+      } else {
+        s.left = (it.x/A4_W_MM*100)+'%';  s.top = (it.y/A4_H_MM*100)+'%';
+        s.width = (it.w/A4_W_MM*100)+'%'; s.height = (it.h/A4_H_MM*100)+'%';
+        if(sheet.border) s.outline = '1px solid #161513';
+      }
+      el.appendChild(img);
+    });
+    return el;
+  }
+
+  function slotOptionsHtml(selectedId){
+    var h = '<option value=""' + (selectedId === '' ? ' selected' : '') + '>Empty</option>';
+    state.pages.forEach(function(p, i){
+      h += '<option value="'+p.id+'"' + (p.id === selectedId ? ' selected' : '') + '>Page '+(i+1)+'</option>';
+    });
+    return h;
+  }
+
+  function drawSheetPreview(){
+    var holder = document.getElementById('sheetHolder');
+    if(!holder) return;
+    var sheets = layoutSheets();
+    if(sheetIndex >= sheets.length) sheetIndex = Math.max(0, sheets.length-1);
+    holder.innerHTML = '';
+    if(sheets.length) holder.appendChild(buildSheetEl(sheets[sheetIndex], false));
+    var label = document.getElementById('shLabel');
+    if(label) label.textContent = 'Sheet ' + (sheetIndex+1) + ' / ' + sheets.length;
+    var prev = document.getElementById('shPrev'), next = document.getElementById('shNext');
+    if(prev) prev.disabled = sheetIndex <= 0;
+    if(next) next.disabled = sheetIndex >= sheets.length-1;
+  }
+
   function renderPages(){
     state.mode='pages';
     clearError();
+    var keepScroll = window.pageYOffset;
+    fixIdSlots();
 
-    var html = '<div class="step-wrap">' +
+    var sheets = layoutSheets();
+    var ok = sheetsHaveContent(sheets);
+    var id = idLayout.on;
+
+    var head = '<div class="pages-head">' +
       '<p class="step-title">Your pages (' + state.pages.length + ')</p>' +
-      '<p class="step-sub">Check everything looks right, then choose how to save it.</p>' +
+      '<p class="step-sub">Check everything looks right, then print or download it.</p>' +
       '<div class="page-grid" id="pageGrid">';
     state.pages.forEach(function(p, i){
-      html += '<div class="page-thumb" data-id="'+p.id+'">' +
+      head += '<div class="page-thumb" data-id="'+p.id+'">' +
         '<img src="'+p.thumbUrl+'">' +
         '<span class="num">'+(i+1)+'</span>' +
         '<button class="del" data-id="'+p.id+'" aria-label="Remove page">\u00d7</button>' +
       '</div>';
     });
-    html += '<div class="add-more" id="addMore">+</div></div>';
+    head += '<div class="add-more" id="addMore">+</div></div></div>';
 
-    html += '<p class="format-title">Save as</p>' +
-      '<div class="row2">' +
-        '<div class="choice'+(exportFormat==='pdf'?' active':'')+'" data-fmt="pdf">PDF<span class="sub">One file, all pages</span></div>' +
-        '<div class="choice'+(exportFormat==='jpeg'?' active':'')+'" data-fmt="jpeg">JPEG<span class="sub">Image per page</span></div>' +
-      '</div>' +
+    var preview = '<div class="pages-preview">' +
+      '<p class="format-title">Final page preview</p>' +
+      '<div class="sheet-frame" id="sheetHolder"></div>' +
+      (sheets.length > 1 ?
+        '<div class="sheet-pager"><button id="shPrev" aria-label="Previous sheet">\u2039</button>' +
+        '<span id="shLabel"></span><button id="shNext" aria-label="Next sheet">\u203a</button></div>' : '') +
+      (id ? '<p class="print-tip">' + (ok
+          ? 'This is exactly how the A4 sheet will print. In the print window choose <b>A4</b> and <b>Scale 100%</b> (Actual size) so the cards keep their size.'
+          : 'Choose a page for the upper or lower half to see the sheet.') + '</p>' : '') +
     '</div>';
 
-    main.innerHTML = html;
+    var opts = '<div class="pages-opts">' +
+      '<label class="switch-row"><span><b>ID card layout</b>' +
+        '<small>Aadhaar, PAN or any ID card: front on the upper half, back on the lower half of one A4</small></span>' +
+        '<span class="switch"><input type="checkbox" id="idToggle"' + (id ? ' checked' : '') + '><span></span></span></label>';
 
+    if(id){
+      opts += '<div class="id-opts">' +
+        '<p class="format-title">Card size</p><div class="row2">';
+      ID_SIZE_ORDER.forEach(function(k){
+        var sz = ID_SIZES[k];
+        opts += '<div class="choice' + (idLayout.size === k ? ' active' : '') + '" data-size="'+k+'">' +
+          sz.label + '<span class="sub">' + sz.sub + '</span></div>';
+      });
+      opts += '</div>' +
+        '<p class="format-title">Which page goes where</p>' +
+        '<div class="slot-row">' +
+          '<label>Upper half<select class="sel" id="slotUpper">' + slotOptionsHtml(idLayout.upper) + '</select></label>' +
+          '<button class="swap-btn" id="slotSwap" aria-label="Swap upper and lower" title="Swap">\u21c5</button>' +
+          '<label>Lower half<select class="sel" id="slotLower">' + slotOptionsHtml(idLayout.lower) + '</select></label>' +
+        '</div>' +
+        '<label class="check-row"><input type="checkbox" id="idBorder"' + (idLayout.border ? ' checked' : '') + '>' +
+          '<span>Draw a border around each card</span></label>' +
+      '</div>';
+    }
+
+    opts += '<p class="format-title">Download as</p><div class="row2">' +
+      '<div class="choice' + (exportFormat==='pdf' ? ' active' : '') + '" data-fmt="pdf">PDF<span class="sub">' +
+        (id ? 'One A4 sheet' : 'One file, all pages') + '</span></div>' +
+      '<div class="choice' + (exportFormat==='jpeg' ? ' active' : '') + '" data-fmt="jpeg">JPEG<span class="sub">' +
+        (id ? 'A4 sheet as an image' : 'Image per page') + '</span></div>' +
+    '</div></div>';
+
+    main.innerHTML = '<div class="step-wrap wide"><div class="pages-layout">' + head + preview + opts + '</div></div>';
+    drawSheetPreview();
+
+    // --- wiring ---
     document.getElementById('addMore').addEventListener('click', renderUpload);
     main.querySelectorAll('.del').forEach(function(btn){
       btn.addEventListener('click', function(){
+        var gone = findPage(btn.getAttribute('data-id'));
+        if(gone && gone.url) URL.revokeObjectURL(gone.url);
         state.pages = state.pages.filter(function(p){ return p.id !== btn.getAttribute('data-id'); });
-        if(state.pages.length===0){ renderUpload(); } else { renderPages(); }
+        if(state.pages.length === 0){ renderUpload(); } else { renderPages(); }
       });
     });
-    main.querySelectorAll('.choice').forEach(function(el){
+
+    document.getElementById('idToggle').addEventListener('change', function(e){
+      idLayout.on = e.target.checked;
+      if(idLayout.on){
+        idLayout.upper = state.pages[0] ? state.pages[0].id : '';
+        idLayout.lower = state.pages[1] ? state.pages[1].id : '';
+      }
+      sheetIndex = 0;
+      renderPages();
+    });
+
+    main.querySelectorAll('[data-size]').forEach(function(el){
+      el.addEventListener('click', function(){ idLayout.size = el.getAttribute('data-size'); renderPages(); });
+    });
+    var upSel = document.getElementById('slotUpper'), loSel = document.getElementById('slotLower');
+    if(upSel) upSel.addEventListener('change', function(){ setSlot('upper', upSel.value); renderPages(); });
+    if(loSel) loSel.addEventListener('change', function(){ setSlot('lower', loSel.value); renderPages(); });
+    var swap = document.getElementById('slotSwap');
+    if(swap) swap.addEventListener('click', function(){
+      var t = idLayout.upper; idLayout.upper = idLayout.lower; idLayout.lower = t; renderPages();
+    });
+    var bd = document.getElementById('idBorder');
+    if(bd) bd.addEventListener('change', function(){ idLayout.border = bd.checked; renderPages(); });
+
+    main.querySelectorAll('[data-fmt]').forEach(function(el){
       el.addEventListener('click', function(){
         exportFormat = el.getAttribute('data-fmt');
-        main.querySelectorAll('.choice').forEach(function(c){c.classList.remove('active');});
+        main.querySelectorAll('[data-fmt]').forEach(function(c){ c.classList.remove('active'); });
         el.classList.add('active');
       });
     });
 
-    footerBtn.style.display='block';
-    footerBtn.textContent='Download';
-    footerBtn.disabled = state.pages.length===0;
+    var shPrev = document.getElementById('shPrev'), shNext = document.getElementById('shNext');
+    if(shPrev) shPrev.addEventListener('click', function(){ sheetIndex--; drawSheetPreview(); });
+    if(shNext) shNext.addEventListener('click', function(){ sheetIndex++; drawSheetPreview(); });
+
+    footerBtn.style.display = 'block';
+    footerBtn.textContent = 'Download';
+    footerBtn.disabled = !ok;
     footerBtn.onclick = doExport;
+    footerBtn2.style.display = 'block';
+    footerBtn2.textContent = 'Print';
+    footerBtn2.disabled = !ok;
+    footerBtn2.onclick = doPrint;
+
+    window.scrollTo(0, keepScroll);
+  }
+
+  /* ============================================================
+     PRINT  (opens the print window straight from the page)
+     ============================================================ */
+
+  // The A4 sheets are printed from a clean, separate frame that contains nothing else, so the
+  // browser's print engine is never affected by the rest of this page (scroll position,
+  // fixed buttons, sticky panels...).
+  var PRINT_CSS =
+    '@page{size:A4;margin:0}' +
+    'html,body{margin:0;padding:0;background:#fff}' +
+    '.print-sheet{position:relative;width:210mm;height:296.5mm;overflow:hidden;background:#fff;' +
+      'page-break-after:always;break-after:page}' +
+    '.print-sheet:last-child{page-break-after:auto;break-after:auto}' +
+    '.print-sheet img{position:absolute;display:block}';
+
+  var printFrame = null;
+
+  function removePrintFrame(){
+    if(printFrame && printFrame.parentNode) printFrame.parentNode.removeChild(printFrame);
+    printFrame = null;
+  }
+
+  function doPrint(){
+    clearError();
+    var sheets = layoutSheets();
+    if(!sheetsHaveContent(sheets)) return;
+
+    removePrintFrame();
+    var frame = document.createElement('iframe');
+    frame.setAttribute('aria-hidden', 'true');
+    frame.style.cssText = 'position:fixed; left:-10000px; top:0; width:210mm; height:297mm; border:0;';
+    document.body.appendChild(frame);
+    printFrame = frame;
+
+    var idoc = frame.contentDocument;
+    idoc.open();
+    idoc.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Sona Xerox \u2014 Scan</title>' +
+               '<style>' + PRINT_CSS + '</style></head><body></body></html>');
+    idoc.close();
+    sheets.forEach(function(s){
+      idoc.body.appendChild(idoc.importNode(buildSheetEl(s, true), true));
+    });
+
+    var waits = Array.prototype.map.call(idoc.querySelectorAll('img'), function(img){
+      return new Promise(function(resolve){
+        if(img.complete && img.naturalWidth) return resolve();
+        img.onload = img.onerror = function(){ resolve(); };
+      });
+    });
+
+    showOverlay('Opening the print window\u2026');
+    Promise.all(waits).then(function(){
+      setTimeout(function(){                 // let the frame finish laying out first
+        hideOverlay();
+        try{
+          var w = frame.contentWindow;
+          w.addEventListener('afterprint', function(){ setTimeout(removePrintFrame, 500); });
+          w.focus();
+          w.print();
+        }catch(err){
+          showError('Could not open the print window \u2014 please use Download and print the file');
+        }
+      }, 150);
+    });
   }
 
   /* ============================================================
@@ -855,14 +1473,71 @@
     });
   }
 
+  function loadImg(url){
+    return new Promise(function(resolve, reject){
+      var i = new Image();
+      i.onload = function(){ resolve(i); };
+      i.onerror = reject;
+      i.src = url;
+    });
+  }
+
+  // Draws one A4 sheet at 300 dpi and returns it as a JPEG
+  function sheetToBlob(sheet){
+    var pxmm = 300/25.4;
+    var cw = Math.round(A4_W_MM*pxmm), ch = Math.round(A4_H_MM*pxmm);
+    var c = document.createElement('canvas'); c.width = cw; c.height = ch;
+    var ctx = c.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cw, ch);
+    ctx.imageSmoothingQuality = 'high';
+    return Promise.all(sheet.items.map(function(it){
+      return loadImg(it.page.url).then(function(img){ return { it:it, img:img }; });
+    })).then(function(list){
+      list.forEach(function(o){
+        var x = o.it.x*pxmm, y = o.it.y*pxmm, w = o.it.w*pxmm, h = o.it.h*pxmm;
+        ctx.drawImage(o.img, x, y, w, h);
+        if(sheet.border){
+          var lw = Math.max(2, Math.round(0.3*pxmm));
+          ctx.lineWidth = lw; ctx.strokeStyle = '#000';
+          ctx.strokeRect(x - lw/2, y - lw/2, w + lw, h + lw);
+        }
+      });
+      return new Promise(function(resolve){ c.toBlob(resolve, 'image/jpeg', JPEG_QUALITY); });
+    });
+  }
+
   function doExport(){
     clearError();
-    if(state.pages.length===0) return;
+    var sheets = layoutSheets();
+    if(!sheetsHaveContent(sheets)) return;
 
-    if(exportFormat==='jpeg'){
+    // ---- ID card sheet: one A4 ----
+    if(idLayout.on){
+      if(exportFormat === 'jpeg'){
+        showOverlay('Preparing your download\u2026');
+        nextTick(function(){
+          sheetToBlob(sheets[0]).then(function(blob){
+            downloadBlob(blob, 'SonaXerox-ID-Sheet.jpg');
+            hideOverlay();
+          }).catch(function(){ hideOverlay(); showError('Could not create the image \u2014 please try again'); });
+        });
+      } else {
+        showOverlay('Building your PDF\u2026');
+        nextTick(function(){
+          buildPdf(sheets).then(function(bytes){
+            downloadBlob(new Blob([bytes], {type:'application/pdf'}), 'SonaXerox-ID-Sheet.pdf');
+            hideOverlay();
+          }).catch(function(){ hideOverlay(); showError('Could not create the PDF \u2014 please try again'); });
+        });
+      }
+      return;
+    }
+
+    // ---- normal pages ----
+    if(exportFormat === 'jpeg'){
       showOverlay('Preparing your download\u2026');
       nextTick(function(){
-        if(state.pages.length===1){
+        if(state.pages.length === 1){
           downloadBlob(state.pages[0].blob, 'SonaXerox-Scan.jpg');
           hideOverlay();
         } else {
@@ -886,36 +1561,45 @@
       return;
     }
 
-    // PDF export
     showOverlay('Building your PDF\u2026');
     nextTick(function(){
-      buildPdf().then(function(bytes){
+      buildPdf(sheets).then(function(bytes){
         downloadBlob(new Blob([bytes], {type:'application/pdf'}), 'SonaXerox-Scan.pdf');
         hideOverlay();
-      }).catch(function(err){
+      }).catch(function(){
         hideOverlay();
         showError('Could not create the PDF \u2014 please try again');
       });
     });
   }
 
-  function buildPdf(){
-    var A4W = 595.28, A4H = 841.89, MARGIN = 24;
+  function buildPdf(sheets){
+    var PT = 72/25.4;                       // millimetres -> PDF points
     return PDFLib.PDFDocument.create().then(function(doc){
       var chain = Promise.resolve();
-      state.pages.forEach(function(p){
+      sheets.forEach(function(sheet){
         chain = chain.then(function(){
-          return blobToArrayBuffer(p.blob).then(function(buf){
-            return doc.embedJpg(buf).then(function(img){
-              var page = doc.addPage([A4W, A4H]);
-              var maxW = A4W - MARGIN*2, maxH = A4H - MARGIN*2;
-              var scale = Math.min(maxW/p.w, maxH/p.h);
-              var drawW = p.w*scale, drawH = p.h*scale;
-              page.drawImage(img, {
-                x:(A4W-drawW)/2, y:(A4H-drawH)/2, width:drawW, height:drawH
+          var page = doc.addPage([A4_W_MM*PT, A4_H_MM*PT]);
+          var inner = Promise.resolve();
+          sheet.items.forEach(function(it){
+            inner = inner.then(function(){
+              return blobToArrayBuffer(it.page.blob).then(function(buf){
+                return doc.embedJpg(buf);
+              }).then(function(img){
+                var x = it.x*PT, w = it.w*PT, h = it.h*PT;
+                var y = (A4_H_MM - it.y - it.h)*PT;
+                page.drawImage(img, { x:x, y:y, width:w, height:h });
+                if(sheet.border){
+                  var bw = 0.3*PT;           // 0.3 mm line, drawn just outside the card
+                  page.drawRectangle({
+                    x:x - bw/2, y:y - bw/2, width:w + bw, height:h + bw,
+                    borderColor: PDFLib.rgb(0,0,0), borderWidth: bw
+                  });
+                }
               });
             });
           });
+          return inner;
         });
       });
       return chain.then(function(){ return doc.save(); });
