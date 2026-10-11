@@ -111,11 +111,10 @@
   }
   .tool:hover{transform:translateY(-4px) rotate(-.4deg); box-shadow:6px 8px 0 var(--line);}
   .tool:active{transform:translateY(1px); box-shadow:2px 2px 0 var(--line);}
-  .tools li:nth-child(5n+1) .tool{--c:var(--cyan);}
-  .tools li:nth-child(5n+2) .tool{--c:var(--magenta);}
-  .tools li:nth-child(5n+3) .tool{--c:var(--yellow); --ic:var(--ink);}
-  .tools li:nth-child(5n+4) .tool{--c:var(--ink);}
-  .tools li:nth-child(5n+5) .tool{--c:var(--cyan);}
+  .tools li:nth-child(4n+1) .tool{--c:var(--cyan);}
+  .tools li:nth-child(4n+2) .tool{--c:var(--magenta);}
+  .tools li:nth-child(4n+3) .tool{--c:var(--yellow); --ic:var(--ink);}
+  .tools li:nth-child(4n+4) .tool{--c:var(--ink);}
 
   .ico{
     flex:0 0 52px; width:52px; height:52px; border-radius:12px;
@@ -128,7 +127,7 @@
   body[data-lang="gu"] .name{font-family:var(--gu); font-weight:700; letter-spacing:0;}
   .path{
     margin-top:.25rem; font-family:'IBM Plex Mono', monospace; font-size:.74rem; color:var(--gray);
-    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    line-height:1.35; overflow-wrap:anywhere;
   }
   .go{font-size:1.3rem; color:var(--gray); transition:transform .15s, color .15s;}
   .tool:hover .go{transform:translateX(4px); color:var(--ink);}
@@ -206,6 +205,16 @@
         <span class="txt">
           <span class="name" data-gu="ચૂંટણી કાર્ડ" data-en="Voter card">ચૂંટણી કાર્ડ</span>
           <span class="path">sonaxerox.in/voter-card/</span>
+        </span>
+        <span class="go" aria-hidden="true">→</span>
+      </a>
+    </li>
+    <li>
+      <a class="tool" href="/pdf-tools/">
+        <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="11" height="14" rx="1.5"/><path d="M9 21h9a2 2 0 0 0 2-2V8"/><path d="M7.5 8h4M7.5 11h4"/></svg></span>
+        <span class="txt">
+          <span class="name" data-gu="PDF ટૂલ્સ" data-en="PDF tools">PDF ટૂલ્સ</span>
+          <span class="path">sonaxerox.in/pdf-tools/</span>
         </span>
         <span class="go" aria-hidden="true">→</span>
       </a>
