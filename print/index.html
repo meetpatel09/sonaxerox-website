@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="gu">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sona Xerox — પ્રિન્ટ ઓર્ડર</title>
 <link rel="icon" type="image/png" href="/favicon.png">
-<title>Sona Xerox — Order Print</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Work+Sans:wght@400;500;600&family=Hind+Vadodara:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
   :root{
     --bg:#FFFFFF;
@@ -119,6 +120,42 @@
     font-size:11.5px; color:var(--text-soft); margin-top:8px; line-height:1.5;
   }
   .limit-note b{color:var(--text); font-weight:600;}
+
+  .preview{
+    display:none;
+    margin-top:12px;
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    background:var(--panel);
+    padding:12px;
+  }
+  .preview.show{display:block;}
+  .preview canvas{
+    display:block;
+    margin:0 auto;
+    max-width:100%;
+    border:1px solid var(--line);
+    border-radius:4px;
+    background:#fff;
+  }
+  .pv-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-top:10px;
+  }
+  .pv-bar button{
+    width:34px;height:34px;
+    border-radius:6px;
+    border:1.5px solid var(--line);
+    background:var(--panel-2);
+    color:var(--text);
+    font-size:16px;
+    cursor:pointer;
+  }
+  .pv-bar button:disabled{opacity:.35; cursor:default;}
+  .pv-bar span{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px; color:var(--text-soft);
+  }
 
   .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
   .choice{
@@ -280,9 +317,155 @@
     cursor:pointer;
     color:var(--text);
   }
+
+  /* ===== header: language toggle ===== */
+  .head-right{display:flex; align-items:center; gap:12px;}
+  .lang-toggle{
+    border:1.5px solid var(--text); background:transparent; border-radius:999px;
+    font-family:'Work Sans','Hind Vadodara',sans-serif; font-weight:600; font-size:12.5px;
+    padding:6px 12px; cursor:pointer; color:var(--text); white-space:nowrap;
+    transition:background .15s, color .15s;
+  }
+  .lang-toggle:hover{background:var(--text); color:#fff;}
+  .lang-toggle:focus-visible, .pv-viewport:focus-visible, .pv-zoom button:focus-visible{outline:3px solid var(--cyan); outline-offset:2px;}
+
+  /* ===== Gujarati typography ===== */
+  body[data-lang="gu"]{font-family:'Hind Vadodara','Work Sans',sans-serif;}
+  body[data-lang="gu"] .send-btn,
+  body[data-lang="gu"] .stamp-wrap h2{font-family:'Hind Vadodara','Archivo Black',sans-serif; font-weight:700; letter-spacing:0;}
+  body[data-lang="gu"] .brand-mark p,
+  body[data-lang="gu"] .ticket-no,
+  body[data-lang="gu"] .step-label,
+  body[data-lang="gu"] .rate-note,
+  body[data-lang="gu"] .stamp-wrap p{font-family:'Hind Vadodara','IBM Plex Mono',sans-serif; letter-spacing:0; text-transform:none;}
+  body[data-lang="gu"] .step-label{font-size:13px; font-weight:600;}
+  body[data-lang="gu"] .send-btn{font-size:15px;}
+
+  /* ===== file preview with zoom ===== */
+  .preview{padding:10px;}
+  .pv-wrap{position:relative;}
+  .pv-viewport{
+    position:relative; width:100%; height:min(58vh, 440px); min-height:260px;
+    overflow:hidden; background:var(--panel-2); border-radius:8px;
+    touch-action:pan-y; cursor:grab; user-select:none; -webkit-user-select:none; outline:none;
+  }
+  .pv-viewport.dragging{cursor:grabbing;}
+  .pv-stage{position:absolute; left:0; top:0; transform-origin:0 0; background:#fff; box-shadow:0 2px 10px rgba(0,0,0,.25);}
+  .preview .pv-stage canvas{
+    position:absolute; left:0; top:0; width:100%; height:100%; margin:0; max-width:none;
+    border:none; border-radius:0; display:block; pointer-events:none;
+  }
+  .pv-zoom{
+    position:absolute; left:50%; bottom:8px; transform:translateX(-50%); z-index:3;
+    display:flex; align-items:center; gap:2px; padding:3px;
+    background:rgba(22,21,19,.84); border-radius:999px;
+  }
+  .pv-zoom button{
+    min-width:32px; height:32px; border:none; border-radius:999px; background:transparent;
+    color:#fff; font-size:17px; cursor:pointer; padding:0 6px; font-family:'IBM Plex Mono', monospace;
+  }
+  .pv-zoom button.txt{font-size:12px; padding:0 10px; font-family:'Work Sans','Hind Vadodara',sans-serif;}
+  .pv-zoom button:active{background:rgba(255,255,255,.22);}
+  .pv-zoom span{min-width:46px; text-align:center; color:#fff; font-size:12px; font-family:'IBM Plex Mono', monospace;}
+  .pv-bar span{text-align:center; line-height:1.35;}
+  .pv-hint{font-size:11px; color:var(--text-soft); text-align:center; margin:8px 0 0; line-height:1.5;}
+
+  /* ===== price box (footer) + price on the success screen ===== */
+  .app{padding-bottom:158px;}
+  .price-bar{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    margin:0 0 10px; padding:8px 14px;
+    background:var(--panel); border:1.5px solid var(--line); border-radius:8px;
+  }
+  .price-info{display:flex; flex-direction:column; min-width:0; gap:1px;}
+  .price-label{font-size:11px; font-weight:600; color:var(--text-soft); text-transform:uppercase; letter-spacing:.6px;}
+  .price-break{font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--text-soft); line-height:1.4;}
+  .price-amt{font-family:'Archivo Black', sans-serif; font-size:28px; line-height:1; color:#A9A6A0; white-space:nowrap;}
+  .price-bar.has-price{border-color:var(--magenta); background:#FFF5FA;}
+  .price-bar.has-price .price-amt{color:var(--magenta);}
+  body[data-lang="gu"] .price-label{text-transform:none; letter-spacing:0; font-family:'Hind Vadodara','Work Sans',sans-serif; font-size:12.5px;}
+  body[data-lang="gu"] .price-break{font-family:'Hind Vadodara','IBM Plex Mono',sans-serif; font-size:12px;}
+  .overlay-price{text-align:center; margin:0 0 20px;}
+  .overlay-price .op-label{display:block; font-size:12.5px; color:var(--text-soft); margin-bottom:2px;}
+  .overlay-price b{display:block; font-family:'Archivo Black', sans-serif; font-size:40px; line-height:1.15; color:var(--magenta);}
+  .overlay-price small{display:block; font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--text-soft); margin-top:2px;}
+  body[data-lang="gu"] .overlay-price small{font-family:'Hind Vadodara','IBM Plex Mono',sans-serif;}
+
+  /* ===== "order received" screen: always fills the visible window (not the whole long page) ===== */
+  .overlay{
+    position:fixed; top:0; bottom:0; left:0; right:0; max-width:420px; margin:0 auto;
+    justify-content:flex-start; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    padding:28px 30px;
+  }
+  .overlay > :first-child{margin-top:auto;}
+  .overlay > :last-child{margin-bottom:auto;}
+  .overlay .stamp-wrap{flex-shrink:0;}
+
+  /* the fixed footer (price + Send) must always sit above the preview's floating zoom bar */
+  footer{z-index:10;}
+
+
+  /* ===== photo editor ("make it print-friendly") ===== */
+  .edit-photos{
+    display:none; width:100%; margin-top:8px; padding:11px; background:#fff; color:var(--magenta);
+    border:1.5px solid var(--magenta); border-radius:8px; font-weight:600; font-size:13.5px; cursor:pointer;
+    font-family:'Work Sans','Hind Vadodara',sans-serif;
+  }
+  body[data-lang="gu"] .edit-photos{font-family:'Hind Vadodara','Work Sans',sans-serif; font-size:14.5px;}
+  .edit-photos:active{background:#FFF5FA;}
+  .ed-root{
+    position:fixed; top:0; right:0; bottom:0; left:0; z-index:40; display:none;
+    background:rgba(22,21,19,.55); overflow-y:auto; -webkit-overflow-scrolling:touch;
+  }
+  .ed-root.show{display:block;}
+  .ed-card{
+    background:#fff; max-width:420px; min-height:100%; margin:0 auto; padding:14px 16px 0; position:relative;
+    font-family:'Work Sans','Hind Vadodara',sans-serif; color:var(--text);
+  }
+  body[data-lang="gu"] .ed-card{font-family:'Hind Vadodara','Work Sans',sans-serif;}
+  .ed-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;}
+  .ed-head b{font-family:'Archivo Black','Hind Vadodara',sans-serif; font-size:16px; font-weight:400;}
+  body[data-lang="gu"] .ed-head b{font-family:'Hind Vadodara',sans-serif; font-weight:700; font-size:17px;}
+  .ed-count{display:block; font-size:11.5px; color:var(--text-soft); margin-top:2px;}
+  .ed-x{width:36px; height:36px; border:1.5px solid var(--line); border-radius:50%; background:var(--panel); font-size:15px; cursor:pointer; color:var(--text); flex-shrink:0;}
+  .ed-stage{position:relative; background:var(--panel-2); border-radius:8px; padding:12px; display:flex; justify-content:center; align-items:center; min-height:200px;}
+  #edCanvas{display:block; background:#fff; box-shadow:0 2px 10px rgba(0,0,0,.28); max-width:100%;}
+  .ed-compare{
+    position:absolute; right:8px; bottom:8px; padding:7px 11px; border:none; border-radius:999px;
+    background:rgba(22,21,19,.84); color:#fff; font-size:11.5px; cursor:pointer; touch-action:none; user-select:none; -webkit-user-select:none;
+    font-family:'Work Sans','Hind Vadodara',sans-serif;
+  }
+  body[data-lang="gu"] .ed-compare{font-family:'Hind Vadodara',sans-serif; font-size:12px;}
+  .ed-note{font-size:11.5px; color:var(--text-soft); margin:8px 0 10px; text-align:center; line-height:1.5;}
+  .ed-thumbs{display:none; gap:8px; overflow-x:auto; padding:2px 2px 10px; margin-bottom:6px;}
+  .ed-thumbs .th{position:relative; flex:0 0 auto; width:52px; height:68px; padding:0; border:2px solid var(--line); border-radius:6px; background:none; cursor:pointer; overflow:visible;}
+  .ed-thumbs .th canvas{width:100%; height:100%; display:block; border-radius:4px;}
+  .ed-thumbs .th.active{border-color:var(--magenta);}
+  .ed-thumbs .thx{position:absolute; top:-7px; right:-7px; width:20px; height:20px; border-radius:50%; background:var(--text); color:#fff; font-size:10px; line-height:20px; text-align:center;}
+  .ed-label{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-soft); text-transform:uppercase; letter-spacing:.6px; margin:4px 0 8px;}
+  body[data-lang="gu"] .ed-label{font-family:'Hind Vadodara',sans-serif; text-transform:none; letter-spacing:0; font-size:13px; font-weight:600;}
+  .ed-chips{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .chip{
+    border:1.5px solid var(--line); border-radius:8px; background:var(--panel); color:var(--text); padding:10px 8px; font-size:13px; font-weight:500;
+    cursor:pointer; text-align:center; font-family:inherit; line-height:1.25;
+  }
+  .chip.sm{padding:9px 4px; font-size:13px;}
+  .chip.active{background:var(--text); color:#fff; border-color:var(--text);}
+  .ed-hint{font-size:12px; color:var(--text-soft); margin:8px 0 12px; line-height:1.5; min-height:18px;}
+  .ed-sl{margin-bottom:10px;}
+  .ed-sl label{display:flex; justify-content:space-between; font-size:12.5px; color:var(--text-soft); margin-bottom:4px;}
+  .ed-sl label b{color:var(--text); font-weight:600;}
+  .ed-sl input[type=range]{width:100%; accent-color:var(--magenta);}
+  .ed-row{display:grid; grid-template-columns:44px 44px 1fr 1fr; gap:8px; margin:12px 0 6px;}
+  .ed-row2{display:flex; justify-content:space-between; gap:10px; margin:6px 0 0;}
+  .link-btn{background:none; border:none; color:var(--magenta); font-weight:600; font-size:13px; cursor:pointer; padding:8px 2px; font-family:inherit;}
+  .ed-err{color:var(--err); font-size:12.5px; margin:6px 0 0; min-height:0; text-align:center;}
+  .ed-actions{position:sticky; bottom:0; background:#fff; padding:10px 0 16px; margin-top:8px; border-top:1px solid var(--line);}
+  .ed-root.busy .ed-card{cursor:progress;}
+  .ed-root.busy .send-btn{background:var(--panel-2); color:var(--text-soft);}
 </style>
 </head>
-<body>
+<body data-lang="gu">
 <div class="app">
 
   <header>
@@ -290,60 +473,86 @@
       <div class="cmyk-dots"><span></span><span></span><span></span><span></span></div>
       <div>
         <h1>Sona Xerox</h1>
-        <p>Valod · Online Print</p>
+        <p data-i18n="tagline">વાલોડ · ઓનલાઇન પ્રિન્ટ</p>
       </div>
     </div>
-    <div class="ticket-no">Token<b id="tokenNo">#—</b></div>
+    <div class="head-right">
+      <button class="lang-toggle" id="langBtn" type="button" aria-label="Language">English</button>
+      <div class="ticket-no"><span data-i18n="token">ટોકન</span><b id="tokenNo">#—</b></div>
+    </div>
   </header>
 
   <main>
 
     <div class="step">
-      <div class="step-label"><span class="n">01</span> Upload PDF</div>
+      <div class="step-label"><span class="n">01</span> <span data-i18n="s1">PDF અપલોડ કરો</span></div>
       <label class="drop" id="dropZone">
-        <input type="file" id="fileInput" accept=".pdf,application/pdf">
+        <input type="file" id="fileInput" accept=".pdf,application/pdf,image/jpeg,image/png,image/webp" multiple>
         <div class="icon">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
         </div>
         <div class="drop-text">
-          <p id="dropText">Tap to choose a PDF file</p>
-          <span id="dropSub">Photos/JPG not accepted yet — ask at counter</span>
+          <p id="dropText"></p>
+          <span id="dropSub"></span>
         </div>
       </label>
-      <p class="limit-note">Max <b>30 pages</b> and <b>15 MB</b> per order. Larger jobs — please call the shop directly.</p>
-      <p class="limit-note">📱 <b>PDF on WhatsApp?</b> Open the PDF once inside WhatsApp, then come back and tap upload — it will appear in <b>“Recent”</b> at the top.</p>
+
+      <button class="edit-photos" id="editPhotosBtn" type="button" style="display:none" data-i18n="editPhotos">✏️</button>
+
+      <div class="preview" id="preview">
+        <div class="pv-wrap">
+          <div class="pv-viewport" id="pvVp" tabindex="0" aria-label="PDF preview">
+            <div class="pv-stage" id="pvStage"><canvas id="pvCanvas"></canvas></div>
+          </div>
+          <div class="pv-zoom">
+            <button id="pvZoomOut" type="button" aria-label="Zoom out">&minus;</button>
+            <span id="pvZoomLabel">100%</span>
+            <button id="pvZoomIn" type="button" aria-label="Zoom in">+</button>
+            <button id="pvFit" type="button" class="txt" data-i18n="fit">ફિટ</button>
+          </div>
+        </div>
+        <div class="pv-bar">
+          <button id="pvPrev" type="button" aria-label="Previous page">&lsaquo;</button>
+          <span id="pvLabel"></span>
+          <button id="pvNext" type="button" aria-label="Next page">&rsaquo;</button>
+        </div>
+        <p class="pv-hint" data-i18n="pvHint"></p>
+      </div>
+
+      <p class="limit-note" data-i18n-html="limitNote"></p>
+      <p class="limit-note" data-i18n-html="waTip"></p>
     </div>
 
     <div class="step">
-      <div class="step-label"><span class="n">02</span> Pages</div>
+      <div class="step-label"><span class="n">02</span> <span data-i18n="s2">પેજ</span></div>
       <div class="row2">
-        <div class="choice active" data-group="pagemode" data-val="all">All pages</div>
-        <div class="choice" data-group="pagemode" data-val="select">Select pages</div>
+        <div class="choice active" data-group="pagemode" data-val="all" data-i18n="allPages">બધા પેજ</div>
+        <div class="choice" data-group="pagemode" data-val="select" data-i18n="selPages">અમુક પેજ પસંદ કરો</div>
       </div>
       <div id="rangeBox" style="display:none; margin-top:10px;">
-        <input class="phone-input" id="rangeInput" type="text" placeholder="e.g. 1-5, 8, 11">
+        <input class="phone-input" id="rangeInput" type="text" data-i18n-ph="rangePh" placeholder="1-5, 8, 11">
       </div>
-      <p class="limit-note" id="rangeHint">Upload a PDF first</p>
+      <p class="limit-note" id="rangeHint"></p>
     </div>
 
     <div class="step">
-      <div class="step-label"><span class="n">03</span> Colour</div>
+      <div class="step-label"><span class="n">03</span> <span data-i18n="s3">રંગ</span></div>
       <div class="row2">
-        <div class="choice active" data-group="color" data-val="bw">Black &amp; white<span class="sub">₹2/page</span></div>
-        <div class="choice" data-group="color" data-val="color">Colour<span class="sub">₹10/page</span></div>
+        <div class="choice active" data-group="color" data-val="bw"><span data-i18n="bw">બ્લેક &amp; વ્હાઇટ</span><span class="sub" data-i18n="per2">₹2/પેજ</span></div>
+        <div class="choice" data-group="color" data-val="color"><span data-i18n="colour">કલર</span><span class="sub" data-i18n="per10">₹10/પેજ</span></div>
       </div>
     </div>
 
     <div class="step">
-      <div class="step-label"><span class="n">04</span> Sides</div>
+      <div class="step-label"><span class="n">04</span> <span data-i18n="s4">બાજુ</span></div>
       <div class="row2">
-        <div class="choice active" data-group="side" data-val="single">Single side</div>
-        <div class="choice" data-group="side" data-val="double">Double side</div>
+        <div class="choice active" data-group="side" data-val="single" data-i18n="single">એક બાજુ</div>
+        <div class="choice" data-group="side" data-val="double" data-i18n="double">બંને બાજુ</div>
       </div>
     </div>
 
     <div class="step">
-      <div class="step-label"><span class="n">05</span> Copies</div>
+      <div class="step-label"><span class="n">05</span> <span data-i18n="s5">કોપી</span></div>
       <div class="stepper">
         <button id="minus" aria-label="Decrease copies">–</button>
         <span class="count" id="copyCount">1</span>
@@ -352,208 +561,1050 @@
     </div>
 
     <div class="step">
-      <div class="step-label"><span class="n">06</span> Your phone number</div>
-      <input class="phone-input" id="phoneInput" type="tel" placeholder="10-digit mobile number" maxlength="10">
+      <div class="step-label"><span class="n">06</span> <span data-i18n="s6">તમારો ફોન નંબર</span></div>
+      <input class="phone-input" id="phoneInput" type="tel" data-i18n-ph="phonePh" placeholder="10" maxlength="10" inputmode="numeric">
     </div>
 
   </main>
 
   <footer>
     <p class="err-note" id="errNote"></p>
-    <p class="rate-note">Pay in cash at pickup · rate shown per page above</p>
-    <button class="send-btn" id="sendBtn" disabled>Send to shop printer</button>
+    <div class="price-bar" id="priceBar">
+      <div class="price-info">
+        <span class="price-label" data-i18n="priceLabel">કુલ કિંમત</span>
+        <span class="price-break" id="priceBreak"></span>
+      </div>
+      <div class="price-amt" id="priceAmt">₹—</div>
+    </div>
+    <button class="send-btn" id="sendBtn" disabled></button>
   </footer>
 
   <div class="overlay" id="overlay">
     <div class="stamp-wrap">
-      <h2>Order received</h2>
-      <p id="overlayToken">TOKEN #—</p>
+      <h2 data-i18n="orderReceived">ઓર્ડર મળી ગયો</h2>
+      <p id="overlayToken"></p>
     </div>
-    <div class="overlay-detail">
-      Sent straight to the counter at <b>Sona Xerox, Valod</b>. Show your token number at pickup and pay in cash.
+    <div class="overlay-price">
+      <span class="op-label" data-i18n="amountToPay">લેતી વખતે ચૂકવવાની રકમ</span>
+      <b id="overlayAmt">₹0</b>
+      <small id="overlayBreak"></small>
     </div>
-    <button class="close-overlay" id="closeOverlay">New order</button>
+    <div class="overlay-detail" data-i18n-html="sentNote"></div>
+    <button class="close-overlay" id="closeOverlay" data-i18n="newOrder">નવો ઓર્ડર</button>
   </div>
 
 </div>
 
+<div class="ed-root" id="edRoot" role="dialog" aria-modal="true" aria-labelledby="edTitle">
+  <div class="ed-card">
+    <div class="ed-head">
+      <div><b id="edTitle" data-i18n="edTitle">પ્રિન્ટ માટે તૈયાર કરો</b><span class="ed-count" id="edCount"></span></div>
+      <button type="button" id="edClose" class="ed-x" aria-label="Close">✕</button>
+    </div>
+
+    <div class="ed-stage" id="edStage">
+      <canvas id="edCanvas"></canvas>
+      <button type="button" id="edCompare" class="ed-compare" data-i18n="edCompare"></button>
+    </div>
+    <p class="ed-note" data-i18n="edNote"></p>
+    <div class="ed-thumbs" id="edThumbs"></div>
+
+    <div class="ed-label" data-i18n="edStyle">સ્ટાઇલ</div>
+    <div class="ed-chips">
+      <button type="button" class="chip" data-mode="asis" data-i18n="m_asis"></button>
+      <button type="button" class="chip" data-mode="photo" data-i18n="m_photo"></button>
+      <button type="button" class="chip" data-mode="doc" data-i18n="m_doc"></button>
+      <button type="button" class="chip" data-mode="bw" data-i18n="m_bw"></button>
+    </div>
+    <p class="ed-hint" id="edModeHint"></p>
+
+    <div class="ed-sl"><label><span data-i18n="edBri"></span><b id="edBriV">0</b></label><input type="range" id="edBri" min="-50" max="50" value="0"></div>
+    <div class="ed-sl"><label><span data-i18n="edCon"></span><b id="edConV">0</b></label><input type="range" id="edCon" min="-50" max="50" value="0"></div>
+    <div class="ed-sl"><label><span data-i18n="edSharp"></span><b id="edSharpV">0</b></label><input type="range" id="edSharp" min="0" max="100" value="0"></div>
+
+    <div class="ed-row">
+      <button type="button" class="chip sm" id="edRotL" aria-label="Rotate left">⟲</button>
+      <button type="button" class="chip sm" id="edRotR" aria-label="Rotate right">⟳</button>
+      <button type="button" class="chip sm" data-fit="fit" data-i18n="fitPage"></button>
+      <button type="button" class="chip sm" data-fit="fill" data-i18n="fillPage"></button>
+    </div>
+    <div class="ed-row2">
+      <button type="button" class="link-btn" id="edAll" data-i18n="edAll"></button>
+      <button type="button" class="link-btn" id="edAdd" data-i18n="edAdd"></button>
+      <input type="file" id="edAddInput" accept="image/jpeg,image/png,image/webp" multiple style="display:none">
+    </div>
+    <p class="ed-err" id="edErr"></p>
+    <div class="ed-actions"><button type="button" class="send-btn" id="edDone"></button></div>
+  </div>
+</div>
+
 <script>
 (function(){
+  'use strict';
 
   /* ============================================================
-     PASTE YOUR BACKEND URL BELOW
-     (from Google Apps Script -> Deploy -> Web app -> URL)
-     It looks like: https://script.google.com/macros/s/AKfycb.../exec
+     BACKEND URL (Google Apps Script web app) — already set
      ============================================================ */
   var BACKEND_URL = "https://script.google.com/macros/s/AKfycbwoNpxnHM8PwyGV90xdcgkut8md988byKOvALWYWFX3pdaSD7NqHWQdN0Jexnxr-hHw/exec";
 
   var MAX_PAGES = 30;
   var MAX_MB = 15;
+  var RATE_BW = 2;       // ₹ per page, black & white
+  var RATE_COLOR = 10;   // ₹ per page, colour
+  var LS_KEY = 'sx_lang';
+  function $(id){ return document.getElementById(id); }
 
+  /* ============================================================
+     LANGUAGE  (Gujarati by default, same toggle as the main site)
+     ============================================================ */
+  var DICT = {
+    title:      {en:'Sona Xerox — Order Print', gu:'Sona Xerox — પ્રિન્ટ ઓર્ડર'},
+    tagline:    {en:'Valod · Online Print', gu:'વાલોડ · ઓનલાઇન પ્રિન્ટ'},
+    token:      {en:'Token', gu:'ટોકન'},
+    s1:         {en:'Upload PDF', gu:'PDF અપલોડ કરો'},
+    tapChoose:  {en:'Tap to choose a PDF or photo', gu:'PDF અથવા ફોટો પસંદ કરવા દબાવો'},
+    fileTypes:  {en:'PDF, JPG or PNG — photos get a print clean-up', gu:'PDF, JPG કે PNG — ફોટાને પ્રિન્ટ માટે સાફ કરી શકાય'},
+    chooseOther:{en:'Tap to choose a different PDF', gu:'બીજી PDF પસંદ કરવા દબાવો'},
+    checking:   {en:'Checking PDF…', gu:'PDF તપાસી રહ્યા છીએ…'},
+    badType:    {en:'Please choose a PDF or JPG/PNG photos', gu:'કૃપા કરીને PDF અથવા JPG/PNG ફોટો પસંદ કરો'},
+    mixedTypes: {en:'Choose either one PDF or photos — not both', gu:'એક PDF અથવા ફોટા પસંદ કરો — બંને નહીં'},
+    onePdf:     {en:'Please choose only one PDF', gu:'કૃપા કરીને ફક્ત એક જ PDF પસંદ કરો'},
+    tooManyPhotos:{en:'Max {max} photos per order', gu:'એક ઓર્ડરમાં વધુમાં વધુ {max} ફોટા'},
+    imgBad:     {en:"Can't open this photo (try JPG or PNG)", gu:'આ ફોટો ખૂલતો નથી (JPG અથવા PNG વાપરો)'},
+    imgTooBig:  {en:'Photo too big (max {mb} MB)', gu:'ફોટો બહુ મોટો છે (વધુમાં વધુ {mb} MB)'},
+    tooBigOut:  {en:'Photos are too large for one order — remove some', gu:'ફોટા એક ઓર્ડર માટે બહુ મોટા છે — થોડા કાઢી નાખો'},
+    buildFail:  {en:'Could not prepare the photos — please try again', gu:'ફોટા તૈયાર કરી શકાયા નહીં — ફરી પ્રયત્ન કરો'},
+    preparing:  {en:'Preparing pages… {n}/{total}', gu:'પેજ તૈયાર થઈ રહ્યા છે… {n}/{total}'},
+    editPhotos: {en:'✏️ Edit photos for printing', gu:'✏️ પ્રિન્ટ માટે ફોટો સુધારો'},
+    photo1:     {en:'1 photo', gu:'1 ફોટો'},
+    photosN:    {en:'{n} photos', gu:'{n} ફોટા'},
+    fileInfoPhotos:{en:'{photos} → {pages} · {mb} MB', gu:'{photos} → {pages} · {mb} MB'},
+    edTitle:    {en:'Make it print-friendly', gu:'પ્રિન્ટ માટે તૈયાર કરો'},
+    edNote:     {en:'Prints on A4. Your photos stay on your phone until you send the order.', gu:'A4 પર પ્રિન્ટ થશે. ઓર્ડર મોકલો ત્યાં સુધી ફોટા તમારા ફોનમાં જ રહે છે.'},
+    edCompare:  {en:'Hold to see original', gu:'અસલ જોવા દબાવી રાખો'},
+    edStyle:    {en:'Style', gu:'સ્ટાઇલ'},
+    m_asis:     {en:'As is', gu:'જેમ છે તેમ'},
+    m_photo:    {en:'Auto photo', gu:'ઓટો ફોટો'},
+    m_doc:      {en:'Clean document', gu:'સાફ દસ્તાવેજ'},
+    m_bw:       {en:'B&W document', gu:'બ્લેક & વ્હાઇટ દસ્તાવેજ'},
+    h_asis:     {en:'Exactly as taken — no changes.', gu:'જેવો છે તેવો — કોઈ ફેરફાર નહીં.'},
+    h_photo:    {en:'Fixes dark or dull photos.', gu:'અંધારા કે ફિક્કા ફોટા સુધારે છે.'},
+    h_doc:      {en:'Removes shadows and yellow tint, whitens the paper, darkens the text.', gu:'પડછાયા અને પીળાશ કાઢે છે, કાગળ સફેદ અને અક્ષર ઘાટા કરે છે.'},
+    h_bw:       {en:'Sharp black text on white — uses less ink.', gu:'સફેદ પર ઘાટા કાળા અક્ષર — ઓછી શાહી વપરાય.'},
+    edAuto:     {en:'picked automatically', gu:'આપોઆપ પસંદ કર્યું'},
+    edBri:      {en:'Brightness', gu:'બ્રાઇટનેસ'},
+    edCon:      {en:'Contrast', gu:'કોન્ટ્રાસ્ટ'},
+    edSharp:    {en:'Sharpen', gu:'શાર્પ'},
+    fitPage:    {en:'Fit page', gu:'આખો ફોટો'},
+    fillPage:   {en:'Fill page', gu:'પેજ ભરો'},
+    edAll:      {en:'Apply to all photos', gu:'બધા ફોટા પર લગાવો'},
+    edAdd:      {en:'+ Add photo', gu:'+ ફોટો ઉમેરો'},
+    edDone:     {en:'Done · {pages}', gu:'થઈ ગયું · {pages}'},
+    edCount:    {en:'Photo {n} of {total}', gu:'ફોટો {n} / {total}'},
+    tooBig:     {en:'File too big (max {mb} MB)', gu:'ફાઇલ બહુ મોટી છે (વધુમાં વધુ {mb} MB)'},
+    cantOpen:   {en:"Can't open this PDF (password-protected or damaged)", gu:'આ PDF ખૂલતી નથી (પાસવર્ડવાળી અથવા બગડેલી)'},
+    cantRead:   {en:'Could not read the file — try again', gu:'ફાઇલ વાંચી શકાઈ નહીં — ફરી પ્રયત્ન કરો'},
+    fileInfo:   {en:'{pages} · {mb} MB', gu:'{pages} · {mb} MB'},
+    nPage1:     {en:'1 page', gu:'1 પેજ'},
+    nPages:     {en:'{n} pages', gu:'{n} પેજ'},
+    nCopies:    {en:'{n} copies', gu:'{n} કોપી'},
+    limitNote:  {en:'Max <b>30 pages</b> and <b>15 MB</b> per order. Larger jobs — please call the shop directly.',
+                 gu:'એક ઓર્ડરમાં વધુમાં વધુ <b>30 પેજ</b> અને <b>15 MB</b>. મોટા કામ માટે કૃપા કરીને દુકાને ફોન કરો.'},
+    waTip:      {en:'📱 <b>PDF on WhatsApp?</b> Open the PDF once inside WhatsApp, then come back and tap upload — it will appear in <b>“Recent”</b> at the top.',
+                 gu:'📱 <b>PDF WhatsApp માં છે?</b> પહેલા WhatsApp માં PDF એક વાર ખોલો, પછી અહીં પાછા આવીને અપલોડ દબાવો — તે ઉપર <b>“Recent”</b> માં દેખાશે.'},
+    s2:         {en:'Pages', gu:'પેજ'},
+    allPages:   {en:'All pages', gu:'બધા પેજ'},
+    selPages:   {en:'Select pages', gu:'અમુક પેજ પસંદ કરો'},
+    rangePh:    {en:'e.g. 1-5, 8, 11', gu:'જેમ કે 1-5, 8, 11'},
+    uploadFirst:{en:'Upload a PDF first', gu:'પહેલા PDF અપલોડ કરો'},
+    printOne:   {en:'Printing 1 page', gu:'1 પેજ પ્રિન્ટ થશે'},
+    printAll:   {en:'Printing all {n} pages', gu:'બધા {n} પેજ પ્રિન્ટ થશે'},
+    tooManyAll: {en:'PDF has {n} pages — use "Select pages" to choose up to {max}', gu:'PDF માં {n} પેજ છે — વધુમાં વધુ {max} પસંદ કરવા “અમુક પેજ પસંદ કરો” દબાવો'},
+    typePages:  {en:'Type page numbers, e.g. 1-5, 8, 11', gu:'પેજ નંબર લખો, જેમ કે 1-5, 8, 11'},
+    badRange:   {en:'Use numbers like 1-5, 8', gu:'આવા નંબર વાપરો: 1-5, 8'},
+    rangeBounds:{en:'Pages must be between 1 and {n}', gu:'પેજ નંબર 1 થી {n} વચ્ચે હોવો જોઈએ'},
+    tooManySel: {en:'{n} pages selected — max {max}', gu:'{n} પેજ પસંદ કર્યા — વધુમાં વધુ {max}'},
+    printSome:  {en:'Printing {n} of {total} pages', gu:'{total} માંથી {n} પેજ પ્રિન્ટ થશે'},
+    s3:         {en:'Colour', gu:'રંગ'},
+    bw:         {en:'Black & white', gu:'બ્લેક & વ્હાઇટ'},
+    colour:     {en:'Colour', gu:'કલર'},
+    per2:       {en:'₹2/page', gu:'₹2/પેજ'},
+    per10:      {en:'₹10/page', gu:'₹10/પેજ'},
+    s4:         {en:'Sides', gu:'બાજુ'},
+    single:     {en:'Single side', gu:'એક બાજુ'},
+    double:     {en:'Double side', gu:'બંને બાજુ'},
+    s5:         {en:'Copies', gu:'કોપી'},
+    s6:         {en:'Your phone number', gu:'તમારો ફોન નંબર'},
+    phonePh:    {en:'10-digit mobile number', gu:'10 અંકનો મોબાઇલ નંબર'},
+    priceLabel: {en:'Total price', gu:'કુલ કિંમત'},
+    priceIdle:  {en:'B&W ₹2/page · Colour ₹10/page · pay at pickup', gu:'બ્લેક & વ્હાઇટ ₹2/પેજ · કલર ₹10/પેજ · લેતી વખતે ચૂકવો'},
+    calcLine:   {en:'{pages} × ₹{rate}{copies}', gu:'{pages} × ₹{rate}{copies}'},
+    payAtPickup:{en:'pay at pickup', gu:'લેતી વખતે ચૂકવો'},
+    amountToPay:{en:'Amount to pay at pickup', gu:'લેતી વખતે ચૂકવવાની રકમ'},
+    send:       {en:'Send to shop printer', gu:'દુકાનના પ્રિન્ટર પર મોકલો'},
+    sending:    {en:'Sending…', gu:'મોકલી રહ્યા છીએ…'},
+    orderReceived:{en:'Order received', gu:'ઓર્ડર મળી ગયો'},
+    tokenWord:  {en:'TOKEN', gu:'ટોકન'},
+    sentNote:   {en:'Sent straight to the counter at <b>Sona Xerox, Valod</b>. Show your token number at pickup and pay in cash.',
+                 gu:'સીધો <b>Sona Xerox, વાલોડ</b> ના કાઉન્ટર પર મોકલાયો છે. લેતી વખતે તમારો ટોકન નંબર બતાવો અને રોકડ ચૂકવો.'},
+    newOrder:   {en:'New order', gu:'નવો ઓર્ડર'},
+    orderFailed:{en:'Order failed — please try again', gu:'ઓર્ડર નિષ્ફળ ગયો — ફરી પ્રયત્ન કરો'},
+    noConn:     {en:'No connection — check internet and try again', gu:'ઇન્ટરનેટ નથી — તપાસીને ફરી પ્રયત્ન કરો'},
+    noBackend:  {en:'Backend not connected yet — BACKEND_URL missing in the page code.', gu:'સિસ્ટમ હજુ જોડાયેલી નથી — દુકાને સંપર્ક કરો'},
+    e_nofile:   {en:'No file received', gu:'ફાઇલ મળી નથી'},
+    e_phone:    {en:'Invalid phone number', gu:'ફોન નંબર ખોટો છે'},
+    e_max:      {en:'Max 30 pages per order', gu:'એક ઓર્ડરમાં વધુમાં વધુ 30 પેજ'},
+    fit:        {en:'Fit', gu:'ફિટ'},
+    pageOf:     {en:'Page {n} / {total}', gu:'પેજ {n} / {total}'},
+    willPrint:  {en:'will print', gu:'પ્રિન્ટ થશે'},
+    notPrinting:{en:'not printing', gu:'પ્રિન્ટ નહીં થાય'},
+    pvHint:     {en:'Zoom with + / − or pinch · drag to move · ‹ › for pages', gu:'ઝૂમ માટે + / − દબાવો અથવા બે આંગળીથી પિંચ કરો · ખસેડવા ખેંચો · પેજ બદલવા ‹ › દબાવો'}
+  };
+  var SERVER_ERR = {
+    'No file received':'e_nofile',
+    'Invalid phone number':'e_phone',
+    'Max 30 pages per order':'e_max'
+  };
+  var lang = 'gu';
+
+  function t(key, p){
+    var e = DICT[key]; if(!e) return key;
+    var s = e[lang] || e.en;
+    if(p){ for(var k in p){ s = s.split('{' + k + '}').join(p[k]); } }
+    return s;
+  }
+  function pagesText(n){ return n === 1 ? t('nPage1') : t('nPages', {n:n}); }
+  var fileInfo = null;          // {pages, mb} of the chosen file, shown as "3 pages · 0.42 MB"
+  // a message is {key, params} (translated live), {raw} (shown as is) or {fileInfoLive}
+  function m(o){
+    if(!o) return '';
+    if(o.fileInfoLive){
+      if(!fileInfo) return '';
+      if(fileInfo.photos) return t('fileInfoPhotos', { photos: fileInfo.photos === 1 ? t('photo1') : t('photosN', { n:fileInfo.photos }), pages:pagesText(fileInfo.pages), mb:fileInfo.mb });
+      return t('fileInfo', { pages:pagesText(fileInfo.pages), mb:fileInfo.mb });
+    }
+    return (o.raw !== undefined) ? o.raw : t(o.key, o.params);
+  }
+
+  /* ============================================================
+     STATE + ELEMENTS
+     ============================================================ */
   var state = { file:null, origBuf:null, fileB64All:null, totalPages:0, pagemode:'all', selection:'all', rangeOk:false, pages:0, color:'bw', side:'single', copies:1, phone:'' };
+  var view = {
+    drop: { main:{key:'tapChoose'}, sub:{key:'fileTypes'}, cls:'' },
+    hint: { msg:{key:'uploadFirst'}, err:false },
+    err:  null,
+    token:null,
+    order:null          // {total, pages, rate, copies} of the order just sent
+  };
+  var sending = false;
 
-  var dropZone = document.getElementById('dropZone');
-  var fileInput = document.getElementById('fileInput');
-  var dropText = document.getElementById('dropText');
-  var dropSub = document.getElementById('dropSub');
-  var errNote = document.getElementById('errNote');
-  var sendBtn = document.getElementById('sendBtn');
-  var rangeBox = document.getElementById('rangeBox');
-  var rangeInput = document.getElementById('rangeInput');
-  var rangeHint = document.getElementById('rangeHint');
+  var dropZone = $('dropZone'), fileInput = $('fileInput'), dropText = $('dropText'), dropSub = $('dropSub');
+  var errNote = $('errNote'), sendBtn = $('sendBtn');
+  var rangeBox = $('rangeBox'), rangeInput = $('rangeInput'), rangeHint = $('rangeHint');
+  var priceBar = $('priceBar'), priceAmt = $('priceAmt'), priceBreak = $('priceBreak');
+  var copyCount = $('copyCount'), phoneInput = $('phoneInput');
+  var langBtn = $('langBtn');
 
-  function showFileError(msg){
+  function renderDrop(){
+    dropText.textContent = m(view.drop.main);
+    dropText.className = view.drop.cls;
+    dropSub.textContent = m(view.drop.sub);
+  }
+  function renderHint(){
+    rangeHint.textContent = m(view.hint.msg);
+    rangeHint.style.color = view.hint.err ? 'var(--err)' : '';
+  }
+  function setHint(msg, err){ view.hint = { msg:msg, err:!!err }; renderHint(); }
+  function renderErr(){
+    if(view.err){ errNote.textContent = m(view.err); errNote.classList.add('show'); }
+    else { errNote.textContent = ''; errNote.classList.remove('show'); }
+  }
+  function showError(msg){ view.err = msg; renderErr(); }
+  function clearError(){ view.err = null; renderErr(); }
+
+  function applyLang(l){
+    lang = l;
+    document.body.setAttribute('data-lang', l);
+    document.documentElement.lang = l;
+    document.title = t('title');
+    document.querySelectorAll('[data-i18n]').forEach(function(el){ el.textContent = t(el.getAttribute('data-i18n')); });
+    document.querySelectorAll('[data-i18n-html]').forEach(function(el){ el.innerHTML = t(el.getAttribute('data-i18n-html')); });
+    document.querySelectorAll('[data-i18n-ph]').forEach(function(el){ el.setAttribute('placeholder', t(el.getAttribute('data-i18n-ph'))); });
+    langBtn.textContent = (l === 'gu') ? 'English' : 'ગુજરાતી';
+    renderDrop(); renderHint(); renderErr();
+    sendBtn.textContent = sending ? t('sending') : t('send');
+    if(view.token) $('overlayToken').textContent = t('tokenWord') + ' #' + view.token;
+    renderOverlayPrice();
+    checkReady();
+    updatePvLabel();
+    if(ed && ed.sess && E.root.classList.contains('show')) edSync();
+    try{ localStorage.setItem(LS_KEY, l); }catch(e){}
+  }
+  langBtn.addEventListener('click', function(){ applyLang(lang === 'gu' ? 'en' : 'gu'); });
+
+  /* ============================================================
+     PREVIEW  — page arrows + zoom (buttons, pinch, Ctrl+wheel, drag, double-tap)
+     ============================================================ */
+  if(window.pdfjsLib){
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+  var preview = $('preview');
+  var pvEls = { vp:$('pvVp'), stage:$('pvStage'), canvas:$('pvCanvas'), label:$('pvLabel'),
+                zl:$('pvZoomLabel'), prev:$('pvPrev'), next:$('pvNext') };
+  var PV_MAX_Z = 8;
+  var pv = { doc:null, n:1, page:null, pw:0, ph:0, z:1, tx:0, ty:0, dispW:0, dispH:0, vw:0, vh:0,
+             rendered:0, task:null, timer:null, pointers:{}, lastTap:{t:0,x:0,y:0}, gestureZ:1, swipe:null, ro:null };
+
+  function hidePreview(){
+    if(pv.task){ try{ pv.task.cancel(); }catch(e){} }
+    clearTimeout(pv.timer);
+    if(pv.doc){ try{ pv.doc.destroy(); }catch(e){} }
+    pv.doc = null; pv.page = null; pv.rendered = 0; pv.pointers = {};
+    preview.classList.remove('show');
+  }
+
+  function pvClamp(){
+    var sw = pv.dispW*pv.z, sh = pv.dispH*pv.z;
+    pv.tx = sw <= pv.vw ? (pv.vw - sw)/2 : Math.min(0, Math.max(pv.vw - sw, pv.tx));
+    pv.ty = sh <= pv.vh ? (pv.vh - sh)/2 : Math.min(0, Math.max(pv.vh - sh, pv.ty));
+  }
+  function pvLayout(keepCenter){
+    var vw = pvEls.vp.clientWidth, vh = pvEls.vp.clientHeight;
+    if(!vw || !vh || !pv.pw) return;
+    var fit = Math.min((vw-16)/pv.pw, (vh-16)/pv.ph);
+    var dw = pv.pw*fit, dh = pv.ph*fit;
+    var cu = .5, cv = .5;
+    if(keepCenter && pv.dispW){
+      cu = (pv.vw/2 - pv.tx)/(pv.dispW*pv.z); cv = (pv.vh/2 - pv.ty)/(pv.dispH*pv.z);
+    }
+    pv.vw = vw; pv.vh = vh; pv.dispW = dw; pv.dispH = dh;
+    pv.tx = vw/2 - cu*dw*pv.z; pv.ty = vh/2 - cv*dh*pv.z;
+    pvEls.stage.style.width = dw + 'px'; pvEls.stage.style.height = dh + 'px';
+  }
+  function pvApply(){
+    pvClamp();
+    pvEls.stage.style.transform = 'translate(' + pv.tx + 'px,' + pv.ty + 'px) scale(' + pv.z + ')';
+    pvEls.zl.textContent = Math.round(pv.z*100) + '%';
+    pvEls.vp.style.touchAction = pv.z > 1.001 ? 'none' : 'pan-y';   // phones: at "fit" a finger still scrolls the page
+    clearTimeout(pv.timer); pv.timer = setTimeout(pvRender, 180);   // re-draw sharply once zooming stops
+  }
+  // draws the page at the resolution the screen needs right now, then swaps it in (no flicker)
+  function pvRender(){
+    if(!pv.page || !pv.dispW) return;
+    var dpr = Math.min(window.devicePixelRatio || 1, 3);
+    var scale = (pv.dispW/pv.pw) * pv.z * dpr;
+    var side = Math.max(pv.pw, pv.ph)*scale;
+    if(side > 4096) scale *= 4096/side;
+    if(pv.rendered && scale <= pv.rendered*1.15 && scale >= pv.rendered/1.6) return;
+    pv.rendered = scale;
+    var vp = pv.page.getViewport({ scale:scale });
+    var off = document.createElement('canvas');
+    off.width = Math.max(1, Math.round(vp.width)); off.height = Math.max(1, Math.round(vp.height));
+    if(pv.task){ try{ pv.task.cancel(); }catch(e){} }
+    var task = pv.page.render({ canvasContext:off.getContext('2d'), viewport:vp });
+    pv.task = task;
+    task.promise.then(function(){
+      if(pv.task !== task) return;
+      pvEls.canvas.width = off.width; pvEls.canvas.height = off.height;
+      pvEls.canvas.getContext('2d').drawImage(off, 0, 0);
+    }).catch(function(){ /* cancelled or failed: non-fatal */ });
+  }
+  function pvShow(n){
+    if(!pv.doc) return;
+    n = Math.max(1, Math.min(pv.doc.numPages, n));
+    pv.n = n;
+    pv.doc.getPage(n).then(function(page){
+      if(pv.n !== n || !pv.doc) return;
+      pv.page = page;
+      var v1 = page.getViewport({ scale:1 });
+      pv.pw = v1.width; pv.ph = v1.height; pv.rendered = 0;
+      pvLayout(true); pvApply(); pvRender();      // zoom + position are kept while you flip pages
+      updatePvLabel();
+    }).catch(function(){});
+  }
+  function updatePvLabel(){
+    if(!pv.doc){ pvEls.label.textContent = ''; return; }
+    var s = t('pageOf', { n:pv.n, total:pv.doc.numPages });
+    if(state.pagemode === 'select' && state.rangeOk && state.selection !== 'all'){
+      s += (state.selection.indexOf(pv.n) >= 0) ? '  ✓ ' + t('willPrint') : '  · ' + t('notPrinting');
+    }
+    pvEls.label.textContent = s;
+    pvEls.prev.disabled = pv.n <= 1;
+    pvEls.next.disabled = pv.n >= pv.doc.numPages;
+  }
+  function showPreview(buf){
+    if(!window.pdfjsLib) return;
+    // pdf.js takes over the buffer, so give it a COPY — the original stays for page extraction
+    pdfjsLib.getDocument({ data: new Uint8Array(buf.slice(0)) }).promise.then(function(doc){
+      hidePreview();
+      pv.doc = doc; pv.n = 1; pv.z = 1; pv.dispW = 0;
+      preview.classList.add('show');
+      requestAnimationFrame(function(){ pvShow(1); });
+    }).catch(function(){ hidePreview(); });
+  }
+
+  function pvPoint(e){ var r = pvEls.vp.getBoundingClientRect(); return { x:e.clientX - r.left, y:e.clientY - r.top }; }
+  function pvZoomAt(px, py, f){
+    var nz = Math.min(PV_MAX_Z, Math.max(1, pv.z*f));
+    var r = nz/pv.z;
+    pv.tx = px - (px - pv.tx)*r; pv.ty = py - (py - pv.ty)*r; pv.z = nz;
+    pvApply();
+  }
+  pvEls.prev.addEventListener('click', function(){ pvShow(pv.n - 1); });
+  pvEls.next.addEventListener('click', function(){ pvShow(pv.n + 1); });
+  $('pvZoomIn').addEventListener('click', function(){ pvZoomAt(pv.vw/2, pv.vh/2, 1.4); });
+  $('pvZoomOut').addEventListener('click', function(){ pvZoomAt(pv.vw/2, pv.vh/2, 1/1.4); });
+  $('pvFit').addEventListener('click', function(){ pv.z = 1; pvApply(); });
+
+  // Ctrl/Cmd + wheel (and trackpad pinch) zooms; a plain wheel still scrolls the page
+  pvEls.vp.addEventListener('wheel', function(e){
+    if(!(e.ctrlKey || e.metaKey)) return;
+    e.preventDefault();
+    var pt = pvPoint(e), dy = e.deltaY;
+    if(e.deltaMode === 1) dy *= 16; else if(e.deltaMode === 2) dy *= 300;
+    dy = Math.max(-120, Math.min(120, dy));
+    pvZoomAt(pt.x, pt.y, Math.exp(-dy * (Math.abs(dy) >= 50 ? 0.002 : 0.012)));
+  }, { passive:false });
+
+  pvEls.vp.addEventListener('pointerdown', function(e){
+    if(e.pointerType === 'mouse' && e.button !== 0) return;
+    try{ pvEls.vp.setPointerCapture(e.pointerId); }catch(err){}
+    pv.pointers[e.pointerId] = { x:e.clientX, y:e.clientY };
+    var ids = Object.keys(pv.pointers);
+    if(ids.length === 1){
+      pvEls.vp.classList.add('dragging');
+      pv.swipe = { x:e.clientX, y:e.clientY, moved:0, type:e.pointerType };
+    } else { pv.swipe = null; }
+  });
+  pvEls.vp.addEventListener('pointermove', function(e){
+    var p = pv.pointers[e.pointerId]; if(!p) return;
+    var ids = Object.keys(pv.pointers);
+    if(ids.length === 1){
+      var dx = e.clientX - p.x, dy = e.clientY - p.y;
+      if(pv.swipe) pv.swipe.moved += Math.abs(dx) + Math.abs(dy);
+      if(pv.z > 1.001){ pv.tx += dx; pv.ty += dy; pvApply(); }
+      p.x = e.clientX; p.y = e.clientY;
+    } else if(ids.length === 2){
+      var a = pv.pointers[ids[0]], b = pv.pointers[ids[1]];
+      var oldD = Math.hypot(a.x-b.x, a.y-b.y), oldM = { x:(a.x+b.x)/2, y:(a.y+b.y)/2 };
+      p.x = e.clientX; p.y = e.clientY;
+      var newD = Math.hypot(a.x-b.x, a.y-b.y), newM = { x:(a.x+b.x)/2, y:(a.y+b.y)/2 };
+      pv.tx += newM.x - oldM.x; pv.ty += newM.y - oldM.y;
+      if(oldD > 0){ var pt = pvPoint({ clientX:newM.x, clientY:newM.y }); pvZoomAt(pt.x, pt.y, newD/oldD); } else { pvApply(); }
+    }
+  });
+  function pvPointerEnd(e){
+    var p = pv.pointers[e.pointerId];
+    var sw = pv.swipe;
+    delete pv.pointers[e.pointerId];
+    if(Object.keys(pv.pointers).length === 0){
+      pvEls.vp.classList.remove('dragging');
+      if(p && sw && e.type === 'pointerup'){
+        var dx = e.clientX - sw.x, dy = e.clientY - sw.y;
+        // double-tap / double-click: zoom in on that spot, or back to fit
+        if(sw.moved < 12){
+          var now = Date.now(), lt = pv.lastTap;
+          if(now - lt.t < 320 && Math.abs(e.clientX - lt.x) < 30 && Math.abs(e.clientY - lt.y) < 30){
+            var pt = pvPoint(e);
+            if(pv.z > 1.05){ pv.z = 1; pvApply(); } else { pvZoomAt(pt.x, pt.y, 2.5); }
+            pv.lastTap = { t:0, x:0, y:0 };
+          } else { pv.lastTap = { t:now, x:e.clientX, y:e.clientY }; }
+        }
+        // a sideways swipe with a finger, at "fit", flips the page
+        else if(sw.type !== 'mouse' && pv.z <= 1.001 && Math.abs(dx) > 60 && Math.abs(dx) > 2*Math.abs(dy)){
+          pvShow(pv.n + (dx < 0 ? 1 : -1));
+        }
+      }
+      pv.swipe = null;
+    }
+  }
+  pvEls.vp.addEventListener('pointerup', pvPointerEnd);
+  pvEls.vp.addEventListener('pointercancel', pvPointerEnd);
+
+  // Safari trackpad pinch uses gesture events
+  pvEls.vp.addEventListener('gesturestart', function(e){ e.preventDefault(); pv.gestureZ = pv.z; }, { passive:false });
+  pvEls.vp.addEventListener('gesturechange', function(e){
+    e.preventDefault();
+    if(Object.keys(pv.pointers).length >= 2) return;
+    var r = pvEls.vp.getBoundingClientRect();
+    var px = (typeof e.clientX === 'number') ? e.clientX - r.left : r.width/2;
+    var py = (typeof e.clientY === 'number') ? e.clientY - r.top : r.height/2;
+    var target = Math.min(PV_MAX_Z, Math.max(1, pv.gestureZ*e.scale));
+    pvZoomAt(px, py, target/pv.z);
+  }, { passive:false });
+  pvEls.vp.addEventListener('gestureend', function(e){ e.preventDefault(); }, { passive:false });
+
+  pvEls.vp.addEventListener('keydown', function(e){
+    if(!pv.doc) return;
+    var k = e.key;
+    if(k === 'ArrowLeft' || k === 'PageUp'){ e.preventDefault(); pvShow(pv.n - 1); }
+    else if(k === 'ArrowRight' || k === 'PageDown'){ e.preventDefault(); pvShow(pv.n + 1); }
+    else if(k === '+' || k === '='){ e.preventDefault(); pvZoomAt(pv.vw/2, pv.vh/2, 1.4); }
+    else if(k === '-' || k === '_'){ e.preventDefault(); pvZoomAt(pv.vw/2, pv.vh/2, 1/1.4); }
+    else if(k === '0'){ e.preventDefault(); pv.z = 1; pvApply(); }
+  });
+  if(window.ResizeObserver){
+    pv.ro = new ResizeObserver(function(){
+      if(!pv.doc || !pv.page) return;
+      if(pvEls.vp.clientWidth === pv.vw && pvEls.vp.clientHeight === pv.vh) return;
+      pvLayout(true); pvApply();
+    });
+    pv.ro.observe(pvEls.vp);
+  }
+
+  /* ============================================================
+     FILE CHOOSING
+     ============================================================ */
+  function showFileError(key, params){
     state.file = null; state.origBuf = null; state.fileB64All = null;
     state.totalPages = 0; state.pages = 0; state.rangeOk = false;
+    hidePreview();
     rangeInput.value = '';
-    rangeHint.textContent = 'Upload a PDF first';
-    rangeHint.style.color = '';
+    setHint({key:'uploadFirst'}, false);
     dropZone.classList.remove('has-file');
     dropZone.classList.add('bad-file');
-    dropText.textContent = msg;
-    dropText.className = 'file-bad';
-    dropSub.textContent = 'Tap to choose a different PDF';
+    view.drop = { main:{key:key, params:params}, sub:{key:'chooseOther'}, cls:'file-bad' };
+    renderDrop();
     checkReady();
   }
 
-  fileInput.addEventListener('change', function(){
-    if(!(fileInput.files && fileInput.files[0])) return;
-    var f = fileInput.files[0];
+  function isPdf(f){ return f.type === 'application/pdf' || /\.pdf$/i.test(f.name); }
+  function isImg(f){ return /^image\/(jpeg|png|webp)$/.test(f.type) || /\.(jpe?g|png|webp)$/i.test(f.name); }
 
-    if(f.type !== 'application/pdf' && !/\.pdf$/i.test(f.name)){
-      showFileError('That file isn\'t a PDF');
-      return;
-    }
-    if(f.size > MAX_MB * 1024 * 1024){
-      showFileError('File too big (max ' + MAX_MB + ' MB)');
-      return;
-    }
+  // a finished PDF (chosen directly, or built from photos) becomes the order's file
+  function acceptPdf(fileLike, buf, photoCount){
+    return PDFLib.PDFDocument.load(buf).then(function(doc){
+      var pages = doc.getPageCount();
+      state.file = fileLike; state.origBuf = buf; state.totalPages = pages;
+      // full file as base64 (used when printing all pages)
+      var bytes = new Uint8Array(buf), bin = '', chunk = 0x8000;
+      for(var i = 0; i < bytes.length; i += chunk){ bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk)); }
+      state.fileB64All = btoa(bin);
 
-    dropText.textContent = 'Checking PDF…';
-    dropText.className = '';
+      fileInfo = { pages:pages, mb:(fileLike.size/1024/1024).toFixed(2), photos:photoCount || 0 };
+      view.drop = { main:{raw:fileLike.name}, sub:{fileInfoLive:true}, cls:'file-name' };
+      renderDrop();
+      dropZone.classList.remove('bad-file'); dropZone.classList.add('has-file');
+
+      rangeInput.value = '';
+      updateRange();
+      showPreview(buf);
+      checkReady();
+      updateEditBtn();
+    });
+  }
+
+  function handlePdf(f){
+    if(f.size > MAX_MB * 1024 * 1024){ showFileError('tooBig', {mb:MAX_MB}); return; }
+    view.drop.main = {key:'checking'}; view.drop.cls = '';
+    renderDrop();
     dropZone.classList.remove('bad-file','has-file');
-
     var reader = new FileReader();
-    reader.onload = function(){
-      var buf = reader.result;
-      PDFLib.PDFDocument.load(buf)
-        .then(function(doc){
-          var pages = doc.getPageCount();
-          state.file = f;
-          state.origBuf = buf;
-          state.totalPages = pages;
-          // convert full file to base64 (used when printing all pages)
-          var bytes = new Uint8Array(buf);
-          var bin = '';
-          var chunk = 0x8000;
-          for(var i = 0; i < bytes.length; i += chunk){
-            bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
-          }
-          state.fileB64All = btoa(bin);
-
-          dropText.textContent = f.name;
-          dropText.className = 'file-name';
-          dropSub.textContent = pages + ' page' + (pages>1?'s':'') + ' · ' + (f.size/1024/1024).toFixed(2) + ' MB';
-          dropZone.classList.add('has-file');
-
-          rangeInput.value = '';
-          updateRange();
-          checkReady();
-        })
-        .catch(function(){
-          showFileError('Can\'t open this PDF (password-protected or damaged)');
-        });
-    };
-    reader.onerror = function(){ showFileError('Could not read the file — try again'); };
+    reader.onload = function(){ acceptPdf(f, reader.result, 0).catch(function(){ showFileError('cantOpen'); }); };
+    reader.onerror = function(){ showFileError('cantRead'); };
     reader.readAsArrayBuffer(f);
+  }
+
+  fileInput.addEventListener('change', function(){
+    var files = Array.prototype.slice.call(fileInput.files || []);
+    if(!files.length) return;
+    var pdfs = files.filter(isPdf), imgs = files.filter(isImg);
+    if(pdfs.length + imgs.length !== files.length){ showFileError('badType'); return; }
+    if(pdfs.length && imgs.length){ showFileError('mixedTypes'); return; }
+    if(pdfs.length > 1){ showFileError('onePdf'); return; }
+    if(pdfs.length === 1){ ed.committed = null; ed.sess = null; handlePdf(pdfs[0]); return; }
+    startPhotos(imgs);
   });
 
-  /* ---- page range selection ---- */
+  /* ============================================================
+     PHOTOS  ->  print-friendly A4 PDF   (all inside the browser — nothing is uploaded until you send the order)
+     ============================================================ */
+  /* ---------- image engine: everything runs in the browser, nothing is uploaded ---------- */
+  var IMG_WORK = 1400;       // px (long side) used while editing — fast
+  var IMG_OUT  = 3508;       // px (long side) in the final PDF — A4 at 300 dpi
+  var MARGIN_PT = 28;        // ~10 mm white border in "Fit page"
 
+  function clamp01(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
+  function percentile(hist, n, p){ var acc = 0, target = n*p, v; for(v = 0; v < 256; v++){ acc += hist[v]; if(acc >= target) return v; } return 255; }
+
+  function decodeFile(file){
+    var p;
+    if(window.createImageBitmap){
+      p = createImageBitmap(file, { imageOrientation:'from-image' }).catch(function(){ return createImageBitmap(file); });
+    } else { p = Promise.reject(new Error('no bitmap')); }
+    return p.catch(function(){
+      return new Promise(function(res, rej){
+        var url = URL.createObjectURL(file), im = new Image();
+        im.onload = function(){ URL.revokeObjectURL(url); res(im); };
+        im.onerror = function(){ URL.revokeObjectURL(url); rej(new Error('decode')); };
+        im.src = url;
+      });
+    });
+  }
+  // draw any decoded image onto a canvas (long side <= maxSide, white behind transparent PNGs)
+  function toCanvas(src, maxSide){
+    var sw = src.naturalWidth || src.width, sh = src.naturalHeight || src.height;
+    var k = Math.min(1, maxSide/Math.max(sw, sh));
+    var c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(sw*k)); c.height = Math.max(1, Math.round(sh*k));
+    var g = c.getContext('2d');
+    g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
+    g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+    g.drawImage(src, 0, 0, c.width, c.height);
+    if(src.close){ try{ src.close(); }catch(e){} }
+    return c;
+  }
+  function rotateCanvas(src, deg){
+    if(!deg) return src;
+    var swap = (deg === 90 || deg === 270), c = document.createElement('canvas');
+    c.width = swap ? src.height : src.width; c.height = swap ? src.width : src.height;
+    var g = c.getContext('2d');
+    g.translate(c.width/2, c.height/2); g.rotate(deg*Math.PI/180); g.drawImage(src, -src.width/2, -src.height/2);
+    return c;
+  }
+
+  // is this a photo of a paper document (mostly pale, low colour, some dark ink)?  Used only to pre-select a style.
+  function looksLikeDoc(cv){
+    var k = 120/Math.max(cv.width, cv.height), w = Math.max(8, Math.round(cv.width*k)), h = Math.max(8, Math.round(cv.height*k));
+    var c = document.createElement('canvas'); c.width = w; c.height = h;
+    var cx = c.getContext('2d'); cx.drawImage(cv, 0, 0, w, h);
+    var D = cx.getImageData(0, 0, w, h).data, n = w*h, L = new Float32Array(n), S = new Float32Array(n), hist = new Uint32Array(256), i;
+    for(i = 0; i < n; i++){
+      var r = D[i*4], g = D[i*4+1], b = D[i*4+2], mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+      L[i] = .299*r + .587*g + .114*b; S[i] = mx ? (mx - mn)/mx : 0; hist[L[i]|0]++;
+    }
+    var P = percentile(hist, n, 0.85);
+    if(P < 60) return false;
+    var paper = 0, ink = 0, mid = 0;
+    for(i = 0; i < n; i++){
+      var l = L[i];
+      if(l >= 0.7*P && S[i] <= 0.45) paper++; else if(l <= 0.5*P) ink++; else if(l < 0.7*P) mid++;
+    }
+    paper /= n; ink /= n; mid /= n;
+    return paper >= 0.4 && ink >= 0.008 && ink <= 0.4 && mid <= 0.45;
+  }
+
+  /* ---- small helpers for the "document" cleaner ---- */
+  function maxFilter2D(a, w, h, r){
+    var t = new Float32Array(a.length), o = new Float32Array(a.length), x, y, k, m, v, x0, x1;
+    for(y = 0; y < h; y++) for(x = 0; x < w; x++){
+      m = 0; x0 = Math.max(0, x-r); x1 = Math.min(w-1, x+r);
+      for(k = x0; k <= x1; k++){ v = a[y*w+k]; if(v > m) m = v; }
+      t[y*w+x] = m;
+    }
+    for(y = 0; y < h; y++) for(x = 0; x < w; x++){
+      m = 0; x0 = Math.max(0, y-r); x1 = Math.min(h-1, y+r);
+      for(k = x0; k <= x1; k++){ v = t[k*w+x]; if(v > m) m = v; }
+      o[y*w+x] = m;
+    }
+    return o;
+  }
+  function blur2D(a, w, h, r){
+    var t = new Float32Array(a.length), o = new Float32Array(a.length), x, y, acc, k, win = 2*r + 1;
+    for(y = 0; y < h; y++){
+      acc = 0; for(k = -r; k <= r; k++) acc += a[y*w + Math.min(w-1, Math.max(0, k))];
+      for(x = 0; x < w; x++){ t[y*w+x] = acc/win; acc += a[y*w + Math.min(w-1, x+r+1)] - a[y*w + Math.max(0, x-r)]; }
+    }
+    for(x = 0; x < w; x++){
+      acc = 0; for(k = -r; k <= r; k++) acc += t[Math.min(h-1, Math.max(0, k))*w + x];
+      for(y = 0; y < h; y++){ o[y*w+x] = acc/win; acc += t[Math.min(h-1, y+r+1)*w + x] - t[Math.max(0, y-r)*w + x]; }
+    }
+    return o;
+  }
+
+  var DOC_TUNE = { maxR:4, blur:3, floor:0.55, hi:228, gamma:1.2, gammaBw:1.7 };
+
+  // "Clean document": estimate the lighting (shadows, vignette, yellow cast) and divide it out, whiten the paper, darken the ink.
+  function docClean(cv, d, mono){
+    var w = d.width, h = d.height, D = d.data, k = 160/Math.max(w, h);
+    var sw = Math.max(8, Math.round(w*k)), sh = Math.max(8, Math.round(h*k));
+    var sm = document.createElement('canvas'); sm.width = sw; sm.height = sh;
+    var sg = sm.getContext('2d'); sg.imageSmoothingQuality = 'high'; sg.drawImage(cv, 0, 0, sw, sh);
+    var S = sg.getImageData(0, 0, sw, sh).data, n = sw*sh, bg = [], ch, i;
+    for(ch = 0; ch < 3; ch++){
+      var a = new Float32Array(n);
+      for(i = 0; i < n; i++) a[i] = S[i*4+ch];
+      a = maxFilter2D(a, sw, sh, DOC_TUNE.maxR);                 // ink is thinner than 11 px at this size -> looks through the text to the paper
+      a = blur2D(a, sw, sh, DOC_TUNE.blur); a = blur2D(a, sw, sh, DOC_TUNE.blur);
+      var srt = Float32Array.from(a).sort(), P = srt[Math.floor(n*0.9)], fl = Math.max(1, P*DOC_TUNE.floor);
+      for(i = 0; i < n; i++) if(a[i] < fl) a[i] = fl;  // a big dark block is NOT "shadow": never brighten it by more than ~1.8x
+      bg.push(a);
+    }
+    var gx = new Int32Array(w), fx = new Float32Array(w), x, y;
+    for(x = 0; x < w; x++){ var u = (x + .5)*sw/w - .5; if(u < 0) u = 0; if(u > sw-1) u = sw-1; gx[x] = Math.floor(u); fx[x] = u - gx[x]; }
+    var hist = new Uint32Array(256), B0 = bg[0], B1 = bg[1], B2 = bg[2];
+    for(y = 0; y < h; y++){
+      var v = (y + .5)*sh/h - .5; if(v < 0) v = 0; if(v > sh-1) v = sh-1;
+      var y0 = Math.floor(v), fy = v - y0, y1 = Math.min(sh-1, y0+1);
+      for(x = 0; x < w; x++){
+        var x0 = gx[x], x1 = Math.min(sw-1, x0+1), ax = fx[x], p = (y*w + x)*4;
+        var i00 = y0*sw + x0, i01 = y0*sw + x1, i10 = y1*sw + x0, i11 = y1*sw + x1;
+        var b0 = ((B0[i00]*(1-ax) + B0[i01]*ax)*(1-fy) + (B0[i10]*(1-ax) + B0[i11]*ax)*fy);
+        var b1 = ((B1[i00]*(1-ax) + B1[i01]*ax)*(1-fy) + (B1[i10]*(1-ax) + B1[i11]*ax)*fy);
+        var b2 = ((B2[i00]*(1-ax) + B2[i01]*ax)*(1-fy) + (B2[i10]*(1-ax) + B2[i11]*ax)*fy);
+        var r0 = 255*D[p]/b0, g0 = 255*D[p+1]/b1, bb = 255*D[p+2]/b2;
+        if(r0 > 255) r0 = 255; if(g0 > 255) g0 = 255; if(bb > 255) bb = 255;
+        D[p] = r0; D[p+1] = g0; D[p+2] = bb;
+        hist[(.299*r0 + .587*g0 + .114*bb)|0]++;
+      }
+    }
+    var lo = percentile(hist, w*h, 0.015); if(lo > 110) lo = 110;
+    var hi = DOC_TUNE.hi, gam = mono ? DOC_TUNE.gammaBw : DOC_TUNE.gamma, lut = new Uint8ClampedArray(256), q;
+    for(q = 0; q < 256; q++) lut[q] = 255*Math.pow(clamp01((q - lo)/(hi - lo)), gam);
+    for(i = 0; i < D.length; i += 4){
+      if(mono){ var L = lut[(.299*D[i] + .587*D[i+1] + .114*D[i+2])|0]; D[i] = D[i+1] = D[i+2] = L; }
+      else { D[i] = lut[D[i]]; D[i+1] = lut[D[i+1]]; D[i+2] = lut[D[i+2]]; }
+    }
+  }
+
+  // "Auto photo": stretch the tones, lift dark / calm bright photos towards a pleasant average, a touch more colour.
+  function photoFix(d){
+    var D = d.data, n = d.width*d.height, hist = new Uint32Array(256), i, v;
+    for(i = 0; i < D.length; i += 4) hist[(.299*D[i] + .587*D[i+1] + .114*D[i+2])|0]++;
+    var lo = percentile(hist, n, 0.005), hi = percentile(hist, n, 0.995);
+    if(lo > 60) lo = 60; if(hi < 120) hi = 120;          // allow a strong lift for under-exposed photos, but never invent contrast from nothing
+    var lut1 = new Float32Array(256), mean = 0;
+    for(v = 0; v < 256; v++){ lut1[v] = clamp01((v - lo)/(hi - lo)); mean += lut1[v]*hist[v]; }
+    mean /= n;
+    var g = Math.log(0.46)/Math.log(Math.min(0.9, Math.max(0.1, mean)));
+    g = Math.min(1.5, Math.max(0.55, g));
+    var lut = new Uint8ClampedArray(256);
+    for(v = 0; v < 256; v++) lut[v] = 255*Math.pow(lut1[v], g);
+    for(i = 0; i < D.length; i += 4){
+      var r = lut[D[i]], gg = lut[D[i+1]], b = lut[D[i+2]], y = .299*r + .587*gg + .114*b;
+      D[i] = y + (r - y)*1.12; D[i+1] = y + (gg - y)*1.12; D[i+2] = y + (b - y)*1.12;
+    }
+  }
+  function briCon(d, bri, con){
+    var off = bri*1.6, c = con*2.4, f = (259*(c + 255))/(255*(259 - c)), D = d.data, i;
+    for(i = 0; i < D.length; i += 4){ D[i] = f*(D[i] - 128) + 128 + off; D[i+1] = f*(D[i+1] - 128) + 128 + off; D[i+2] = f*(D[i+2] - 128) + 128 + off; }
+  }
+  function blurRGB(src, w, h, r){
+    var tmp = new Uint8ClampedArray(src.length), out = new Uint8ClampedArray(src.length), x, y, ch, acc, k, win = 2*r + 1;
+    for(y = 0; y < h; y++) for(ch = 0; ch < 3; ch++){
+      acc = 0; for(k = -r; k <= r; k++) acc += src[(y*w + Math.min(w-1, Math.max(0, k)))*4 + ch];
+      for(x = 0; x < w; x++){ tmp[(y*w + x)*4 + ch] = acc/win; acc += src[(y*w + Math.min(w-1, x+r+1))*4 + ch] - src[(y*w + Math.max(0, x-r))*4 + ch]; }
+    }
+    for(x = 0; x < w; x++) for(ch = 0; ch < 3; ch++){
+      acc = 0; for(k = -r; k <= r; k++) acc += tmp[(Math.min(h-1, Math.max(0, k))*w + x)*4 + ch];
+      for(y = 0; y < h; y++){ out[(y*w + x)*4 + ch] = acc/win; acc += tmp[(Math.min(h-1, y+r+1)*w + x)*4 + ch] - tmp[(Math.max(0, y-r)*w + x)*4 + ch]; }
+    }
+    return out;
+  }
+  function unsharp(d, amount){
+    var r = Math.max(1, Math.round(Math.max(d.width, d.height)/1400)), B = blurRGB(d.data, d.width, d.height, r), D = d.data, i;
+    for(i = 0; i < D.length; i += 4){ D[i] += amount*(D[i] - B[i]); D[i+1] += amount*(D[i+1] - B[i+1]); D[i+2] += amount*(D[i+2] - B[i+2]); }
+  }
+
+  // settings: {mode:'asis'|'photo'|'doc'|'bw', bri, con, sharp, rot, fit}  ->  a NEW canvas with the edits applied
+  function processCanvas(src, s){
+    var rot = rotateCanvas(src, s.rot), c = document.createElement('canvas');
+    c.width = rot.width; c.height = rot.height;
+    var g = c.getContext('2d'); g.drawImage(rot, 0, 0);
+    if(s.mode === 'asis' && !s.bri && !s.con && !s.sharp) return c;
+    var d = g.getImageData(0, 0, c.width, c.height);
+    if(s.mode === 'doc' || s.mode === 'bw') docClean(c, d, s.mode === 'bw');
+    else if(s.mode === 'photo') photoFix(d);
+    if(s.bri || s.con) briCon(d, s.bri, s.con);
+    var amt = s.sharp/50 + ((s.mode === 'doc' || s.mode === 'bw') ? 0.6 : (s.mode === 'photo' ? 0.3 : 0));
+    if(amt > 0) unsharp(d, amt);
+    g.putImageData(d, 0, 0);
+    return c;
+  }
+
+  // A4 page (portrait, or landscape for wide images) with the picture placed on it
+  function pageGeom(w, h){ return (w > h*1.05) ? { pw:841.89, ph:595.28 } : { pw:595.28, ph:841.89 }; }
+  function composePage(img, fit, pxPerPt){
+    var g = pageGeom(img.width, img.height), W = Math.max(1, Math.round(g.pw*pxPerPt)), H = Math.max(1, Math.round(g.ph*pxPerPt));
+    var c = document.createElement('canvas'); c.width = W; c.height = H;
+    var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, W, H);
+    x.imageSmoothingEnabled = true; x.imageSmoothingQuality = 'high';
+    if(fit === 'fill'){
+      var s = Math.max(W/img.width, H/img.height), dw = img.width*s, dh = img.height*s;
+      x.drawImage(img, (W - dw)/2, (H - dh)/2, dw, dh);
+    } else {
+      var m = MARGIN_PT*pxPerPt, s2 = Math.min((W - 2*m)/img.width, (H - 2*m)/img.height), dw2 = img.width*s2, dh2 = img.height*s2;
+      x.drawImage(img, (W - dw2)/2, (H - dh2)/2, dw2, dh2);
+    }
+    return c;
+  }
+
+
+  var IMG_MAX_MB = 40;
+  var ATTEMPTS = [ { q:0.92, ppp:300/72 }, { q:0.82, ppp:220/72 }, { q:0.72, ppp:170/72 }, { q:0.62, ppp:130/72 } ];   // fallbacks if the PDF would be over the size limit
+  var ed = { sess:null, committed:null, cur:0, compare:false, building:false, queued:false, fresh:true };
+  var E = { root:$('edRoot'), stage:$('edStage'), canvas:$('edCanvas'), thumbs:$('edThumbs'), hint:$('edModeHint'), err:$('edErr'),
+            bri:$('edBri'), con:$('edCon'), sharp:$('edSharp'), briV:$('edBriV'), conV:$('edConV'), sharpV:$('edSharpV'),
+            done:$('edDone'), addInput:$('edAddInput'), count:$('edCount'), close:$('edClose'), cmp:$('edCompare'),
+            all:$('edAll'), add:$('edAdd'), rotL:$('edRotL'), rotR:$('edRotR') };
+  var editBtn = $('editPhotosBtn');
+
+  function curItem(){ return ed.sess ? ed.sess.items[ed.cur] : null; }
+  function defaults(doc){ return { mode: doc ? 'doc' : 'photo', bri:0, con:0, sharp:0, rot:0, fit:'fit' }; }
+  function cloneSettings(s){ return { mode:s.mode, bri:s.bri, con:s.con, sharp:s.sharp, rot:s.rot, fit:s.fit }; }
+  function cloneItem(it){ return { file:it.file, name:it.name, work:it.work, doc:it.doc, auto:false, settings:cloneSettings(it.settings), cache:null, cacheKey:'' }; }
+  function updateEditBtn(){ editBtn.style.display = (ed.committed && state.file && state.file.fromPhotos) ? 'block' : 'none'; }
+  function restoreDrop(){
+    if(state.file){ view.drop = { main:{raw:state.file.name}, sub:{fileInfoLive:true}, cls:'file-name' }; }
+    else { view.drop = { main:{key:'tapChoose'}, sub:{key:'fileTypes'}, cls:'' }; }
+    renderDrop();
+  }
+
+  // decode the chosen photos (rotation from the phone's EXIF is honoured) into small working copies
+  function loadPhotos(files){
+    var items = [], i = 0;
+    function next(){
+      if(i >= files.length) return Promise.resolve(items);
+      var f = files[i++];
+      if(f.size > IMG_MAX_MB*1024*1024) return Promise.reject({ key:'imgTooBig', params:{mb:IMG_MAX_MB} });
+      return decodeFile(f).then(function(src){
+        var work = toCanvas(src, IMG_WORK), doc = looksLikeDoc(work);
+        items.push({ file:f, name:f.name, work:work, doc:doc, auto:true, settings:defaults(doc), cache:null, cacheKey:'' });
+        return next();
+      }, function(){ return Promise.reject({ key:'imgBad' }); });
+    }
+    return next();
+  }
+  function startPhotos(files){
+    if(files.length > MAX_PAGES){ showFileError('tooManyPhotos', {max:MAX_PAGES}); return; }
+    view.drop.main = {key:'checking'}; view.drop.cls = ''; renderDrop();
+    loadPhotos(files).then(function(items){
+      ed.sess = { items:items }; ed.cur = 0; openEditor(true);
+    }).catch(function(e){ showFileError(e && e.key ? e.key : 'imgBad', e && e.params); });
+  }
+
+  function openEditor(fresh){
+    ed.fresh = fresh; ed.compare = false;
+    E.err.textContent = ''; E.root.classList.add('show'); document.body.style.overflow = 'hidden';
+    E.root.scrollTop = 0;
+    edSync();
+    requestAnimationFrame(edRender);
+  }
+  function closeEditor(saved){
+    E.root.classList.remove('show'); document.body.style.overflow = '';
+    if(!saved){
+      ed.sess = null;
+      if(ed.fresh) restoreDrop();
+      fileInput.value = '';
+    }
+    updateEditBtn();
+  }
+
+  /* ---- live preview: the picture placed on an A4 page exactly as it will print ---- */
+  function edQueue(){ if(ed.queued) return; ed.queued = true; requestAnimationFrame(function(){ ed.queued = false; edRender(); }); }
+  function edRender(){
+    var it = curItem(); if(!it || !E.root.classList.contains('show')) return;
+    var s = it.settings, key = [s.mode, s.bri, s.con, s.sharp, s.rot].join('|'), img;
+    if(ed.compare){ img = rotateCanvas(it.work, s.rot); }
+    else { if(it.cacheKey !== key){ it.cache = processCanvas(it.work, s); it.cacheKey = key; } img = it.cache; }
+    var g = pageGeom(img.width, img.height);
+    var box = Math.max(140, E.stage.clientWidth - 24), maxH = Math.max(240, Math.min(window.innerHeight*0.5, 520));
+    var cssW = Math.min(box, 340), cssH = cssW*g.ph/g.pw;
+    if(cssH > maxH){ cssH = maxH; cssW = cssH*g.pw/g.ph; }
+    var dpr = Math.min(window.devicePixelRatio || 1, 2), page = composePage(img, s.fit, cssW*dpr/g.pw);
+    E.canvas.width = page.width; E.canvas.height = page.height;
+    E.canvas.style.width = Math.round(cssW) + 'px'; E.canvas.style.height = Math.round(cssH) + 'px';
+    E.canvas.getContext('2d').drawImage(page, 0, 0);
+    E.canvas.setAttribute('data-orient', g.pw > g.ph ? 'landscape' : 'portrait');
+  }
+
+  /* ---- controls ---- */
+  function edSync(){
+    var it = curItem(); if(!it) return; var s = it.settings, items = ed.sess.items, i;
+    E.root.querySelectorAll('[data-mode]').forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-mode') === s.mode); });
+    E.root.querySelectorAll('[data-fit]').forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-fit') === s.fit); });
+    E.bri.value = s.bri; E.briV.textContent = s.bri; E.con.value = s.con; E.conV.textContent = s.con; E.sharp.value = s.sharp; E.sharpV.textContent = s.sharp;
+    E.hint.textContent = t('h_' + s.mode) + (it.auto ? ' · ' + t('edAuto') : '');
+    E.count.textContent = items.length > 1 ? t('edCount', { n:ed.cur + 1, total:items.length }) : '';
+    E.all.style.display = items.length > 1 ? '' : 'none';
+    if(!ed.building) E.done.textContent = t('edDone', { pages:pagesText(items.length) });
+    E.thumbs.style.display = items.length > 1 ? 'flex' : 'none';
+    E.thumbs.innerHTML = '';
+    for(i = 0; i < items.length; i++){
+      (function(idx){
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'th' + (idx === ed.cur ? ' active' : '');
+        var c = document.createElement('canvas'); c.width = 52; c.height = 68; var cg = c.getContext('2d');
+        cg.fillStyle = '#EBEBE7'; cg.fillRect(0, 0, 52, 68);
+        var w = items[idx].work, k = Math.min(52/w.width, 68/w.height);
+        cg.drawImage(w, (52 - w.width*k)/2, (68 - w.height*k)/2, w.width*k, w.height*k);
+        b.appendChild(c);
+        var x = document.createElement('span'); x.className = 'thx'; x.textContent = '✕'; x.setAttribute('aria-label', 'Remove');
+        x.addEventListener('click', function(ev){ ev.stopPropagation(); removePhoto(idx); });
+        b.appendChild(x);
+        b.addEventListener('click', function(){ ed.cur = idx; edSync(); edQueue(); });
+        E.thumbs.appendChild(b);
+      })(i);
+    }
+  }
+  function removePhoto(idx){
+    if(ed.building) return;
+    ed.sess.items.splice(idx, 1);
+    if(!ed.sess.items.length){ closeEditor(false); return; }
+    ed.cur = Math.min(ed.cur, ed.sess.items.length - 1);
+    edSync(); edQueue();
+  }
+  E.root.querySelectorAll('[data-mode]').forEach(function(b){
+    b.addEventListener('click', function(){ var it = curItem(); if(!it || ed.building) return; it.settings.mode = b.getAttribute('data-mode'); it.auto = false; edSync(); edQueue(); });
+  });
+  E.root.querySelectorAll('[data-fit]').forEach(function(b){
+    b.addEventListener('click', function(){ var it = curItem(); if(!it || ed.building) return; it.settings.fit = b.getAttribute('data-fit'); edSync(); edQueue(); });
+  });
+  function bindSlider(el, label, key){
+    el.addEventListener('input', function(){ var it = curItem(); if(!it) return; it.settings[key] = +el.value; label.textContent = el.value; edQueue(); });
+  }
+  bindSlider(E.bri, E.briV, 'bri'); bindSlider(E.con, E.conV, 'con'); bindSlider(E.sharp, E.sharpV, 'sharp');
+  E.rotL.addEventListener('click', function(){ var it = curItem(); if(!it || ed.building) return; it.settings.rot = (it.settings.rot + 270) % 360; edQueue(); });
+  E.rotR.addEventListener('click', function(){ var it = curItem(); if(!it || ed.building) return; it.settings.rot = (it.settings.rot + 90) % 360; edQueue(); });
+  function cmpOn(e){ e.preventDefault(); ed.compare = true; edRender(); }
+  function cmpOff(){ if(ed.compare){ ed.compare = false; edRender(); } }
+  E.cmp.addEventListener('pointerdown', cmpOn); E.cmp.addEventListener('pointerup', cmpOff);
+  E.cmp.addEventListener('pointerleave', cmpOff); E.cmp.addEventListener('pointercancel', cmpOff);
+  E.all.addEventListener('click', function(){
+    var it = curItem(); if(!it || ed.building) return;
+    ed.sess.items.forEach(function(o){ var r = o.settings.rot; o.settings = cloneSettings(it.settings); o.settings.rot = r; o.auto = false; });
+    edSync(); edQueue();
+  });
+  E.add.addEventListener('click', function(){ if(!ed.building) E.addInput.click(); });
+  E.addInput.addEventListener('change', function(){
+    var files = Array.prototype.slice.call(E.addInput.files || []).filter(isImg); E.addInput.value = '';
+    if(!files.length || ed.building) return;
+    if(ed.sess.items.length + files.length > MAX_PAGES){ E.err.textContent = t('tooManyPhotos', { max:MAX_PAGES }); return; }
+    E.err.textContent = '';
+    loadPhotos(files).then(function(items){
+      var first = ed.sess.items.length; ed.sess.items = ed.sess.items.concat(items); ed.cur = first; edSync(); edQueue();
+    }).catch(function(e){ E.err.textContent = t(e && e.key ? e.key : 'imgBad', e && e.params); });
+  });
+  E.close.addEventListener('click', function(){ if(!ed.building) closeEditor(false); });
+  window.addEventListener('keydown', function(e){ if(e.key === 'Escape' && E.root.classList.contains('show') && !ed.building) closeEditor(false); });
+  editBtn.addEventListener('click', function(){
+    if(!ed.committed) return;
+    ed.sess = { items:ed.committed.items.map(cloneItem) }; ed.cur = 0; openEditor(false);
+  });
+  window.addEventListener('resize', function(){ if(E.root.classList.contains('show')) edQueue(); });
+
+  /* ---- build the PDF: every photo is decoded at full size ONE AT A TIME, edited, laid out on A4 and added ---- */
+  function jpegBuffer(canvas, q){
+    return new Promise(function(res, rej){
+      canvas.toBlob(function(blob){
+        if(!blob){ rej(new Error('jpeg')); return; }
+        if(blob.arrayBuffer){ blob.arrayBuffer().then(res, rej); return; }
+        var fr = new FileReader(); fr.onload = function(){ res(fr.result); }; fr.onerror = rej; fr.readAsArrayBuffer(blob);
+      }, 'image/jpeg', q);
+    });
+  }
+  function buildPdf(items, attempt, progress){
+    return PDFLib.PDFDocument.create().then(function(pdf){
+      var i = 0;
+      function step(){
+        if(i >= items.length) return pdf.save();
+        progress(i + 1, items.length);
+        var it = items[i];
+        return decodeFile(it.file).then(function(bmp){
+          var src = toCanvas(bmp, IMG_OUT), proc = processCanvas(src, it.settings), g = pageGeom(proc.width, proc.height);
+          var dispW = it.settings.fit === 'fill' ? Math.max(g.pw, g.ph*proc.width/proc.height) : Math.min(g.pw - 2*MARGIN_PT, (g.ph - 2*MARGIN_PT)*proc.width/proc.height);
+          var ppp = Math.min(attempt.ppp, Math.max(150/72, proc.width/dispW));
+          var page = composePage(proc, it.settings.fit, ppp);
+          return jpegBuffer(page, attempt.q).then(function(ab){ return pdf.embedJpg(ab); }).then(function(jpg){
+            pdf.addPage([g.pw, g.ph]).drawImage(jpg, { x:0, y:0, width:g.pw, height:g.ph });
+            i++; return step();
+          });
+        }, function(){ throw new Error('decode'); });
+      }
+      return step();
+    });
+  }
+  function buildWithLimit(items, progress){
+    var a = 0;
+    function attempt(){
+      return buildPdf(items, ATTEMPTS[a], progress).then(function(bytes){
+        if(bytes.length <= MAX_MB*1024*1024) return bytes;
+        a++; if(a >= ATTEMPTS.length) throw new Error('tooBigOut');
+        return attempt();
+      });
+    }
+    return attempt();
+  }
+  function setBusy(b){
+    ed.building = b; E.root.classList.toggle('busy', b);
+    E.root.querySelectorAll('button, input').forEach(function(el){ el.disabled = b; });
+  }
+  E.done.addEventListener('click', function(){
+    if(ed.building || !ed.sess) return;
+    var items = ed.sess.items;
+    setBusy(true); E.err.textContent = '';
+    buildWithLimit(items, function(n, total){ E.done.textContent = t('preparing', { n:n, total:total }); })
+    .then(function(bytes){
+      var buf = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+      var name = items.length === 1 ? items[0].name.replace(/\.[^.]+$/, '') + '.pdf' : 'photos.pdf';
+      return acceptPdf({ name:name, size:bytes.length, fromPhotos:true }, buf, items.length);
+    })
+    .then(function(){ ed.committed = ed.sess; setBusy(false); closeEditor(true); })
+    .catch(function(err){
+      setBusy(false);
+      E.err.textContent = (err && err.message === 'tooBigOut') ? t('tooBigOut') : t('buildFail');
+      edSync();
+    });
+  });
+
+  /* ============================================================
+     PAGE RANGE
+     ============================================================ */
   function parsePageRange(text, total){
     text = text.trim();
     if(!text) return { all:true };
-    var parts = text.split(',');
-    var set = [], seen = {};
+    var parts = text.split(','), set = [], seen = {};
     for(var i = 0; i < parts.length; i++){
-      var p = parts[i].trim();
-      if(!p) continue;
-      var m = p.match(/^(\d+)\s*-\s*(\d+)$/);
-      var a, b;
-      if(m){ a = +m[1]; b = +m[2]; }
+      var p = parts[i].trim(); if(!p) continue;
+      var mm = p.match(/^(\d+)\s*-\s*(\d+)$/), a, b;
+      if(mm){ a = +mm[1]; b = +mm[2]; }
       else if(/^\d+$/.test(p)){ a = b = +p; }
-      else return { error: 'Use numbers like 1-5, 8' };
-      if(a < 1 || b > total || a > b) return { error: 'Pages must be between 1 and ' + total };
-      for(var n = a; n <= b; n++){
-        if(!seen[n]){ seen[n] = 1; set.push(n); }
-      }
+      else return { err:{key:'badRange'} };
+      if(a < 1 || b > total || a > b) return { err:{key:'rangeBounds', params:{n:total}} };
+      for(var n = a; n <= b; n++){ if(!seen[n]){ seen[n] = 1; set.push(n); } }
     }
     if(!set.length) return { all:true };
     return { pages:set };
   }
 
   function updateRange(){
-    // show/hide the page-numbers box based on mode
     rangeBox.style.display = state.pagemode === 'select' ? 'block' : 'none';
 
     if(!state.origBuf){
-      state.rangeOk = false;
-      rangeHint.textContent = 'Upload a PDF first';
-      rangeHint.style.color = '';
-      checkReady();
-      return;
+      state.rangeOk = false; setHint({key:'uploadFirst'}, false); checkReady(); updatePvLabel(); return;
     }
 
     if(state.pagemode === 'all'){
-      state.selection = 'all';
-      state.pages = state.totalPages;
+      state.selection = 'all'; state.pages = state.totalPages;
       if(state.totalPages > MAX_PAGES){
         state.rangeOk = false;
-        rangeHint.textContent = 'PDF has ' + state.totalPages + ' pages — use "Select pages" to choose up to ' + MAX_PAGES;
-        rangeHint.style.color = 'var(--err)';
+        setHint({key:'tooManyAll', params:{n:state.totalPages, max:MAX_PAGES}}, true);
       } else {
         state.rangeOk = true;
-        rangeHint.textContent = 'Printing all ' + state.totalPages + ' page' + (state.totalPages>1?'s':'');
-        rangeHint.style.color = '';
+        setHint(state.totalPages === 1 ? {key:'printOne'} : {key:'printAll', params:{n:state.totalPages}}, false);
       }
-      checkReady();
-      return;
+      checkReady(); updatePvLabel(); return;
     }
 
-    // select mode
     if(!rangeInput.value.trim()){
-      state.rangeOk = false;
-      rangeHint.textContent = 'Type page numbers, e.g. 1-5, 8, 11';
-      rangeHint.style.color = '';
-      checkReady();
-      return;
+      state.rangeOk = false; setHint({key:'typePages'}, false); checkReady(); updatePvLabel(); return;
     }
-
     var res = parsePageRange(rangeInput.value, state.totalPages);
-    if(res.error){
-      state.rangeOk = false;
-      rangeHint.textContent = res.error;
-      rangeHint.style.color = 'var(--err)';
+    if(res.err){
+      state.rangeOk = false; setHint(res.err, true);
     } else if(res.all){
-      state.rangeOk = false;
-      rangeHint.textContent = 'Type page numbers, e.g. 1-5, 8, 11';
-      rangeHint.style.color = '';
+      state.rangeOk = false; setHint({key:'typePages'}, false);
     } else if(res.pages.length > MAX_PAGES){
-      state.rangeOk = false;
-      rangeHint.textContent = res.pages.length + ' pages selected — max ' + MAX_PAGES;
-      rangeHint.style.color = 'var(--err)';
+      state.rangeOk = false; setHint({key:'tooManySel', params:{n:res.pages.length, max:MAX_PAGES}}, true);
     } else {
-      state.selection = res.pages;
-      state.pages = res.pages.length;
-      state.rangeOk = true;
-      rangeHint.textContent = 'Printing ' + res.pages.length + ' of ' + state.totalPages + ' pages';
-      rangeHint.style.color = '';
+      state.selection = res.pages; state.pages = res.pages.length; state.rangeOk = true;
+      setHint({key:'printSome', params:{n:res.pages.length, total:state.totalPages}}, false);
     }
-    checkReady();
+    checkReady(); updatePvLabel();
   }
-
   rangeInput.addEventListener('input', updateRange);
 
+  // builds a PDF with ONLY the chosen pages (so what is stored is exactly what gets printed)
   function buildFinalB64(){
     if(state.selection === 'all') return Promise.resolve(state.fileB64All);
     var indices = state.selection.map(function(n){ return n - 1; });
@@ -566,68 +1617,78 @@
       });
     }).then(function(bytes){
       var bin = '', chunk = 0x8000;
-      for(var i = 0; i < bytes.length; i += chunk){
-        bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
-      }
+      for(var i = 0; i < bytes.length; i += chunk){ bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk)); }
       return btoa(bin);
     });
   }
 
+  /* ============================================================
+     OPTIONS + READY STATE + TOTAL
+     ============================================================ */
   document.querySelectorAll('.choice').forEach(function(el){
     el.addEventListener('click', function(){
       var group = el.getAttribute('data-group');
-      document.querySelectorAll('.choice[data-group="'+group+'"]').forEach(function(sib){
-        sib.classList.remove('active');
-      });
+      document.querySelectorAll('.choice[data-group="'+group+'"]').forEach(function(sib){ sib.classList.remove('active'); });
       el.classList.add('active');
       state[group] = el.getAttribute('data-val');
       if(group === 'pagemode') updateRange();
+      checkReady();
     });
   });
-
-  var copyCount = document.getElementById('copyCount');
-  document.getElementById('plus').addEventListener('click', function(){
-    if(state.copies < 30){ state.copies++; copyCount.textContent = state.copies; }
+  $('plus').addEventListener('click', function(){
+    if(state.copies < 30){ state.copies++; copyCount.textContent = state.copies; checkReady(); }
   });
-  document.getElementById('minus').addEventListener('click', function(){
-    if(state.copies > 1){ state.copies--; copyCount.textContent = state.copies; }
+  $('minus').addEventListener('click', function(){
+    if(state.copies > 1){ state.copies--; copyCount.textContent = state.copies; checkReady(); }
   });
-
-  var phoneInput = document.getElementById('phoneInput');
   phoneInput.addEventListener('input', function(){
     phoneInput.value = phoneInput.value.replace(/\D/g,'').slice(0,10);
     state.phone = phoneInput.value;
     checkReady();
   });
 
+  // price of what is currently chosen (null until a valid file + page selection exists)
+  function currentPrice(){
+    if(!(state.fileB64All && state.rangeOk && state.pages >= 1)) return null;
+    var rate = state.color === 'color' ? RATE_COLOR : RATE_BW;
+    return { rate:rate, pages:state.pages, copies:state.copies, total:state.pages * rate * state.copies };
+  }
+  function calcText(o){
+    return t('calcLine', { pages:pagesText(o.pages), rate:o.rate, copies:o.copies > 1 ? ' × ' + t('nCopies', {n:o.copies}) : '' });
+  }
+  function renderOverlayPrice(){
+    var o = view.order;
+    $('overlayAmt').textContent = o ? '₹' + o.total : '';
+    $('overlayBreak').textContent = o ? calcText(o) : '';
+  }
+
   function checkReady(){
     var ready = state.fileB64All && state.rangeOk && state.pages >= 1 && state.phone.length === 10 && !sending;
     sendBtn.disabled = !ready;
+    var pr = currentPrice();
+    if(pr){
+      priceAmt.textContent = '₹' + pr.total;
+      priceBreak.textContent = calcText(pr) + ' · ' + t('payAtPickup');
+      priceBar.classList.add('has-price');
+    } else {
+      priceAmt.textContent = '₹—';
+      priceBreak.textContent = t('priceIdle');
+      priceBar.classList.remove('has-price');
+    }
   }
 
-  function showError(msg){
-    errNote.textContent = msg;
-    errNote.classList.add('show');
-  }
-  function clearError(){
-    errNote.textContent = '';
-    errNote.classList.remove('show');
-  }
-
-  var sending = false;
-
+  /* ============================================================
+     SEND THE ORDER  (same as before)
+     ============================================================ */
   sendBtn.addEventListener('click', function(){
     if(sending) return;
     clearError();
+    if(BACKEND_URL.indexOf('script.google.com') === -1){ showError({key:'noBackend'}); return; }
 
-    if(BACKEND_URL.indexOf('script.google.com') === -1){
-      showError('Backend not connected yet — BACKEND_URL missing in the page code.');
-      return;
-    }
-
+    var sentPrice = currentPrice();
     sending = true;
     sendBtn.classList.add('sending');
-    sendBtn.textContent = 'Sending…';
+    sendBtn.textContent = t('sending');
     sendBtn.disabled = true;
 
     buildFinalB64()
@@ -650,35 +1711,34 @@
     .then(function(res){ return res.json(); })
     .then(function(out){
       if(out && out.ok && out.token){
-        document.getElementById('tokenNo').textContent = '#' + out.token;
-        document.getElementById('overlayToken').textContent = 'TOKEN #' + out.token;
-        document.getElementById('overlay').classList.add('show');
+        view.token = out.token;
+        view.order = sentPrice;
+        renderOverlayPrice();
+        $('tokenNo').textContent = '#' + out.token;
+        $('overlayToken').textContent = t('tokenWord') + ' #' + out.token;
+        $('overlay').classList.add('show');
       } else {
-        showError((out && out.error) ? out.error : 'Order failed — please try again');
+        var k = out && out.error ? SERVER_ERR[out.error] : null;
+        showError(k ? {key:k} : (out && out.error && lang === 'en' ? {raw:out.error} : {key:'orderFailed'}));
       }
     })
-    .catch(function(){
-      showError('No connection — check internet and try again');
-    })
+    .catch(function(){ showError({key:'noConn'}); })
     .finally(function(){
       sending = false;
       sendBtn.classList.remove('sending');
-      sendBtn.textContent = 'Send to shop printer';
+      sendBtn.textContent = t('send');
       checkReady();
     });
   });
 
-  document.getElementById('closeOverlay').addEventListener('click', function(){
-    // full reset for a new order
+  $('closeOverlay').addEventListener('click', function(){
     state = { file:null, origBuf:null, fileB64All:null, totalPages:0, pagemode:'all', selection:'all', rangeOk:false, pages:0, color:'bw', side:'single', copies:1, phone:'' };
     fileInput.value = '';
-    rangeInput.value = '';
-    rangeBox.style.display = 'none';
-    rangeHint.textContent = 'Upload a PDF first';
-    rangeHint.style.color = '';
-    dropText.textContent = 'Tap to choose a PDF file';
-    dropText.className = '';
-    dropSub.textContent = 'Photos/JPG not accepted yet — ask at counter';
+    hidePreview();
+    rangeInput.value = ''; rangeBox.style.display = 'none';
+    fileInfo = null; ed.committed = null; ed.sess = null; updateEditBtn();
+    view.drop = { main:{key:'tapChoose'}, sub:{key:'fileTypes'}, cls:'' }; renderDrop();
+    setHint({key:'uploadFirst'}, false);
     dropZone.classList.remove('has-file','bad-file');
     copyCount.textContent = '1';
     phoneInput.value = '';
@@ -686,12 +1746,20 @@
     document.querySelector('.choice[data-val="all"]').classList.add('active');
     document.querySelector('.choice[data-val="bw"]').classList.add('active');
     document.querySelector('.choice[data-val="single"]').classList.add('active');
-    document.getElementById('tokenNo').textContent = '#—';
+    view.token = null; view.order = null; renderOverlayPrice();
+    $('tokenNo').textContent = '#—';
     clearError();
     checkReady();
-    document.getElementById('overlay').classList.remove('show');
+    updatePvLabel();
+    $('overlay').classList.remove('show');
   });
 
+  /* ============================================================
+     START — remembered language, else Gujarati
+     ============================================================ */
+  var saved = null;
+  try{ saved = localStorage.getItem(LS_KEY); }catch(e){}
+  applyLang(saved === 'en' ? 'en' : 'gu');
 })();
 </script>
 </body>
