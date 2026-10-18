@@ -121,11 +121,44 @@
     user-select:none;
     max-width:100%;
   }
-  .editor-wrap img{display:block; height:auto; width:auto; max-width:100%; max-height:64vh; pointer-events:none;}
+  .editor-wrap img, .editor-wrap canvas{display:block; height:auto; width:auto; max-width:100%; max-height:64vh; pointer-events:none;}
   .editor-wrap svg{position:absolute; inset:0; width:100%; height:100%;}
   .corner-poly{fill:rgba(0,174,239,0.22); stroke:var(--cyan); stroke-width:2;}
   .corner-handle{fill:#fff; stroke:var(--cyan); stroke-width:3; cursor:grab;}
   .corner-handle:active{cursor:grabbing; fill:var(--cyan);}
+
+  /* ---- turn + straighten bar (like the Windows Photos straighten line) ---- */
+  .rot-bar{display:flex; align-items:center; gap:10px; margin-top:14px; padding:10px 12px; background:var(--panel); border-radius:12px;}
+  .rot-btn{
+    flex:0 0 46px; height:46px; padding:0; border-radius:10px; border:1.5px solid var(--line); background:var(--bg);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text);
+  }
+  .rot-btn svg{width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+  .rot-btn:active{background:var(--cyan); border-color:var(--cyan); color:#fff;}
+  .rot-mid{flex:1; min-width:0;}
+  .rot-readout{display:flex; align-items:center; justify-content:space-between; min-height:24px;}
+  .rot-readout b{font-family:'IBM Plex Mono', monospace; font-size:13px; font-weight:500;}
+  .rot-reset{border:none; background:none; color:var(--magenta); font-weight:600; font-size:12.5px; cursor:pointer; padding:3px 4px; visibility:hidden;}
+  .rot-reset.show{visibility:visible;}
+  .rot-track{position:relative; height:30px;}
+  .rot-track::before{content:''; position:absolute; left:11px; right:11px; top:50%; height:2px; margin-top:-1px; background:var(--line);}
+  .rot-ticks{position:absolute; left:11px; right:11px; top:50%; height:16px; margin-top:-8px; display:flex; justify-content:space-between; align-items:center; pointer-events:none;}
+  .rot-ticks i{display:block; width:1px; height:7px; background:#BDBAB2;}
+  .rot-ticks i.maj{height:11px; background:#A9A6A0;}
+  .rot-ticks i.mid{width:2px; height:16px; background:var(--magenta);}
+  input.rot-slider[type=range]{
+    -webkit-appearance:none; appearance:none; position:absolute; left:0; top:0; width:100%; height:30px; margin:0;
+    background:transparent; cursor:pointer;
+  }
+  input.rot-slider[type=range]::-webkit-slider-runnable-track{height:30px; background:transparent;}
+  input.rot-slider[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:22px; height:22px; margin-top:4px; border-radius:50%;
+    background:var(--cyan); border:3px solid #fff; box-shadow:0 1px 5px rgba(0,0,0,.35);
+  }
+  input.rot-slider[type=range]::-moz-range-track{height:30px; background:transparent;}
+  input.rot-slider[type=range]::-moz-range-thumb{width:16px; height:16px; border-radius:50%; background:var(--cyan); border:3px solid #fff; box-shadow:0 1px 5px rgba(0,0,0,.35);}
+  input.rot-slider[type=range]:focus-visible{outline:2px solid var(--cyan); outline-offset:2px; border-radius:6px;}
+  .rot-hint{font-size:11.5px; color:var(--text-soft); text-align:center; margin:8px 0 0; line-height:1.5;}
   .editor-actions{display:flex; gap:10px; margin-top:14px;}
   .btn-ghost{
     flex:1; padding:13px; border-radius:9px; border:1.5px solid var(--line);
@@ -279,7 +312,8 @@
     .corners-editor-col{order:1;}
     .corners-side-col{order:2; position:sticky; top:24px; padding-top:6px;}
     .corners-side-col .editor-actions{flex-direction:column;}
-    .editor-wrap img{max-height:74vh;}
+    /* leave room under the photo for the turn bar + hint above the pinned 'Confirm corners' button */
+    .editor-wrap img, .editor-wrap canvas{max-height:max(300px, min(74vh, calc(100vh - 400px)));}
 
     .pages-layout{
       display:grid; grid-template-columns:1fr 440px; column-gap:40px; align-items:start;
@@ -628,7 +662,7 @@
         '<input type="file" id="fileInput" accept="image/*">' +
         '<div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h3l2-2h6l2 2h3v13H4z"/><circle cx="12" cy="13" r="4"/></svg></div>' +
         '<p>Tap to add a photo</p>' +
-        '<span>Camera or gallery \u00b7 JPG / PNG</span>' +
+        '<span>Camera or gallery \u00b7 JPG / PNG / iPhone HEIC</span>' +
       '</label>' +
       '<div class="privacy-note">\ud83d\udd12 <span>Everything happens on your own phone or computer. Your photo is never uploaded anywhere.</span></div>' +
       (state.pages.length ? '<div class="editor-actions"><button class="btn-ghost" id="goPages">\u2190 Back to your pages (' + state.pages.length + ')</button></div>' : '') +
@@ -641,32 +675,145 @@
     }
   }
 
+  /* ---- opening the chosen photo (JPG, PNG, WebP... and iPhone HEIC, which no desktop browser can open by itself) ---- */
+  var HEIC_URL = 'https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js';
+  var heicLoading = null;
+
+  function loadViaImg(file){
+    return new Promise(function(res, rej){
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function(){ URL.revokeObjectURL(url); res(img); };
+      img.onerror = function(){ URL.revokeObjectURL(url); rej(new Error('decode')); };
+      img.src = url;
+    });
+  }
+  // works even where the browser/preview blocks blob: images (no URL is needed)
+  function loadViaBitmap(file){
+    if(!window.createImageBitmap) return Promise.reject(new Error('no bitmap'));
+    return createImageBitmap(file, { imageOrientation:'from-image' }).catch(function(){ return createImageBitmap(file); });
+  }
+  // last resort: read the file into a data: address
+  function loadViaDataUrl(file){
+    return new Promise(function(res, rej){
+      var fr = new FileReader();
+      fr.onload = function(){ var im = new Image(); im.onload = function(){ res(im); }; im.onerror = function(){ rej(new Error('decode')); }; im.src = fr.result; };
+      fr.onerror = function(){ rej(new Error('read')); };
+      fr.readAsDataURL(file);
+    });
+  }
+  function openImageFile(file){
+    return loadViaImg(file).catch(function(){ return loadViaBitmap(file); }).catch(function(){ return loadViaDataUrl(file); });
+  }
+  // HEIC/HEIF files start with "....ftyp" + a brand such as heic / heix / mif1
+  function looksLikeHeic(file){
+    if(/hei[cf]/i.test(file.type || '') || /\.(heic|heif)$/i.test(file.name || '')) return Promise.resolve(true);
+    return file.slice(0, 16).arrayBuffer().then(function(ab){
+      var u = new Uint8Array(ab), box = String.fromCharCode(u[4], u[5], u[6], u[7]), brand = String.fromCharCode(u[8], u[9], u[10], u[11]);
+      return box === 'ftyp' && /^(heic|heix|hevc|hevx|heim|heis|hevm|hevs|mif1|msf1)$/.test(brand);
+    }).catch(function(){ return false; });
+  }
+  function loadHeicLib(){
+    if(window.heic2any) return Promise.resolve();
+    if(!heicLoading){
+      heicLoading = new Promise(function(res, rej){
+        var sc = document.createElement('script'); sc.src = HEIC_URL;
+        sc.onload = res; sc.onerror = function(){ heicLoading = null; rej(new Error('lib')); };
+        document.head.appendChild(sc);
+      });
+    }
+    return heicLoading;
+  }
+  function heicToJpeg(file){
+    return loadHeicLib().then(function(){ return window.heic2any({ blob:file, toType:'image/jpeg', quality:0.92 }).catch(function(){ throw { code:'heic' }; }); },
+                             function(){ throw { code:'heicnet' }; })
+      .then(function(out){
+        var blob = Array.isArray(out) ? out[0] : out;
+        return new File([blob], (file.name || 'photo').replace(/\.[^.]+$/, '') + '.jpg', { type:'image/jpeg' });
+      });
+  }
+  // resolves to an <img>; rejects with {code:'heic'|'bad'}
+  function decodeUpload(file){
+    return openImageFile(file).catch(function(){
+      return looksLikeHeic(file).then(function(isHeic){
+        if(!isHeic) throw { code:'bad' };
+        showOverlay('Converting your iPhone photo\u2026');
+        return heicToJpeg(file).then(openImageFile).then(function(img){ hideOverlay(); return img; },
+                                                        function(e){ hideOverlay(); throw (e && e.code) ? e : { code:'heic' }; });
+      });
+    });
+  }
+  // draw straight into the working size (no giant in-between canvas — big phone photos used to be able to fail here)
+  function imgToCanvas(img, maxDim){
+    var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height, k = Math.min(1, maxDim/Math.max(w, h));
+    var c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w*k)); c.height = Math.max(1, Math.round(h*k));
+    var g = c.getContext('2d');
+    g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);          // transparent PNGs get a white background
+    g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+    g.drawImage(img, 0, 0, c.width, c.height);
+    if(img.close){ try{ img.close(); }catch(e){} }
+    return c;
+  }
+
   function onFileChosen(){
     if(!(fileInput.files && fileInput.files[0])) return;
     var f = fileInput.files[0];
     clearError();
-    var img = new Image();
-    var url = URL.createObjectURL(f);
-    img.onload = function(){
-      URL.revokeObjectURL(url);
-      var srcCanvas = scaleCanvas((function(){
-        var c=document.createElement('canvas'); c.width=img.width; c.height=img.height;
-        c.getContext('2d').drawImage(img,0,0);
-        return c;
-      })(), SRC_MAX);
-      state.cur = { srcCanvas: srcCanvas, corners: null, adjustments: null };
-      renderCorners();
-    };
-    img.onerror = function(){
-      URL.revokeObjectURL(url);
-      showError('Could not open that image \u2014 try a different photo');
-    };
-    img.src = url;
+    decodeUpload(f).then(function(img){
+      try{
+        state.cur = { srcCanvas: imgToCanvas(img, SRC_MAX), corners0: null, rot: { q:0, fine:0 }, adjustments: null };
+        renderCorners();
+      } catch(e){
+        console.error(e);
+        showError('Something went wrong while preparing the photo \u2014 please try again (' + ((e && e.message) || e) + ')');
+      }
+    }, function(err){
+      showError(err && err.code === 'heicnet' ? 'Could not convert this iPhone (HEIC) photo \u2014 check your internet connection, or choose a JPG instead'
+              : err && err.code === 'heic'    ? 'Could not read this iPhone (HEIC) photo \u2014 please choose a JPG instead'
+              : 'Could not open that image \u2014 try a JPG or PNG photo');
+    });
   }
 
   /* ============================================================
-     STEP 2 — CORNER SELECTION
+     STEP 2 — CORNER SELECTION  (turn / straighten the photo first, then place the dots)
      ============================================================ */
+
+  var ROT_PREVIEW_MAX = 1100;   // size of the photo on screen while turning it
+  var ROT_FULL_MAX = 3000;      // size of the turned photo that is used for the real scan
+  var cornerUI = null;          // live pieces of the corner screen (canvas, svg, dots)
+
+  /* The photo itself is never changed: its original pixels stay in srcCanvas.
+     "rot" (quarter turns + fine tilt) is applied on top, and the four corner dots are stored in the
+     ORIGINAL photo's coordinates (corners0) — so they travel with the photo when it is turned. */
+  function rotGeom(cur){
+    var w = cur.srcCanvas.width, h = cur.srcCanvas.height;
+    var deg = cur.rot.q*90 + cur.rot.fine, th = deg*Math.PI/180, c = Math.cos(th), s = Math.sin(th);
+    return { w:w, h:h, th:th, c:c, s:s, bw:Math.abs(w*c) + Math.abs(h*s), bh:Math.abs(w*s) + Math.abs(h*c) };
+  }
+  function toRot(g, p){ var dx = p.x - g.w/2, dy = p.y - g.h/2; return { x:g.bw/2 + dx*g.c - dy*g.s, y:g.bh/2 + dx*g.s + dy*g.c }; }
+  function fromRot(g, p){ var dx = p.x - g.bw/2, dy = p.y - g.bh/2; return { x:g.w/2 + dx*g.c + dy*g.s, y:g.h/2 - dx*g.s + dy*g.c }; }
+
+  // draws the turned photo; fillWhite=false keeps the empty corners transparent (so you can see the photo's edge)
+  function paintRotated(target, cur, maxDim, fillWhite){
+    var g = rotGeom(cur), sc = Math.min(1, maxDim/Math.max(g.bw, g.bh));
+    var cw = Math.max(1, Math.round(g.bw*sc)), ch = Math.max(1, Math.round(g.bh*sc));
+    var cv = target || document.createElement('canvas');
+    if(cv.width !== cw) cv.width = cw;
+    if(cv.height !== ch) cv.height = ch;
+    var x = cv.getContext('2d');
+    x.setTransform(1,0,0,1,0,0); x.clearRect(0, 0, cw, ch);
+    if(fillWhite){ x.fillStyle = '#fff'; x.fillRect(0, 0, cw, ch); }
+    x.imageSmoothingEnabled = true; x.imageSmoothingQuality = 'high';
+    x.translate(cw/2, ch/2); x.rotate(g.th); x.scale(cw/g.bw, ch/g.bh);
+    x.drawImage(cur.srcCanvas, -g.w/2, -g.h/2);
+    return cv;
+  }
+  function defaultCorners(cur){
+    var w = cur.srcCanvas.width, h = cur.srcCanvas.height, mx = w*0.08, my = h*0.08;
+    return [ {x:mx, y:my}, {x:w-mx, y:my}, {x:w-mx, y:h-my}, {x:mx, y:h-my} ];
+  }
+
+  var ROT_ICON_L = '<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>';
+  var ROT_ICON_R = '<svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>';
 
   function renderCorners(){
     state.mode='corners';
@@ -677,11 +824,29 @@
     footerBtn.onclick=confirmCorners;
     clearError();
 
+    var cur = state.cur;
+    if(!cur.rot) cur.rot = { q:0, fine:0 };
+    if(!cur.corners0) cur.corners0 = defaultCorners(cur);
+
+    var ticks = '';
+    for(var t = 0; t <= 18; t++){ ticks += '<i class="' + (t === 9 ? 'mid' : (t % 3 === 0 ? 'maj' : '')) + '"></i>'; }
+
     main.innerHTML = '<div class="step-wrap wide"><div class="corners-layout">' +
       '<div class="corners-editor-col">' +
         '<p class="step-title">Line up the corners</p>' +
-        '<p class="step-sub">Drag the four dots so they sit exactly on the edges of your document.</p>' +
-        '<div class="editor-frame"><div class="editor-wrap" id="editorWrap"><img id="editorImg"></div></div>' +
+        '<p class="step-sub">Drag the four dots so they sit exactly on the edges of your document. Sideways or crooked photo? Turn it with the controls under the photo first.</p>' +
+        '<div class="editor-frame"><div class="editor-wrap" id="editorWrap"><canvas id="editorImg"></canvas></div></div>' +
+        '<div class="rot-bar" id="rotBar">' +
+          '<button type="button" class="rot-btn" id="rotL" aria-label="Turn left 90 degrees" title="Turn left 90\u00b0">' + ROT_ICON_L + '</button>' +
+          '<div class="rot-mid">' +
+            '<div class="rot-readout"><b id="rotVal">0.0\u00b0</b><button type="button" class="rot-reset" id="rotReset">Reset</button></div>' +
+            '<div class="rot-track"><div class="rot-ticks">' + ticks + '</div>' +
+              '<input type="range" class="rot-slider" id="rotRange" min="-45" max="45" step="0.5" value="0" aria-label="Straighten the photo">' +
+            '</div>' +
+          '</div>' +
+          '<button type="button" class="rot-btn" id="rotR" aria-label="Turn right 90 degrees" title="Turn right 90\u00b0">' + ROT_ICON_R + '</button>' +
+        '</div>' +
+        '<p class="rot-hint">Buttons turn the photo 90\u00b0 \u00b7 drag the line to fix a small tilt</p>' +
       '</div>' +
       '<div class="corners-side-col">' +
         '<div class="editor-actions">' +
@@ -692,81 +857,99 @@
     '</div></div>';
 
     var wrap = document.getElementById('editorWrap');
-    var imgEl = document.getElementById('editorImg');
-    imgEl.src = state.cur.srcCanvas.toDataURL('image/jpeg', 0.85);
+    var cv = document.getElementById('editorImg');
+    cornerUI = { wrap:wrap, cv:cv, svg:null, poly:null, handles:[], dispW:0, dispH:0, raf:0,
+                 range:document.getElementById('rotRange'), val:document.getElementById('rotVal'), reset:document.getElementById('rotReset') };
 
     document.getElementById('cancelUpload').addEventListener('click', renderUpload);
     document.getElementById('resetCorners').addEventListener('click', function(){
-      setupCornerHandles(wrap, imgEl, true);
+      state.cur.corners0 = defaultCorners(state.cur);       // the starting box, turned together with the photo
+      redrawCorners();
     });
+    document.getElementById('rotL').addEventListener('click', function(){ state.cur.rot.q = (state.cur.rot.q + 3) % 4; applyRotation(); });
+    document.getElementById('rotR').addEventListener('click', function(){ state.cur.rot.q = (state.cur.rot.q + 1) % 4; applyRotation(); });
+    cornerUI.range.addEventListener('input', function(){
+      state.cur.rot.fine = parseFloat(cornerUI.range.value) || 0;
+      if(cornerUI.raf) return;
+      cornerUI.raf = requestAnimationFrame(function(){ cornerUI.raf = 0; applyRotation(true); });   // smooth, one redraw per frame
+    });
+    cornerUI.range.addEventListener('dblclick', function(){ state.cur.rot.fine = 0; applyRotation(); });
+    cornerUI.reset.addEventListener('click', function(){ state.cur.rot.q = 0; state.cur.rot.fine = 0; applyRotation(); });
 
-    imgEl.onload = function(){ setupCornerHandles(wrap, imgEl, false); };
-    if(imgEl.complete) setupCornerHandles(wrap, imgEl, false);
+    buildCornerOverlay();
+    applyRotation();
   }
 
-  function setupCornerHandles(wrap, imgEl, forceReset){
-    var dispW = imgEl.clientWidth, dispH = imgEl.clientHeight;
-    if(!dispW || !dispH){ setTimeout(function(){ setupCornerHandles(wrap, imgEl, forceReset); }, 50); return; }
+  function updateRotUI(){
+    var u = cornerUI, r = state.cur.rot, f = r.fine;
+    u.range.value = f;
+    u.val.textContent = (f > 0 ? '+' : '') + f.toFixed(1) + '\u00b0';
+    u.reset.classList.toggle('show', f !== 0 || r.q % 4 !== 0);
+  }
+  function applyRotation(keepSlider){
+    var u = cornerUI; if(!u) return;
+    paintRotated(u.cv, state.cur, ROT_PREVIEW_MAX, false);
+    if(!keepSlider) updateRotUI(); else { u.val.textContent = (state.cur.rot.fine > 0 ? '+' : '') + state.cur.rot.fine.toFixed(1) + '\u00b0'; u.reset.classList.toggle('show', state.cur.rot.fine !== 0 || state.cur.rot.q % 4 !== 0); }
+    layoutCorners();
+  }
 
-    if(!state.cur.dispCorners || forceReset){
-      var mx = dispW*0.08, my = dispH*0.08;
-      state.cur.dispCorners = [
-        {x:mx, y:my}, {x:dispW-mx, y:my}, {x:dispW-mx, y:dispH-my}, {x:mx, y:dispH-my}
-      ];
-    }
-    state.cur.dispW = dispW; state.cur.dispH = dispH;
-
-    var svgNS = 'http://www.w3.org/2000/svg';
-    var old = wrap.querySelector('svg'); if(old) old.remove();
-    var svg = document.createElementNS(svgNS,'svg');
-    svg.setAttribute('viewBox','0 0 '+dispW+' '+dispH);
-    var poly = document.createElementNS(svgNS,'polygon');
-    poly.setAttribute('class','corner-poly');
+  function buildCornerOverlay(){
+    var u = cornerUI, svgNS = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(svgNS, 'svg');
+    var poly = document.createElementNS(svgNS, 'polygon');
+    poly.setAttribute('class', 'corner-poly');
     svg.appendChild(poly);
-
-    var handles = state.cur.dispCorners.map(function(pt){
-      var c = document.createElementNS(svgNS,'circle');
-      c.setAttribute('class','corner-handle');
-      c.setAttribute('r','11');
-      svg.appendChild(c);
-      return c;
-    });
-
-    function redraw(){
-      var pts = state.cur.dispCorners;
-      poly.setAttribute('points', pts.map(function(p){return p.x+','+p.y;}).join(' '));
-      handles.forEach(function(h,i){ h.setAttribute('cx',pts[i].x); h.setAttribute('cy',pts[i].y); });
+    u.svg = svg; u.poly = poly; u.handles = [];
+    for(var i = 0; i < 4; i++){
+      (function(i){
+        var h = document.createElementNS(svgNS, 'circle');
+        h.setAttribute('class', 'corner-handle'); h.setAttribute('r', '11');
+        svg.appendChild(h); u.handles.push(h);
+        h.addEventListener('pointerdown', function(ev){
+          ev.preventDefault();
+          h.setPointerCapture(ev.pointerId);
+          function move(mv){
+            var rect = svg.getBoundingClientRect();
+            var x = (mv.clientX - rect.left)*u.dispW/rect.width, y = (mv.clientY - rect.top)*u.dispH/rect.height;
+            x = Math.max(0, Math.min(u.dispW, x)); y = Math.max(0, Math.min(u.dispH, y));
+            var g = rotGeom(state.cur);
+            state.cur.corners0[i] = fromRot(g, { x:x*g.bw/u.dispW, y:y*g.bh/u.dispH });   // remember it on the ORIGINAL photo
+            redrawCorners();
+          }
+          function up(){ window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); }
+          window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
+        });
+      })(i);
     }
-    redraw();
-    wrap.appendChild(svg);
-
-    handles.forEach(function(h,i){
-      h.addEventListener('pointerdown', function(ev){
-        ev.preventDefault();
-        h.setPointerCapture(ev.pointerId);
-        function move(mv){
-          var rect = svg.getBoundingClientRect();
-          var scaleX = dispW/rect.width, scaleY = dispH/rect.height;
-          var x = (mv.clientX-rect.left)*scaleX, y=(mv.clientY-rect.top)*scaleY;
-          x = Math.max(0, Math.min(dispW, x));
-          y = Math.max(0, Math.min(dispH, y));
-          state.cur.dispCorners[i] = {x:x,y:y};
-          redraw();
-        }
-        function up(){
-          window.removeEventListener('pointermove', move);
-          window.removeEventListener('pointerup', up);
-        }
-        window.addEventListener('pointermove', move);
-        window.addEventListener('pointerup', up);
-      });
-    });
+    u.wrap.appendChild(svg);
   }
+  function layoutCorners(){
+    var u = cornerUI; if(!u || state.mode !== 'corners') return;
+    var dw = u.cv.clientWidth, dh = u.cv.clientHeight;
+    if(!dw || !dh){ setTimeout(layoutCorners, 50); return; }
+    u.dispW = dw; u.dispH = dh;
+    u.svg.setAttribute('viewBox', '0 0 ' + dw + ' ' + dh);
+    redrawCorners();
+  }
+  function redrawCorners(){
+    var u = cornerUI; if(!u || !u.dispW) return;
+    var g = rotGeom(state.cur), pts = state.cur.corners0.map(function(p){
+      var q = toRot(g, p); return { x:q.x*u.dispW/g.bw, y:q.y*u.dispH/g.bh };
+    });
+    u.poly.setAttribute('points', pts.map(function(p){ return p.x + ',' + p.y; }).join(' '));
+    u.handles.forEach(function(h, i){ h.setAttribute('cx', pts[i].x); h.setAttribute('cy', pts[i].y); });
+  }
+  window.addEventListener('resize', function(){ if(state.mode === 'corners') layoutCorners(); });
 
   function confirmCorners(){
-    var cur = state.cur;
-    var scale = cur.srcCanvas.width / cur.dispW;
-    var corners = cur.dispCorners.map(function(p){ return {x:p.x*scale, y:p.y*scale}; });
+    var cur = state.cur, g = rotGeom(cur);
+    var turned = (cur.rot.q % 4 !== 0 || cur.rot.fine !== 0);
+    var rotFull = turned ? paintRotated(null, cur, ROT_FULL_MAX, true) : cur.srcCanvas;     // untouched photo when nothing was turned
+    var kx = rotFull.width/g.bw, ky = rotFull.height/g.bh;
+    var corners = cur.corners0.map(function(p){ var q = toRot(g, p); return { x:q.x*kx, y:q.y*ky }; });
+    // the scanned page must follow what you SEE: after quarter turns the dot that is now top-left in the view comes first
+    var shift = (4 - (cur.rot.q % 4)) % 4;
+    corners = [ corners[shift % 4], corners[(shift + 1) % 4], corners[(shift + 2) % 4], corners[(shift + 3) % 4] ];
 
     var top = Math.hypot(corners[1].x-corners[0].x, corners[1].y-corners[0].y);
     var bottom = Math.hypot(corners[2].x-corners[3].x, corners[2].y-corners[3].y);
@@ -780,9 +963,8 @@
 
     showOverlay('Straightening your page\u2026');
     nextTick(function(){
-      var srcCtx = cur.srcCanvas.getContext('2d');
-      var srcData = srcCtx.getImageData(0,0,cur.srcCanvas.width,cur.srcCanvas.height).data;
-      var warped = warpPerspective(srcData, cur.srcCanvas.width, cur.srcCanvas.height, corners, outW, outH);
+      var srcData = rotFull.getContext('2d').getImageData(0, 0, rotFull.width, rotFull.height).data;
+      var warped = warpPerspective(srcData, rotFull.width, rotFull.height, corners, outW, outH);
 
       cur.baseFull = warped;
       var fullCanvas = imageDataToCanvas(warped);
