@@ -158,6 +158,26 @@
   input.rot-slider[type=range]::-moz-range-track{height:30px; background:transparent;}
   input.rot-slider[type=range]::-moz-range-thumb{width:16px; height:16px; border-radius:50%; background:var(--cyan); border:3px solid #fff; box-shadow:0 1px 5px rgba(0,0,0,.35);}
   input.rot-slider[type=range]:focus-visible{outline:2px solid var(--cyan); outline-offset:2px; border-radius:6px;}
+  .rot-lbl{font-size:12px; color:var(--text-soft); margin-right:8px; font-weight:600;}
+  .rot-readout b{margin-right:auto;}
+  /* ---- the upright Vertical slider, beside the photo ---- */
+  .editor-frame{align-items:flex-start; gap:8px;}
+  .editor-frame .editor-wrap{max-width:calc(100% - 66px);}
+  .vt-col{flex:0 0 58px; box-sizing:border-box; display:flex; flex-direction:column; align-items:center; background:var(--panel); border-radius:12px; padding:8px 2px 6px;}
+  .vt-head{display:flex; flex-direction:column; align-items:center; gap:2px; min-height:60px;}
+  .vt-head .rot-lbl{margin:0; font-size:11px;}
+  .vt-head b{font-family:'IBM Plex Mono', monospace; font-size:11.5px; font-weight:500; margin:0;}
+  .vt-head .rot-reset{padding:1px 2px; font-size:11.5px;}
+  .vt-track{position:relative; flex:1; width:100%; min-height:150px;}
+  .vt-track::before{content:''; position:absolute; left:50%; top:11px; bottom:11px; width:2px; margin-left:-1px; background:var(--line);}
+  .vt-ticks{position:absolute; top:11px; bottom:11px; left:50%; width:16px; margin-left:-8px; display:flex; flex-direction:column; justify-content:space-between; align-items:center; pointer-events:none;}
+  .vt-ticks i{display:block; height:1px; width:7px; background:#BDBAB2;}
+  .vt-ticks i.maj{width:11px; background:#A9A6A0;}
+  .vt-ticks i.mid{height:2px; width:16px; background:var(--magenta);}
+  input.rot-slider.vt-slider[type=range]{
+    left:calc(50% - 15px); top:var(--vtH, 120px); width:var(--vtH, 120px); height:30px;
+    transform-origin:0 0; transform:rotate(-90deg); touch-action:none;
+  }
   .rot-hint{font-size:11.5px; color:var(--text-soft); text-align:center; margin:8px 0 0; line-height:1.5;}
   .editor-actions{display:flex; gap:10px; margin-top:14px;}
   .btn-ghost{
@@ -498,7 +518,7 @@
     return [r,g,b];
   }
 
-  function warpPerspective(srcData, srcW, srcH, corners, outW, outH){
+  function warpPerspective(srcData, srcW, srcH, corners, outW, outH, whiteOutside){
     var m = computeSquareToQuad(
       corners[0].x, corners[0].y, corners[1].x, corners[1].y,
       corners[2].x, corners[2].y, corners[3].x, corners[3].y
@@ -511,8 +531,9 @@
         var denom = m.g*u + m.h*v + 1;
         var X = (m.a*u + m.b*v + m.c) / denom;
         var Y = (m.d*u + m.e*v + m.f) / denom;
-        var rgb = sampleBilinear(srcData, srcW, srcH, X, Y);
         var idx = (py*outW+px)*4;
+        if(whiteOutside && (X < -0.5 || Y < -0.5 || X > srcW - 0.5 || Y > srcH - 0.5)){ out[idx]=255; out[idx+1]=255; out[idx+2]=255; out[idx+3]=255; continue; }
+        var rgb = sampleBilinear(srcData, srcW, srcH, X, Y);
         out[idx]=rgb[0]; out[idx+1]=rgb[1]; out[idx+2]=rgb[2]; out[idx+3]=255;
       }
     }
@@ -760,7 +781,7 @@
     clearError();
     decodeUpload(f).then(function(img){
       try{
-        state.cur = { srcCanvas: imgToCanvas(img, SRC_MAX), corners0: null, rot: { q:0, fine:0 }, adjustments: null };
+        state.cur = { srcCanvas: imgToCanvas(img, SRC_MAX), corners0: null, rot: { q:0, fine:0, vert:0 }, adjustments: null };
         renderCorners();
       } catch(e){
         console.error(e);
@@ -774,16 +795,18 @@
   }
 
   /* ============================================================
-     STEP 2 — CORNER SELECTION  (turn / straighten the photo first, then place the dots)
+     STEP 2 — CORNER SELECTION
+     Turn (90°), Straighten (small tilt) and Vertical (top/bottom squeeze) the photo first, then place the dots.
      ============================================================ */
 
-  var ROT_PREVIEW_MAX = 1100;   // size of the photo on screen while turning it
-  var ROT_FULL_MAX = 3000;      // size of the turned photo that is used for the real scan
+  var ROT_PREVIEW_MAX = 1100;   // size of the photo on screen while adjusting it
+  var KEY_F = 1.3;              // "camera distance" used for the vertical (perspective) correction
   var cornerUI = null;          // live pieces of the corner screen (canvas, svg, dots)
 
-  /* The photo itself is never changed: its original pixels stay in srcCanvas.
-     "rot" (quarter turns + fine tilt) is applied on top, and the four corner dots are stored in the
-     ORIGINAL photo's coordinates (corners0) — so they travel with the photo when it is turned. */
+  /* The photo's original pixels never change (srcCanvas). The view is:  original --turn/straighten--> rot --vertical--> view.
+     The four dots are stored in ORIGINAL-photo coordinates (corners0): turning or straightening carries them with the photo.
+     The vertical slider is different on purpose: the dot FRAME stays where it is on screen while the photo is squeezed
+     under it — so the scan, which is cut out with the frame, really gets the correction. */
   function rotGeom(cur){
     var w = cur.srcCanvas.width, h = cur.srcCanvas.height;
     var deg = cur.rot.q*90 + cur.rot.fine, th = deg*Math.PI/180, c = Math.cos(th), s = Math.sin(th);
@@ -791,6 +814,60 @@
   }
   function toRot(g, p){ var dx = p.x - g.w/2, dy = p.y - g.h/2; return { x:g.bw/2 + dx*g.c - dy*g.s, y:g.bh/2 + dx*g.s + dy*g.c }; }
   function fromRot(g, p){ var dx = p.x - g.bw/2, dy = p.y - g.bh/2; return { x:g.w/2 + dx*g.c + dy*g.s, y:g.h/2 - dx*g.s + dy*g.c }; }
+
+  // everything about how the photo is shown right now
+  function viewGeom(cur){
+    var g = rotGeom(cur), phi = (cur.rot.vert || 0)*Math.PI/180, s = Math.sin(phi), c = Math.cos(phi);
+    var cx = g.bw/2, cy = g.bh/2, f = KEY_F*Math.max(g.bw, g.bh);
+    var v = { g:g, s:s, c:c, cx:cx, cy:cy, f:f, flat:(phi === 0) };
+    v.K  = function(p){ var x = p.x - cx, y = p.y - cy, d = f + y*s; return { x:cx + f*x/d, y:cy + f*y*c/d }; };
+    v.Ki = function(p){ var u = p.x - cx, w = p.y - cy, y = w*f/(f*c - w*s), x = u*(f + y*s)/f; return { x:cx + x, y:cy + y }; };
+    var q = [ {x:0,y:0}, {x:g.w,y:0}, {x:g.w,y:g.h}, {x:0,y:g.h} ].map(function(p){ return v.K(toRot(g, p)); });
+    var x0 = Math.min(q[0].x, q[1].x, q[2].x, q[3].x), x1 = Math.max(q[0].x, q[1].x, q[2].x, q[3].x);
+    var y0 = Math.min(q[0].y, q[1].y, q[2].y, q[3].y), y1 = Math.max(q[0].y, q[1].y, q[2].y, q[3].y);
+    v.quad = q; v.minx = x0; v.miny = y0; v.vw = x1 - x0; v.vh = y1 - y0;
+    return v;
+  }
+  // S = the stable "squeezed" frame (does not move when only the vertical slider changes)
+  function toS(v, p0){ return v.K(toRot(v.g, p0)); }
+  function fromS(v, S){ return fromRot(v.g, v.Ki(S)); }
+
+  function ensurePixels(cur){
+    if(!cur.srcPix){ var c = cur.srcCanvas; cur.srcPix = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; }
+    return cur.srcPix;
+  }
+  // draws the photo as it is shown; the fast canvas path when there is no vertical squeeze, a per-pixel one when there is
+  function paintView(target, cur, maxDim){
+    var v = viewGeom(cur);
+    if(v.flat) return paintRotated(target, cur, maxDim, false);
+    var g = v.g, sc = Math.min(1, maxDim/Math.max(v.vw, v.vh));
+    var cw = Math.max(1, Math.round(v.vw*sc)), ch = Math.max(1, Math.round(v.vh*sc));
+    var cv = target || document.createElement('canvas');
+    if(cv.width !== cw) cv.width = cw;
+    if(cv.height !== ch) cv.height = ch;
+    var x = cv.getContext('2d'), out = x.createImageData(cw, ch), O = out.data, P = ensurePixels(cur), W = g.w, H = g.h;
+    var kx = v.vw/cw, ky = v.vh/ch, f = v.f, s = v.s, c = v.c, cxr = v.cx, cyr = v.cy, mx = v.minx, my = v.miny;
+    var gc = g.c, gs = g.s, gw2 = g.w/2, gh2 = g.h/2, bw2 = g.bw/2, bh2 = g.bh/2;
+    for(var py = 0; py < ch; py++){
+      var Sy = my + (py + 0.5)*ky, wv = Sy - cyr, yr = wv*f/(f*c - wv*s);
+      for(var px = 0; px < cw; px++){
+        var Sx = mx + (px + 0.5)*kx, xr = (Sx - cxr)*(f + yr*s)/f;
+        var dx = xr + cxr - bw2, dy = yr + cyr - bh2;
+        var X0 = gw2 + dx*gc + dy*gs, Y0 = gh2 - dx*gs + dy*gc;
+        if(X0 < -0.5 || Y0 < -0.5 || X0 > W - 0.5 || Y0 > H - 0.5) continue;          // outside the photo: stays transparent
+        if(X0 < 0) X0 = 0; else if(X0 > W - 1.001) X0 = W - 1.001;
+        if(Y0 < 0) Y0 = 0; else if(Y0 > H - 1.001) Y0 = H - 1.001;
+        var xi = X0|0, yi = Y0|0, fx = X0 - xi, fy = Y0 - yi, i00 = (yi*W + xi)*4, i10 = i00 + 4, i01 = i00 + W*4, i11 = i01 + 4, o = (py*cw + px)*4;
+        var w00 = (1-fx)*(1-fy), w10 = fx*(1-fy), w01 = (1-fx)*fy, w11 = fx*fy;
+        O[o]   = P[i00]*w00 + P[i10]*w10 + P[i01]*w01 + P[i11]*w11;
+        O[o+1] = P[i00+1]*w00 + P[i10+1]*w10 + P[i01+1]*w01 + P[i11+1]*w11;
+        O[o+2] = P[i00+2]*w00 + P[i10+2]*w10 + P[i01+2]*w01 + P[i11+2]*w11;
+        O[o+3] = 255;
+      }
+    }
+    x.putImageData(out, 0, 0);
+    return cv;
+  }
 
   // draws the turned photo; fillWhite=false keeps the empty corners transparent (so you can see the photo's edge)
   function paintRotated(target, cur, maxDim, fillWhite){
@@ -807,13 +884,45 @@
     x.drawImage(cur.srcCanvas, -g.w/2, -g.h/2);
     return cv;
   }
+
   function defaultCorners(cur){
     var w = cur.srcCanvas.width, h = cur.srcCanvas.height, mx = w*0.08, my = h*0.08;
     return [ {x:mx, y:my}, {x:w-mx, y:my}, {x:w-mx, y:h-my}, {x:mx, y:h-my} ];
   }
+  function insideConvex(q, p){
+    var sign = 0;
+    for(var i = 0; i < 4; i++){
+      var a = q[i], b = q[(i+1) % 4], cr = (b.x - a.x)*(p.y - a.y) - (b.y - a.y)*(p.x - a.x);
+      if(Math.abs(cr) < 1e-9) continue;
+      if(!sign) sign = cr > 0 ? 1 : -1; else if((cr > 0 ? 1 : -1) !== sign) return false;
+    }
+    return true;
+  }
+  // the starting frame: the photo's own 8% box — or, when the photo is squeezed, the biggest upright rectangle that fits inside it
+  function startFrame(cur){
+    var v = viewGeom(cur);
+    if(v.flat) return defaultCorners(cur);
+    var cxS = v.minx + v.vw/2, cyS = v.miny + v.vh/2, hw = v.vw/2, hh = v.vh/2, lo = 0, hi = 1, k;
+    for(k = 0; k < 24; k++){
+      var t = (lo + hi)/2, ok = [[-1,-1],[1,-1],[1,1],[-1,1]].every(function(d){ return insideConvex(v.quad, { x:cxS + d[0]*hw*t, y:cyS + d[1]*hh*t }); });
+      if(ok) lo = t; else hi = t;
+    }
+    var t2 = lo*0.92, view = [[-1,-1],[1,-1],[1,1],[-1,1]].map(function(d){ return fromS(v, { x:cxS + d[0]*hw*t2, y:cyS + d[1]*hh*t2 }); });
+    var shift = (4 - (cur.rot.q % 4)) % 4, out = [];
+    for(k = 0; k < 4; k++) out[(shift + k) % 4] = view[k];     // dot i belongs to ORIGINAL corner i; the view's top-left is original corner "shift"
+    return out;
+  }
 
   var ROT_ICON_L = '<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>';
   var ROT_ICON_R = '<svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>';
+  var TILT_ICON = '<svg viewBox="0 0 24 24"><path d="M8 4h8l5 16H3z"/><path d="M12 4v16" stroke-dasharray="2 3"/></svg>';
+
+  function ticksHtml(){
+    var t = '';
+    for(var i = 0; i <= 18; i++){ t += '<i class="' + (i === 9 ? 'mid' : (i % 3 === 0 ? 'maj' : '')) + '"></i>'; }
+    return t;
+  }
+  function fmtDeg(v){ return (v > 0 ? '+' : '') + v.toFixed(1) + '\u00b0'; }
 
   function renderCorners(){
     state.mode='corners';
@@ -825,28 +934,34 @@
     clearError();
 
     var cur = state.cur;
-    if(!cur.rot) cur.rot = { q:0, fine:0 };
-    if(!cur.corners0) cur.corners0 = defaultCorners(cur);
-
-    var ticks = '';
-    for(var t = 0; t <= 18; t++){ ticks += '<i class="' + (t === 9 ? 'mid' : (t % 3 === 0 ? 'maj' : '')) + '"></i>'; }
+    if(!cur.rot) cur.rot = { q:0, fine:0, vert:0 };
+    if(cur.rot.vert === undefined) cur.rot.vert = 0;
+    if(!cur.corners0){ cur.corners0 = startFrame(cur); cur.frameDefault = true; }
 
     main.innerHTML = '<div class="step-wrap wide"><div class="corners-layout">' +
       '<div class="corners-editor-col">' +
         '<p class="step-title">Line up the corners</p>' +
-        '<p class="step-sub">Drag the four dots so they sit exactly on the edges of your document. Sideways or crooked photo? Turn it with the controls under the photo first.</p>' +
-        '<div class="editor-frame"><div class="editor-wrap" id="editorWrap"><canvas id="editorImg"></canvas></div></div>' +
+        '<p class="step-sub">Drag the four dots so they sit exactly on the edges of your document. Sideways, crooked or taken from an angle? Fix the photo with the controls under it first.</p>' +
+        '<div class="editor-frame">' +
+          '<div class="editor-wrap" id="editorWrap"><canvas id="editorImg"></canvas></div>' +
+          '<div class="vt-col" id="tiltBar">' +
+            '<div class="vt-head"><span class="rot-lbl">Vertical</span><b id="tiltVal">0.0\u00b0</b><button type="button" class="rot-reset" id="tiltReset">Reset</button></div>' +
+            '<div class="vt-track" id="vtTrack"><div class="vt-ticks">' + ticksHtml() + '</div>' +
+              '<input type="range" class="rot-slider vt-slider" id="tiltRange" min="-30" max="30" step="0.5" value="0" aria-label="Vertical tilt of the photo: slide up if the top looks narrower">' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
         '<div class="rot-bar" id="rotBar">' +
           '<button type="button" class="rot-btn" id="rotL" aria-label="Turn left 90 degrees" title="Turn left 90\u00b0">' + ROT_ICON_L + '</button>' +
           '<div class="rot-mid">' +
-            '<div class="rot-readout"><b id="rotVal">0.0\u00b0</b><button type="button" class="rot-reset" id="rotReset">Reset</button></div>' +
-            '<div class="rot-track"><div class="rot-ticks">' + ticks + '</div>' +
+            '<div class="rot-readout"><span class="rot-lbl">Straighten</span><b id="rotVal">0.0\u00b0</b><button type="button" class="rot-reset" id="rotReset">Reset</button></div>' +
+            '<div class="rot-track"><div class="rot-ticks">' + ticksHtml() + '</div>' +
               '<input type="range" class="rot-slider" id="rotRange" min="-45" max="45" step="0.5" value="0" aria-label="Straighten the photo">' +
             '</div>' +
           '</div>' +
           '<button type="button" class="rot-btn" id="rotR" aria-label="Turn right 90 degrees" title="Turn right 90\u00b0">' + ROT_ICON_R + '</button>' +
         '</div>' +
-        '<p class="rot-hint">Buttons turn the photo 90\u00b0 \u00b7 drag the line to fix a small tilt</p>' +
+        '<p class="rot-hint">Buttons turn the photo 90\u00b0 \u00b7 Straighten fixes a small tilt \u00b7 Vertical (right side): top looks narrower? slide up \u2014 bottom narrower? slide down</p>' +
       '</div>' +
       '<div class="corners-side-col">' +
         '<div class="editor-actions">' +
@@ -859,37 +974,53 @@
     var wrap = document.getElementById('editorWrap');
     var cv = document.getElementById('editorImg');
     cornerUI = { wrap:wrap, cv:cv, svg:null, poly:null, handles:[], dispW:0, dispH:0, raf:0,
-                 range:document.getElementById('rotRange'), val:document.getElementById('rotVal'), reset:document.getElementById('rotReset') };
+                 range:document.getElementById('rotRange'), val:document.getElementById('rotVal'), reset:document.getElementById('rotReset'),
+                 trange:document.getElementById('tiltRange'), tval:document.getElementById('tiltVal'), treset:document.getElementById('tiltReset') };
 
     document.getElementById('cancelUpload').addEventListener('click', renderUpload);
     document.getElementById('resetCorners').addEventListener('click', function(){
-      state.cur.corners0 = defaultCorners(state.cur);       // the starting box, turned together with the photo
+      state.cur.corners0 = startFrame(state.cur); state.cur.frameDefault = true;
       redrawCorners();
     });
     document.getElementById('rotL').addEventListener('click', function(){ state.cur.rot.q = (state.cur.rot.q + 3) % 4; applyRotation(); });
     document.getElementById('rotR').addEventListener('click', function(){ state.cur.rot.q = (state.cur.rot.q + 1) % 4; applyRotation(); });
-    cornerUI.range.addEventListener('input', function(){
-      state.cur.rot.fine = parseFloat(cornerUI.range.value) || 0;
+    function schedule(){
       if(cornerUI.raf) return;
-      cornerUI.raf = requestAnimationFrame(function(){ cornerUI.raf = 0; applyRotation(true); });   // smooth, one redraw per frame
-    });
+      cornerUI.raf = requestAnimationFrame(function(){ cornerUI.raf = 0; applyRotation(true); });   // one redraw per frame while dragging
+    }
+    cornerUI.range.addEventListener('input', function(){ state.cur.rot.fine = parseFloat(cornerUI.range.value) || 0; schedule(); });
     cornerUI.range.addEventListener('dblclick', function(){ state.cur.rot.fine = 0; applyRotation(); });
     cornerUI.reset.addEventListener('click', function(){ state.cur.rot.q = 0; state.cur.rot.fine = 0; applyRotation(); });
+    cornerUI.trange.addEventListener('input', function(){ setVert(parseFloat(cornerUI.trange.value) || 0); schedule(); });
+    cornerUI.trange.addEventListener('dblclick', function(){ setVert(0); applyRotation(); });
+    cornerUI.treset.addEventListener('click', function(){ setVert(0); applyRotation(); });
 
     buildCornerOverlay();
     applyRotation();
   }
 
-  function updateRotUI(){
-    var u = cornerUI, r = state.cur.rot, f = r.fine;
-    u.range.value = f;
-    u.val.textContent = (f > 0 ? '+' : '') + f.toFixed(1) + '\u00b0';
-    u.reset.classList.toggle('show', f !== 0 || r.q % 4 !== 0);
+  // change the vertical squeeze while the dot FRAME stays where it is on screen
+  function setVert(val){
+    var cur = state.cur;
+    if(cur.frameDefault){ cur.rot.vert = val; cur.corners0 = startFrame(cur); return; }   // untouched starting frame: refit it inside the corrected photo
+    var vOld = viewGeom(cur);
+    var S = cur.corners0.map(function(p){ return toS(vOld, p); });
+    cur.rot.vert = val;
+    var vNew = viewGeom(cur);
+    cur.corners0 = S.map(function(p){ return fromS(vNew, p); });
   }
-  function applyRotation(keepSlider){
+
+  function updateRotUI(){
+    var u = cornerUI, r = state.cur.rot;
+    u.range.value = r.fine; u.trange.value = r.vert;
+    u.val.textContent = fmtDeg(r.fine); u.tval.textContent = fmtDeg(r.vert);
+    u.reset.classList.toggle('show', r.fine !== 0 || r.q % 4 !== 0);
+    u.treset.classList.toggle('show', r.vert !== 0);
+  }
+  function applyRotation(){
     var u = cornerUI; if(!u) return;
-    paintRotated(u.cv, state.cur, ROT_PREVIEW_MAX, false);
-    if(!keepSlider) updateRotUI(); else { u.val.textContent = (state.cur.rot.fine > 0 ? '+' : '') + state.cur.rot.fine.toFixed(1) + '\u00b0'; u.reset.classList.toggle('show', state.cur.rot.fine !== 0 || state.cur.rot.q % 4 !== 0); }
+    paintView(u.cv, state.cur, ROT_PREVIEW_MAX);
+    updateRotUI();
     layoutCorners();
   }
 
@@ -912,8 +1043,9 @@
             var rect = svg.getBoundingClientRect();
             var x = (mv.clientX - rect.left)*u.dispW/rect.width, y = (mv.clientY - rect.top)*u.dispH/rect.height;
             x = Math.max(0, Math.min(u.dispW, x)); y = Math.max(0, Math.min(u.dispH, y));
-            var g = rotGeom(state.cur);
-            state.cur.corners0[i] = fromRot(g, { x:x*g.bw/u.dispW, y:y*g.bh/u.dispH });   // remember it on the ORIGINAL photo
+            var v = viewGeom(state.cur);
+            state.cur.corners0[i] = fromS(v, { x:v.minx + x*v.vw/u.dispW, y:v.miny + y*v.vh/u.dispH });   // remember it on the ORIGINAL photo
+            state.cur.frameDefault = false;                                                                // you placed it: it stays where you put it
             redrawCorners();
           }
           function up(){ window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); }
@@ -929,12 +1061,17 @@
     if(!dw || !dh){ setTimeout(layoutCorners, 50); return; }
     u.dispW = dw; u.dispH = dh;
     u.svg.setAttribute('viewBox', '0 0 ' + dw + ' ' + dh);
+    var col = document.getElementById('tiltBar'), trk = document.getElementById('vtTrack');
+    if(col && trk){
+      col.style.height = Math.max(dh, 250) + 'px';
+      trk.style.setProperty('--vtH', trk.clientHeight + 'px');     // the slider is a normal range turned upright: give it the track's height as its length
+    }
     redrawCorners();
   }
   function redrawCorners(){
     var u = cornerUI; if(!u || !u.dispW) return;
-    var g = rotGeom(state.cur), pts = state.cur.corners0.map(function(p){
-      var q = toRot(g, p); return { x:q.x*u.dispW/g.bw, y:q.y*u.dispH/g.bh };
+    var v = viewGeom(state.cur), pts = state.cur.corners0.map(function(p){
+      var S = toS(v, p); return { x:(S.x - v.minx)*u.dispW/v.vw, y:(S.y - v.miny)*u.dispH/v.vh };
     });
     u.poly.setAttribute('points', pts.map(function(p){ return p.x + ',' + p.y; }).join(' '));
     u.handles.forEach(function(h, i){ h.setAttribute('cx', pts[i].x); h.setAttribute('cy', pts[i].y); });
@@ -942,11 +1079,9 @@
   window.addEventListener('resize', function(){ if(state.mode === 'corners') layoutCorners(); });
 
   function confirmCorners(){
-    var cur = state.cur, g = rotGeom(cur);
-    var turned = (cur.rot.q % 4 !== 0 || cur.rot.fine !== 0);
-    var rotFull = turned ? paintRotated(null, cur, ROT_FULL_MAX, true) : cur.srcCanvas;     // untouched photo when nothing was turned
-    var kx = rotFull.width/g.bw, ky = rotFull.height/g.bh;
-    var corners = cur.corners0.map(function(p){ var q = toRot(g, p); return { x:q.x*kx, y:q.y*ky }; });
+    var cur = state.cur, src = cur.srcCanvas;
+    // the page is cut out of the ORIGINAL photo with the four dots (already corrected for turn / straighten / vertical)
+    var corners = cur.corners0.map(function(p){ return { x:p.x, y:p.y }; });
     // the scanned page must follow what you SEE: after quarter turns the dot that is now top-left in the view comes first
     var shift = (4 - (cur.rot.q % 4)) % 4;
     corners = [ corners[shift % 4], corners[(shift + 1) % 4], corners[(shift + 2) % 4], corners[(shift + 3) % 4] ];
@@ -963,8 +1098,8 @@
 
     showOverlay('Straightening your page\u2026');
     nextTick(function(){
-      var srcData = rotFull.getContext('2d').getImageData(0, 0, rotFull.width, rotFull.height).data;
-      var warped = warpPerspective(srcData, rotFull.width, rotFull.height, corners, outW, outH);
+      var srcData = src.getContext('2d').getImageData(0, 0, src.width, src.height).data;
+      var warped = warpPerspective(srcData, src.width, src.height, corners, outW, outH, true);
 
       cur.baseFull = warped;
       var fullCanvas = imageDataToCanvas(warped);
