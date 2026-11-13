@@ -3,7 +3,7 @@ description: Test, commit, push a branch and open a pull request (never merges)
 ---
 Ship my current work safely. Extra instructions from me: $ARGUMENTS
 
-1. If the current branch is `main`, create a branch named `area/short-name` that describes the change (areas: site, print, scan, pdf-tools, aadhaar, voter, dashboard, backend, shop-pc, tests, docs, tools). Never commit on `main`.
+1. If the current branch is `main`, stop: changes belong in a worktree (`bash tools/new_worktree.sh area/short-name`, see CLAUDE.md). Otherwise the branch is already named `area/short-name`. (Fallback only if I insist: create a branch named `area/short-name` that describes the change (areas: site, print, scan, pdf-tools, aadhaar, voter, dashboard, backend, shop-pc, tests, docs, tools). Never commit on `main`.)
 2. Run `.venv/bin/python tests/run_all.py`. If anything fails, stop and show me the failures.
 3. Show `git diff --stat`. Make sure no secret, token, Apps Script SECRET or `listener.config.json` is in the changes (this repository is PUBLIC). Stop if you find one.
 4. Commit with the message `area: what changed`. Put related files in ONE commit (every commit starts a GitHub Pages build).
