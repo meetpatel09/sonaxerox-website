@@ -58,6 +58,11 @@ for rel in ["index.html"] + [f"{d}/index.html" for d in SITE_DIRS]:
 priced = [rel for rel in ["index.html"] + [f"{d}/index.html" for d in SITE_DIRS] if "₹" in text(rel)]
 r.check("any page that shows ₹ bundles the rupee glyph (old PCs draw an empty box otherwise)", all("SX Rupee" in text(p) for p in priced), priced)
 
+# ---- Claude Code project commands (/setup-project, /ship, ...) must have a description ----
+cmds = sorted((REPO / ".claude/commands").glob("*.md"))
+r.check("every Claude Code slash command has a description and the core four exist",
+        {"setup-project", "ship", "verify-live", "new-page"} <= {c.stem for c in cmds} and all(re.search(r"^description: .+", c.read_text(encoding="utf-8"), re.M) for c in cmds), [c.stem for c in cmds])
+
 # ---- a public repository: no secrets ----
 files = subprocess.run(["git", "ls-files"], cwd=REPO, capture_output=True, text=True).stdout.split()
 if not files:                                                                    # not a git checkout (e.g. a zip): scan the folder instead

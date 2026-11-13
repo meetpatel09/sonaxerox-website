@@ -10,6 +10,9 @@ You are working on the **Sona Xerox** website and shop tools (sonaxerox.in). Rea
 | `sonaxerox-print-pipeline` | print orders, Apps Script, the shop-PC listener, prices, payments |
 | `sonaxerox-image-tools` | /scan, the /print photo editor, HEIC, the Aadhaar tools |
 
+## Slash commands (`.claude/commands/`)
+`/setup-project` (check tools, tests, GitHub login) · `/ship <note>` (branch → tests → commit → push → PR, never merges) · `/verify-live` (live site == repo?) · `/new-page <what>` (new page the right way).
+
 ## Non-negotiables
 1. **Every new page gets a button on `/our-tools/`** → `python3 tools/new_page.py …`.
 2. Private tools are `noindex`; only pages in `sitemap.xml` are public.

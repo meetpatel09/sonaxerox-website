@@ -43,6 +43,47 @@ Claude Code reads `CLAUDE.md` and the five skills in `.claude/skills/` automatic
 * **never:** `sudo`, `rm -rf`, force-push, pushing straight to `main`, reading `.env` or the shop PC's `listener.config.json`, editing `CNAME` or the Google verification file
 Use `/permissions` inside Claude Code to see or change these rules.
 
+## Let Claude Code do the whole setup itself
+Things only **you** can do (they need your account / browser): sign in to Claude, click "trust this folder", approve each command it asks about, and log in to GitHub (`gh auth login`).
+Everything else Claude Code does by itself.
+
+**Stage 1 — first time (the project is not on the Mac yet).** Download `sonaxerox-project-setup.bundle` into Downloads, then:
+```bash
+cd /Users/meetpatel && claude
+```
+and paste this message:
+```
+You are setting up my Sona Xerox website project on this Mac. Do every step yourself and tell me in simple English what you did.
+Stop and ask me only if a step fails or needs my login.
+
+Goal: /Users/meetpatel/sona-xerox-website is a git clone of https://github.com/meetpatel09/sonaxerox-website.git, on the branch project-setup, with the tools installed.
+
+1. Print the versions of git, python3 and node. If one is missing, tell me exactly how to install it and stop.
+2. If /Users/meetpatel/sona-xerox-website does not exist, run: git clone https://github.com/meetpatel09/sonaxerox-website.git /Users/meetpatel/sona-xerox-website
+   If it exists, never overwrite it: show git status, and continue only if it is that repository with no uncommitted changes.
+3. Find the newest file matching ~/Downloads/sonaxerox-project-setup*.bundle (ls -t). If there is none, tell me to download it from our chat and stop.
+   Otherwise, inside the repo run: git fetch <that bundle file> project-setup:project-setup   then: git switch project-setup
+   (if a local branch project-setup already exists, fetch into the name project-setup-new instead and tell me).
+4. Run: bash tools/setup_dev.sh   and show me the summary.
+5. Run: .venv/bin/python tests/run_all.py   and tell me which suites passed. If any failed, show the failing lines and your guess why (the tests were written on Linux, so Mac fonts/pixels may differ). Do NOT change any test or page.
+6. Run: gh auth status. If I am not logged in, tell me to run "gh auth login" in my own terminal. Never ask for or handle a token or password.
+7. Do NOT push, merge, delete, or edit any file. End with a checklist (✅/❌ per step) and the one next thing I should do.
+```
+
+**Stage 2 — restart inside the project** (Claude Code reads `CLAUDE.md`, the skills, the slash commands and the permission rules from the folder you start it in):
+```bash
+cd /Users/meetpatel/sona-xerox-website && claude
+```
+then type `/setup-project` (re-checks everything and tells you what is left).
+
+**Slash commands in this project** (type `/` to see them)
+| Command | What Claude Code does by itself |
+|---|---|
+| `/setup-project` | checks tools, runs the tests, checks the GitHub login, reports ✅/❌ |
+| `/ship <note>` | new branch → full tests → secret check → commit → (asks you) push → pull request. **Never merges.** |
+| `/verify-live` | compares sonaxerox.in with the repo, retries once after 60 s |
+| `/new-page <what>` | creates the page + dashboard button + noindex, builds it in Gujarati and English, tests it |
+
 ## Daily flow
 ```bash
 git switch main && git pull --ff-only
