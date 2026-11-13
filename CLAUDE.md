@@ -13,6 +13,9 @@ You are working on the **Sona Xerox** website and shop tools (sonaxerox.in). Rea
 ## Slash commands (`.claude/commands/`)
 `/setup-project` (check tools, tests, GitHub login) · `/ship <note>` (branch → tests → commit → push → PR, never merges) · `/verify-live` (live site == repo?) · `/new-page <what>` (new page the right way).
 
+## Worktree workflow (every update or bug fix)
+The main folder `~/sona-xerox-website` stays on `main` — **never edit or commit there**. For each change run `bash tools/new_worktree.sh area/short-name` (e.g. `print/fix-margin`); it creates `~/sona-xerox-worktrees/area-short-name` on a new branch from fresh `origin/main`, with `.venv` and test fixtures linked. Work, test and `/ship` inside that folder. After the PR is merged: `git worktree remove ../sona-xerox-worktrees/<folder>` and `git branch -D <branch>`, then `git pull` in the main folder.
+
 ## Non-negotiables
 1. **Every new page gets a button on `/our-tools/`** → `python3 tools/new_page.py …`.
 2. Private tools are `noindex`; only pages in `sitemap.xml` are public.
