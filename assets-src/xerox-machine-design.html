@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sona Xerox — Machine Design Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Hind+Vadodara:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBFAF6; --ink:#161616;
+    --cyan:#00A3C4; --magenta:#E0218A; --yellow:#FFC400;
+    --line:#E4E2D9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    background:var(--paper);
+    font-family:"Bricolage Grotesque","Hind Vadodara",sans-serif;
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:2rem;padding:2rem 1rem;color:var(--ink);
+  }
+  h1{font-size:clamp(1.3rem,4vw,1.8rem);font-weight:800;letter-spacing:-.02em;text-align:center}
+  h1 span{color:var(--magenta)}
+  .hint{font-size:.9rem;color:#6F6F68;text-align:center;font-family:"Hind Vadodara",sans-serif}
+
+  .machine-wrap{width:min(440px,92vw)}
+
+  /* ============ THE MACHINE ============ */
+  .machine{position:relative;width:100%;aspect-ratio:440/420}
+
+  /* lid */
+  .lid{
+    position:absolute;top:0;left:6%;width:88%;height:7%;
+    background:var(--ink);border-radius:10px 10px 4px 4px;
+  }
+  .lid::after{
+    content:"";position:absolute;right:8%;top:-46%;width:14%;height:46%;
+    background:var(--ink);border-radius:6px 6px 0 0;
+  }
+  /* glass / scan deck */
+  .deck{
+    position:absolute;top:7%;left:9%;width:82%;height:13%;
+    background:linear-gradient(180deg,#2b2b2b,#1c1c1c);
+    border-radius:0 0 6px 6px;overflow:hidden;
+  }
+  .scanlight{
+    position:absolute;top:0;bottom:0;width:14%;
+    background:linear-gradient(90deg,transparent,rgba(0,229,255,.95),transparent);
+    filter:blur(1px);
+    animation:scan 2.6s ease-in-out infinite;
+  }
+  @keyframes scan{
+    0%{left:-15%} 45%{left:101%} 55%{left:101%} 100%{left:-15%}
+  }
+
+  /* body */
+  .bodyblock{
+    position:absolute;top:20%;left:2%;width:96%;height:46%;
+    background:#fff;border:2.5px solid var(--ink);border-radius:14px;
+    box-shadow:8px 8px 0 rgba(22,22,22,.08);
+  }
+  /* control panel */
+  .panel{
+    position:absolute;top:6%;right:5%;display:flex;gap:8px;align-items:center;
+  }
+  .panel i{width:14px;height:14px;border-radius:50%;display:block;border:2px solid var(--ink)}
+  .panel i:nth-child(1){background:var(--cyan)}
+  .panel i:nth-child(2){background:var(--magenta)}
+  .panel i:nth-child(3){background:var(--yellow)}
+  .panel .go{
+    width:auto;height:auto;border-radius:8px;background:var(--ink);color:#fff;
+    font-size:.6rem;font-weight:800;letter-spacing:.1em;padding:3px 8px;border:none;
+  }
+  /* brand on machine */
+  .brand{
+    position:absolute;left:6%;top:8%;
+    font-weight:800;font-size:clamp(.9rem,3vw,1.2rem);letter-spacing:-.01em;
+  }
+  .brand small{display:block;font-size:.55em;font-weight:700;color:#6F6F68;letter-spacing:.18em}
+
+  /* toner window */
+  .toner{
+    position:absolute;left:6%;bottom:14%;display:flex;gap:6px;align-items:flex-end;height:34%;
+  }
+  .toner b{width:13px;border:2px solid var(--ink);border-radius:4px;display:block;position:relative;overflow:hidden;height:100%;background:#fff}
+  .toner b::after{content:"";position:absolute;left:0;right:0;bottom:0;animation:tonerPulse 3.4s ease-in-out infinite}
+  .toner b.c::after{background:var(--cyan);height:78%}
+  .toner b.m::after{background:var(--magenta);height:62%;animation-delay:.4s}
+  .toner b.y::after{background:var(--yellow);height:85%;animation-delay:.8s}
+  .toner b.k::after{background:var(--ink);height:70%;animation-delay:1.2s}
+  @keyframes tonerPulse{0%,100%{opacity:1}50%{opacity:.72}}
+
+  /* output slot */
+  .slot{
+    position:absolute;bottom:18%;right:5%;width:58%;height:5%;
+    background:var(--ink);border-radius:6px;
+  }
+  /* output tray */
+  .tray{
+    position:absolute;top:66%;right:3%;width:64%;height:4%;
+    background:var(--ink);border-radius:0 0 10px 10px;
+  }
+  /* paper coming out */
+  .page{
+    position:absolute;right:7%;width:50%;aspect-ratio:210/150;
+    top:64%;
+    background:#fff;border:2px solid var(--ink);border-radius:4px;
+    transform-origin:top center;
+    animation:printOut 2.6s ease-in-out infinite;
+    overflow:hidden;
+    box-shadow:0 8px 18px rgba(22,22,22,.14);
+    display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6%;
+    padding:5%;
+  }
+  @keyframes printOut{
+    0%,46%{transform:translateY(-92%);}
+    78%,100%{transform:translateY(4%);}
+  }
+  .page .pgname{font-weight:800;font-size:clamp(.7rem,2.6vw,1rem);letter-spacing:-.01em}
+  .page .pgname span{color:var(--cyan)}
+  .page .pgline{width:80%;height:5px;border-radius:3px;background:var(--line)}
+  .page .pgline.short{width:55%}
+  .page .pgcmyk{display:flex;gap:4px;width:80%}
+  .page .pgcmyk i{flex:1;height:7px;border-radius:2px}
+  .page .pgcmyk i:nth-child(1){background:var(--cyan)}
+  .page .pgcmyk i:nth-child(2){background:var(--magenta)}
+  .page .pgcmyk i:nth-child(3){background:var(--yellow)}
+  .page .pgcmyk i:nth-child(4){background:var(--ink)}
+
+  /* legs */
+  .leg{position:absolute;bottom:0;width:6%;height:14%;background:var(--ink);border-radius:0 0 5px 5px}
+  .leg.l{left:10%} .leg.r{right:10%}
+  .base{
+    position:absolute;bottom:13%;left:4%;width:92%;height:3%;
+    background:var(--ink);border-radius:4px;
+  }
+
+  /* halftone dots backdrop */
+  .machine::before{
+    content:"";position:absolute;inset:-6% -4%;z-index:-1;border-radius:24px;
+    background-image:radial-gradient(rgba(0,163,196,.16) 1.6px, transparent 1.6px);
+    background-size:14px 14px;
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .scanlight{animation:none;left:40%}
+    .page{animation:none;transform:translateY(4%)}
+    .toner b::after{animation:none}
+  }
+</style>
+</head>
+<body>
+  <h1>Design preview — <span>animated xerox machine</span></h1>
+
+  <div class="machine-wrap">
+    <div class="machine" role="img" aria-label="Animated illustration of a xerox machine printing a page that says Sona Xerox">
+      <div class="lid"></div>
+      <div class="deck"><div class="scanlight"></div></div>
+
+      <div class="bodyblock">
+        <div class="brand">SONA XEROX<small>VALOD • EST. 25 YRS</small></div>
+        <div class="panel"><i></i><i></i><i></i><span class="go">COPY</span></div>
+        <div class="toner"><b class="c"></b><b class="m"></b><b class="y"></b><b class="k"></b></div>
+        <div class="slot"></div>
+      </div>
+
+      <div class="page">
+        <div class="pgname">SONA <span>XEROX</span></div>
+        <div class="pgline"></div>
+        <div class="pgline short"></div>
+        <div class="pgcmyk"><i></i><i></i><i></i><i></i></div>
+      </div>
+
+      <div class="tray"></div>
+      <div class="base"></div>
+      <div class="leg l"></div><div class="leg r"></div>
+    </div>
+  </div>
+
+  <p class="hint">The scanner light sweeps, CMYK toner levels pulse, and a fresh page with your shop name prints out — on repeat.</p>
+</body>
+</html>

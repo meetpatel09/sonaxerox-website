@@ -1,0 +1,12 @@
+* text=auto
+*.html text eol=lf
+*.js text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+# Windows scripts for the shop PC must keep Windows line endings
+*.bat text eol=crlf
+*.vbs text eol=crlf
+*.png binary
+*.jpg binary
+*.pdf binary

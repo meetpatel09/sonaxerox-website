@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>{{TITLE_EN}} — Sona Xerox</title>
+{{ROBOTS}}<meta name="theme-color" content="#FBFAF6">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="apple-touch-icon" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Archivo:wght@400;500;600;700&family=Hind+Vadodara:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+{{RUPEE_CSS}}  :root{
+{{TOKENS}}
+  }
+  *{margin:0; padding:0; box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    font-family:var(--body);
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.5;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:env(safe-area-inset-bottom, 0px);
+  }
+  body[data-lang="gu"]{font-family:var(--gu);}
+  .cmyk-bar{display:flex; height:8px; width:100%;}
+  .cmyk-bar span{flex:1;}
+  .cmyk-bar span:nth-child(1){background:var(--cyan);}
+  .cmyk-bar span:nth-child(2){background:var(--magenta);}
+  .cmyk-bar span:nth-child(3){background:var(--yellow);}
+  .cmyk-bar span:nth-child(4){background:var(--ink);}
+  header{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 20px; max-width:960px; margin:0 auto;}
+  header h1{font-family:var(--display); font-size:1.1rem;}
+  .lang-toggle{border:1.5px solid var(--ink); background:transparent; border-radius:999px; font:600 .8rem var(--body); padding:6px 12px; cursor:pointer;}
+  main{max-width:960px; margin:0 auto; padding:8px 20px 40px;}
+  h2{font-family:var(--display); font-size:1.6rem; margin:16px 0 6px;}
+</style>
+</head>
+<body data-lang="gu">
+<div class="cmyk-bar" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+<header>
+  <h1>Sona Xerox</h1>
+  <button class="lang-toggle" id="langBtn" type="button" aria-label="Language">English</button>
+</header>
+<main>
+  <h2 data-gu="{{TITLE_GU}}" data-en="{{TITLE_EN}}">{{TITLE_GU}}</h2>
+  <p data-gu="અહીં તમારી સામગ્રી લખો." data-en="Write your content here.">અહીં તમારી સામગ્રી લખો.</p>
+</main>
+<script>
+  // Gujarati / English toggle — same pattern and storage key as the other pages (remembers the choice on this device)
+  var KEY = 'sx_lang';
+  var btn = document.getElementById('langBtn');
+  function setLang(lang){
+    document.body.dataset.lang = lang;
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-gu]').forEach(function(el){ el.textContent = el.dataset[lang]; });
+    btn.textContent = lang === 'gu' ? 'English' : 'ગુજરાતી';
+    try{ localStorage.setItem(KEY, lang); }catch(e){}
+  }
+  btn.addEventListener('click', function(){ setLang(document.body.dataset.lang === 'gu' ? 'en' : 'gu'); });
+  var saved = null;
+  try{ saved = localStorage.getItem(KEY); }catch(e){}
+  if(saved === 'en') setLang('en');
+</script>
+</body>
+</html>
