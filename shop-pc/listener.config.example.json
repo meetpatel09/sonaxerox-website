@@ -1,0 +1,8 @@
+{
+  "BACKEND_URL": "https://script.google.com/macros/s/PASTE_YOUR_DEPLOYMENT_ID/exec",
+  "SECRET": "the-same-secret-you-put-in-the-Apps-Script",
+  "PRINTER_BW": "Exact Windows printer name for black & white",
+  "PRINTER_COLOR": "Exact Windows printer name for colour",
+  "SUMATRA_PATH": "C:\\Program Files\\SumatraPDF\\SumatraPDF.exe",
+  "POLL_SECONDS": 15
+}
