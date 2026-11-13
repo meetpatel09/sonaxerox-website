@@ -1,0 +1,11 @@
+{
+  "name": "sonaxerox-tests",
+  "private": true,
+  "description": "Browser libraries the tests serve from disk instead of the CDNs (versions match the ones the pages load).",
+  "dependencies": {
+    "heic2any": "0.0.4",
+    "jszip": "3.10.1",
+    "pdf-lib": "1.17.1",
+    "pdfjs-dist": "3.11.174"
+  }
+}
