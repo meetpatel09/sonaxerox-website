@@ -10,7 +10,7 @@ rep = Report("Developer tools")
 
 
 def scratch():
-    d = Path(tempfile.mkdtemp()); shutil.copytree(REPO, d / "r", ignore=shutil.ignore_patterns(".git", "node_modules", ".fixtures", "__pycache__")); return d / "r"
+    d = Path(tempfile.mkdtemp()); shutil.copytree(REPO, d / "r", ignore=shutil.ignore_patterns(".git", ".venv", "node_modules", ".fixtures", "__pycache__")); return d / "r"
 
 
 def run(cwd, *args):

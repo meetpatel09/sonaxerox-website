@@ -52,11 +52,10 @@ CLAUDE.md       short guide for AI assistants working in this repo
 ```bash
 python3 -m http.server 8000                  # preview at http://localhost:8000  (the pages work from any static server)
 
-# one-time test setup
-pip install -r tests/requirements.txt && python3 -m playwright install chromium
-(cd tests && npm install)
+# one-time setup (Mac/Linux) — creates .venv, installs the test browser + libraries, generates test photos
+bash tools/setup_dev.sh                      # details: docs/LOCAL_SETUP.md
 
-python3 tests/run_all.py                     # all suites (~4 min)      --fast = no browser (10 s)   --slow = + heavy photos
+python3 tests/run_all.py                     # (use .venv/bin/python) all suites (~4 min)      --fast = no browser (10 s)   --slow = + heavy photos
 python3 tools/new_page.py my-tool "My tool" "મારું ટૂલ"          # new page: file + dashboard button + noindex, all automatic
 ```
 

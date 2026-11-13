@@ -61,7 +61,7 @@ r.check("any page that shows ₹ bundles the rupee glyph (old PCs draw an empty 
 # ---- a public repository: no secrets ----
 files = subprocess.run(["git", "ls-files"], cwd=REPO, capture_output=True, text=True).stdout.split()
 if not files:                                                                    # not a git checkout (e.g. a zip): scan the folder instead
-    files = [str(p.relative_to(REPO)) for p in REPO.rglob("*") if p.is_file() and ".git" not in p.parts and "node_modules" not in p.parts and ".fixtures" not in p.parts]
+    files = [str(p.relative_to(REPO)) for p in REPO.rglob("*") if p.is_file() and ".git" not in p.parts and ".venv" not in p.parts and "node_modules" not in p.parts and ".fixtures" not in p.parts]
 bad = []
 pat = re.compile(r"(ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AIza[0-9A-Za-z_-]{30,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|sk-[A-Za-z0-9]{30,})")
 for f in files:
