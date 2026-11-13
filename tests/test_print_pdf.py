@@ -32,7 +32,7 @@ with browser() as b:
     # ---------- language ----------
     rep.check("opens in Gujarati by default", p.get_attribute("body", "data-lang") == "gu" and p.get_attribute("html", "lang") == "gu")
     rep.check("Gujarati labels, rates and placeholders",
-              "PDF અપલોડ કરો" in txt(p, ".step:nth-of-type(1) .step-label") and raw(p, "#sendBtn") == "દુકાનના પ્રિન્ટર પર મોકલો"
+              "ફાઇલ અપલોડ કરો" in txt(p, ".step:nth-of-type(1) .step-label") and raw(p, "#sendBtn") == "દુકાનના પ્રિન્ટર પર મોકલો"
               and txt(p, "#priceBreak") == "બ્લેક & વ્હાઇટ ₹2/પેજ · કલર ₹10/પેજ · લેતી વખતે ચૂકવો" and txt(p, "#priceAmt") == "₹—"
               and p.get_attribute("#phoneInput", "placeholder") == "10 અંકનો મોબાઇલ નંબર")
     p.click("#langBtn")
@@ -135,14 +135,14 @@ with browser() as b:
     # ---------- phone ----------
     ctx = new_context(b, be, "phone"); be.mode = "ok"
     p = open_page(ctx, "print/index.html", errors)
-    lb, tk = p.locator("#langBtn").bounding_box(), p.locator(".ticket-no").bounding_box()
-    rep.check("phone: header fits (language button + token inside the screen)", lb["x"] >= 0 and tk["x"] + tk["width"] <= 390)
+    lb = p.locator("#langBtn").bounding_box()
+    rep.check("phone: header fits (language button inside the screen; the token only appears after an order)", lb["x"] >= 0 and lb["x"] + lb["width"] <= 390 and not p.is_visible(".ticket-no"))
     upload(p, "p6.pdf")
     rep.check("phone: no sideways scroll", not p.evaluate("document.documentElement.scrollWidth>window.innerWidth"))
     p.evaluate("window.scrollTo(0, document.body.scrollHeight)"); p.wait_for_timeout(200)
     pb, fb = p.locator("#phoneInput").bounding_box(), p.locator("footer").bounding_box()
     rep.check("phone: the price box + Send button never cover the phone-number field", pb["y"] + pb["height"] <= fb["y"] + 1)
-    p.evaluate("window.scrollTo(0,0)"); p.locator("#pvVp").scroll_into_view_if_needed(); p.wait_for_timeout(200)
+    p.evaluate("window.scrollTo(0,0)"); p.locator("#pvVp").evaluate("e=>e.scrollIntoView({block:'center'})"); p.wait_for_timeout(200)   # centred, so the fixed price bar is not over it
     cdp = ctx.new_cdp_session(p); touch = lambda kind, pts: cdp.send("Input.dispatchTouchEvent", {"type": kind, "touchPoints": [{"x": x, "y": y, "id": i} for i, (x, y) in enumerate(pts)]})
     bx = p.locator("#pvVp").bounding_box(); mx, my = bx["x"] + bx["width"] / 2, bx["y"] + bx["height"] / 2
     rep.check("phone: at Fit a finger still scrolls the page", p.evaluate("document.getElementById('pvVp').style.touchAction") == "pan-y")

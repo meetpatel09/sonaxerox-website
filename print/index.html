@@ -15,337 +15,6 @@
   @font-face{font-family:'SX Rupee'; src:url(data:font/woff;base64,d09GRgABAAAAAASUAAwAAAAABgAABAEGAAAAAAAAAAAAAAAAAAAAAAAAAABHUE9TAAAERAAAACAAAAAgRHZMdUdTVUIAAARkAAAALgAAADAfSCdrT1MvMgAAAZQAAABJAAAAYHoKfaRjbWFwAAAB6AAAACoAAAA0AAwhDGdseWYAAAIcAAAAsgAAALIx9YzcaGVhZAAAARwAAAA2AAAANiEMHORoaGVhAAABVAAAAB4AAAAkBtMBIGhtdHgAAAHgAAAACAAAAAgEbwAzbG9jYQAAAhQAAAAGAAAABgBZACZtYXhwAAABdAAAAB8AAAAgAHQAQ25hbWUAAALQAAABXgAAAvBBWl9ZcG9zdAAABDAAAAATAAAAIP+4ADIAAQAAAAQBBhsCqQJfDzz1AAMD6AAAAADYpKm+AAAAAOb6LooAAP/2AlMCvAAAAAcAAgAAAAAAAHicY2BkYGCR+reIIYWpmgEImIIZGBlQARMAUTIC+QAAeJxjYGRgYGBiUGFgZQABRiBbjoENyEoB8xkACR8AuAB4nGNgYQ5mnMDAysDA1MUUwcDA4A2hGeMYjBg9gHyQFFbgGeLmz3BAYafCThapf4sYUljymYqBwowgOSYVpl1ASoGBBQAAUwucAAAAAfQAAAJ7ADN4nGNgYGBiYGBgBmIRIMkIplkYFIA0CxAC+Qo7//+HkPc9wPIMAF8vBzUAAAAAACYAWQAAAAUAAAAAAfQCvAADAAYACQAMAA8AABEhESEBIRcDNycBEQcTJwcB9P4MAaT+rKrIqqoBkKqMqqoCvP1EAor//tT///4CAf7//tT//wABADP/9gJTAroAIwAAARUzFSMOAiMVFDMyNTMGBiMiJjU1MjY2NyE1ITU1ITUhFSMB0oGGCT1zX3Z0VAFoYGNncm0yB/67AUn+twIggQIcEUJFTiJPh4JkZm5jjQ8xNUISWkNDAAAAeJydUl1Kw0AYnLRVrGDxBGXpgyhorVJ80KciFIVA1Yr42p80jdQkZJOWXscjeAJP4lHE2S8rmvRNwnYn883M9222AOpIUIVTqwN448qxg32+5biCBt4trqKJD4trUPi0eAu7+LJ4G01nx+I9p+UcWNzAReUG14gQY82uAXzMkTLlHB1ZCo9kPO53ooqpCaHlPSHzwtpEHD1k3OfkEqkfSlJKh8YlTvn49BpFhjHadEV4JWu4GXHG3Cm9a3LFXkcY4pmJD9TE7OcReUzLsMCIjnL1ih7TQxOnG1VVcnc5S4dPV5S/upOSznyHQE7W53ShnHlINCNaicJk54oF9wnfQ5lhSiY/nUeVkm/gifsWLveBdAwLyW4h4ZjMk7g1+Ui0Z5zbLPVnsmLfn2lGWHIFco4xf01lZe/CVE3fHu4Fp7wrtXFzmqnm3xGT1eypJa0td+2zPmCC+z/XN/Zld90AAHicY2BmAIP/WxmMGLAAACzCAeoAAAEAAAAKABwAHgABREZMVAAIAAQAAAAA//8AAAAAAAB4nGNgZGBg4GLQYdBjYHZx8wlhEElJLTNikAOSiQxyDCxAWYb//xngAAClPAb2AAA=) format('woff'); unicode-range:U+20B9; font-weight:400; font-style:normal;}
   @font-face{font-family:'SX Rupee Bold'; src:url(data:font/woff;base64,d09GRgABAAAAAAScAAwAAAAABiAABAEGAAAAAAAAAAAAAAAAAAAAAAAAAABHUE9TAAAETAAAACAAAAAgRHZMdUdTVUIAAARsAAAALgAAADAfSCdrT1MvMgAAAZQAAABKAAAAYHtDgKRjbWFwAAAB6AAAACoAAAA0AAwhDGdseWYAAAIcAAAAsgAAALI00HhTaGVhZAAAARwAAAA2AAAANiDxHPBoaGVhAAABVAAAAB4AAAAkBrcA+2htdHgAAAHgAAAACAAAAAgESgAmbG9jYQAAAhQAAAAGAAAABgBZACZtYXhwAAABdAAAAB8AAAAgAHQAQm5hbWUAAALQAAABZgAAAxBErmHEcG9zdAAABDgAAAATAAAAIP+4ADIAAQAAAAQBBgzqxwxfDzz1AAMD6AAAAADYpKnIAAAAAOb6LooAAP/2AjcCvgABAAcAAgAAAAAAAHicY2BkYGCR+reIIYUpjAEImMwZGBlQARMAS4ECuAAAeJxjYGRgYGBiUGZgZQABRiBbjoENyEoB8xkACQYAtwB4nGNgYc5k2sPAysDA1MUUwcDA4A2hGeMYjBj9gHwGDgbswDPEzZ9hgcJOhZ0sUv8WMaSw5DMVA4UZQXJMekwHgZQCAwsAFwgL2QAAAfQAAAJWACZ4nGNgYGBiYGBgBmIRIMkIplkYFIA0CxAC+Qo7//+HkPc9wPIMAF8vBzUAAAAAACYAWQAAAAUAAAAAAfQCvAADAAYACQAMAA8AABEhESEBIRcDNycBEQcTJwcB9P4MAaT+rKrIqqoBkKqMqqoCvP1EAor//tT///4CAf7//tT//wABACb/9gI3Ar4AIgAAARUzFSMGBiMVFBYzMjY1MwYGIyImNTUyNjY3ITUhNSE1IRUB4lVbEHx3HiUjHp4Eb2hwd2hjMQj+6QEc/uQCEQJLPGhZXSgnKyoqZXB1dYEJHSBoPHNzAAAAeJydUk1Lw0AUnLRVrKBHD56CB6mitUrxoKcqFIRA1Yp4bWuaVGoSuklL/46/w6M/xx/hvJcNGkUPEjZvdnbmvbcfAOqYoQqnVgfwwpFjB9uc5biCNbxaXEUDbxbXsI93i1ew7mxZvIpdx7V4w9lxuhZv4rQS4hIxEixZdYIAIVK4OEFLh4s7Mj7jtaoSaiIYnc/IPHFtpI4OMsaQ3EzXG5oppcPgDEf8AnpFkWGIJl0xnskKNybOmPeR3iW5cq099PHAjLfUJKwn3VxQMaW+iL8rzplBKhqy6R86YX32mHE2YB9t9tji11bPp6PQH37TyzlNdOddKiI9kz7RmGihCqmWK6aMI84j7Upq57v3qXL1jHx1X8Fj7GnlqJTZK2U4IHOvbkM+Vu0x+5fhfumsXLfoZoA5x0T3MeRfVhb2rmRV6nZwozjlXbo/btYwq7yehKxhTaPZmvoWAq73mMH7n+sDaRp8nQAAeJxjYGYAg/9bGYwYsAAALMIB6gAAAQAAAAoAHAAeAAFERkxUAAgABAAAAAD//wAAAAAAAHicY2BkYGDgYtBh0GNgdnHzCWEQSUktM2KQA5KJDHIMLEBZhv//GeAAAKU8BvYAAA==) format('woff'); unicode-range:U+20B9; font-weight:400; font-style:normal;}
 
-  :root{
-    --bg:#FFFFFF;
-    --panel:#F5F5F3;
-    --panel-2:#EBEBE7;
-    --text:#161513;
-    --text-soft:#726F68;
-    --line:#DEDCD5;
-    --cyan:#00AEEF;
-    --magenta:#EC008C;
-    --yellow:#F5C400;
-    --ok:#2E9A50;
-    --err:#D93025;
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    background:var(--bg);
-    color:var(--text);
-    font-family:'Work Sans', sans-serif;
-    -webkit-font-smoothing:antialiased;
-  }
-  .app{
-    max-width:420px;
-    margin:0 auto;
-    min-height:100vh;
-    background:var(--bg);
-    position:relative;
-    padding-bottom:120px;
-  }
-  header{
-    padding:22px 20px 16px;
-    border-bottom:1px solid var(--line);
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-  }
-  .brand-mark{display:flex; align-items:center; gap:12px;}
-  .cmyk-dots{
-    display:grid;
-    grid-template-columns:repeat(2,9px);
-    grid-template-rows:repeat(2,9px);
-    gap:2px;
-    flex-shrink:0;
-  }
-  .cmyk-dots span{border-radius:50%;}
-  .cmyk-dots span:nth-child(1){background:var(--cyan);}
-  .cmyk-dots span:nth-child(2){background:var(--magenta);}
-  .cmyk-dots span:nth-child(3){background:var(--yellow);}
-  .cmyk-dots span:nth-child(4){background:var(--text);}
-  .brand-mark h1{
-    font-family:'Archivo Black', sans-serif;
-    font-size:16px;
-    margin:0;
-    letter-spacing:0.2px;
-    line-height:1.15;
-  }
-  .brand-mark p{margin:2px 0 0; font-size:11px; color:var(--text-soft); letter-spacing:0.5px; text-transform:uppercase;}
-  .ticket-no{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11px;
-    color:var(--text-soft);
-    text-align:right;
-  }
-  .ticket-no b{display:block; color:var(--text); font-size:13px;}
-
-  main{padding:20px;}
-  .step{margin-bottom:26px;}
-  .step-label{
-    display:flex; align-items:baseline; gap:8px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:12px; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.6px;
-    margin-bottom:10px;
-  }
-  .step-label .n{color:var(--magenta); font-weight:600;}
-
-  .drop{
-    display:flex;
-    align-items:center;
-    gap:14px;
-    border:1.5px solid var(--line);
-    border-radius:10px;
-    background:var(--panel);
-    padding:18px 16px;
-    cursor:pointer;
-    transition:border-color .15s ease, background .15s ease;
-  }
-  .drop:active{background:var(--panel-2);}
-  .drop.has-file{border-color:var(--ok);}
-  .drop.bad-file{border-color:var(--err);}
-  .drop .icon{
-    width:44px; height:44px;
-    border-radius:8px;
-    background:var(--panel-2);
-    display:flex; align-items:center; justify-content:center;
-    flex-shrink:0;
-  }
-  .drop .icon svg{width:22px; height:22px; stroke:var(--cyan);}
-  .drop.has-file .icon svg{stroke:var(--ok);}
-  .drop.bad-file .icon svg{stroke:var(--err);}
-  .drop-text{min-width:0;}
-  .drop-text p{margin:0; font-size:14px; color:var(--text); font-weight:500;}
-  .drop-text p.file-name{color:var(--ok); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .drop-text p.file-bad{color:var(--err);}
-  .drop-text span{font-size:11.5px; color:var(--text-soft);}
-  input[type=file]{display:none;}
-
-  .limit-note{
-    font-size:11.5px; color:var(--text-soft); margin-top:8px; line-height:1.5;
-  }
-  .limit-note b{color:var(--text); font-weight:600;}
-
-  .preview{
-    display:none;
-    margin-top:12px;
-    border:1.5px solid var(--line);
-    border-radius:10px;
-    background:var(--panel);
-    padding:12px;
-  }
-  .preview.show{display:block;}
-  .preview canvas{
-    display:block;
-    margin:0 auto;
-    max-width:100%;
-    border:1px solid var(--line);
-    border-radius:4px;
-    background:#fff;
-  }
-  .pv-bar{
-    display:flex; align-items:center; justify-content:space-between;
-    margin-top:10px;
-  }
-  .pv-bar button{
-    width:34px;height:34px;
-    border-radius:6px;
-    border:1.5px solid var(--line);
-    background:var(--panel-2);
-    color:var(--text);
-    font-size:16px;
-    cursor:pointer;
-  }
-  .pv-bar button:disabled{opacity:.35; cursor:default;}
-  .pv-bar span{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:12px; color:var(--text-soft);
-  }
-
-  .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
-  .choice{
-    border:1.5px solid var(--line);
-    border-radius:8px;
-    background:var(--panel);
-    padding:12px 10px;
-    text-align:center;
-    font-size:13.5px;
-    font-weight:500;
-    cursor:pointer;
-    user-select:none;
-    color:var(--text);
-  }
-  .choice.active{
-    background:var(--text);
-    color:#FFFFFF;
-    border-color:var(--text);
-  }
-  .choice[data-val="color"].active{background:var(--magenta); border-color:var(--magenta); color:#fff;}
-  .choice .sub{display:block; font-size:11px; font-weight:400; opacity:.7; margin-top:2px;}
-
-  .stepper{
-    display:flex; align-items:center; justify-content:space-between;
-    border:1.5px solid var(--line);
-    border-radius:8px;
-    padding:8px 14px;
-    background:var(--panel);
-  }
-  .stepper button{
-    width:34px;height:34px;
-    border-radius:6px;
-    border:1.5px solid var(--line);
-    background:var(--panel-2);
-    color:var(--text);
-    font-size:18px;
-    font-family:'IBM Plex Mono', monospace;
-    cursor:pointer;
-  }
-  .stepper button:active{background:var(--cyan); color:#FFFFFF; border-color:var(--cyan);}
-  .stepper .count{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:22px; font-weight:500;
-  }
-
-  .phone-input{
-    width:100%;
-    padding:12px 14px;
-    border-radius:8px;
-    border:1.5px solid var(--line);
-    background:var(--panel);
-    font-family:'Work Sans', sans-serif;
-    font-size:15px;
-    color:var(--text);
-  }
-  .phone-input:focus{outline:none; border-color:var(--cyan);}
-  .phone-input::placeholder{color:#A9A6A0;}
-
-  footer{
-    position:fixed;
-    bottom:0; left:0; right:0;
-    max-width:420px;
-    margin:0 auto;
-    background:var(--bg);
-    border-top:1px solid var(--line);
-    padding:14px 20px 18px;
-  }
-  .rate-note{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11.5px;
-    color:var(--text-soft);
-    margin:0 0 10px;
-    text-align:center;
-  }
-  .err-note{
-    font-size:12.5px;
-    color:var(--err);
-    margin:0 0 10px;
-    text-align:center;
-    display:none;
-  }
-  .err-note.show{display:block;}
-  .send-btn{
-    width:100%;
-    padding:16px;
-    background:var(--magenta);
-    color:#fff;
-    border:none;
-    border-radius:8px;
-    font-family:'Archivo Black', sans-serif;
-    font-size:14px;
-    letter-spacing:0.4px;
-    text-transform:uppercase;
-    cursor:pointer;
-  }
-  .send-btn:active{background:#c30074;}
-  .send-btn:disabled{background:var(--panel-2); color:#A9A6A0; cursor:not-allowed;}
-  .send-btn.sending{
-    background:var(--panel-2);
-    color:var(--text-soft);
-    cursor:progress;
-  }
-
-  .overlay{
-    position:absolute; inset:0;
-    background:var(--bg);
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    padding:40px 30px;
-    text-align:center;
-    opacity:0;
-    pointer-events:none;
-    transition:opacity .25s ease;
-    z-index:20;
-  }
-  .overlay.show{opacity:1; pointer-events:all;}
-  .stamp-wrap{
-    border:3px solid var(--cyan);
-    border-radius:10px;
-    color:var(--cyan);
-    padding:18px 26px;
-    transform:rotate(-6deg) scale(0.6);
-    opacity:0;
-    margin-bottom:26px;
-  }
-  .overlay.show .stamp-wrap{
-    animation:stampdown .45s cubic-bezier(.36,1.4,.4,1) .15s forwards;
-  }
-  @keyframes stampdown{
-    0%{transform:rotate(-6deg) scale(2.2); opacity:0;}
-    60%{transform:rotate(-6deg) scale(0.92); opacity:1;}
-    100%{transform:rotate(-6deg) scale(1); opacity:1;}
-  }
-  .stamp-wrap h2{
-    font-family:'Archivo Black', sans-serif;
-    font-size:20px;
-    margin:0 0 4px;
-    letter-spacing:1px;
-    color:var(--text);
-  }
-  .stamp-wrap p{
-    margin:0;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:13px;
-    letter-spacing:1px;
-  }
-  .overlay-detail{font-size:14px; color:var(--text-soft); line-height:1.6; max-width:280px;}
-  .overlay-detail b{color:var(--text);}
-  .close-overlay{
-    margin-top:26px;
-    background:none;
-    border:1.5px solid var(--line);
-    border-radius:8px;
-    padding:10px 22px;
-    font-size:13px;
-    font-weight:500;
-    cursor:pointer;
-    color:var(--text);
-  }
-
-  /* ===== header: language toggle ===== */
-  .head-right{display:flex; align-items:center; gap:12px;}
-  .lang-toggle{
-    border:1.5px solid var(--text); background:transparent; border-radius:999px;
-    font-family:'Work Sans','Hind Vadodara',sans-serif; font-weight:600; font-size:12.5px;
-    padding:6px 12px; cursor:pointer; color:var(--text); white-space:nowrap;
-    transition:background .15s, color .15s;
-  }
-  .lang-toggle:hover{background:var(--text); color:#fff;}
-  .lang-toggle:focus-visible, .pv-viewport:focus-visible, .pv-zoom button:focus-visible{outline:3px solid var(--cyan); outline-offset:2px;}
-
-  /* ===== Gujarati typography ===== */
-  body[data-lang="gu"]{font-family:'Hind Vadodara','Work Sans',sans-serif;}
-  body[data-lang="gu"] .send-btn,
-  body[data-lang="gu"] .stamp-wrap h2{font-family:'Hind Vadodara','Archivo Black',sans-serif; font-weight:700; letter-spacing:0;}
-  body[data-lang="gu"] .brand-mark p,
-  body[data-lang="gu"] .ticket-no,
-  body[data-lang="gu"] .step-label,
-  body[data-lang="gu"] .rate-note,
-  body[data-lang="gu"] .stamp-wrap p{font-family:'Hind Vadodara','IBM Plex Mono',sans-serif; letter-spacing:0; text-transform:none;}
-  body[data-lang="gu"] .step-label{font-size:13px; font-weight:600;}
-  body[data-lang="gu"] .send-btn{font-size:15px;}
-
   /* ===== file preview with zoom ===== */
   .preview{padding:10px;}
   .pv-wrap{position:relative;}
@@ -374,41 +43,6 @@
   .pv-zoom span{min-width:46px; text-align:center; color:#fff; font-size:12px; font-family:'IBM Plex Mono', monospace;}
   .pv-bar span{text-align:center; line-height:1.35;}
   .pv-hint{font-size:11px; color:var(--text-soft); text-align:center; margin:8px 0 0; line-height:1.5;}
-
-  /* ===== price box (footer) + price on the success screen ===== */
-  .app{padding-bottom:158px;}
-  .price-bar{
-    display:flex; align-items:center; justify-content:space-between; gap:12px;
-    margin:0 0 10px; padding:8px 14px;
-    background:var(--panel); border:1.5px solid var(--line); border-radius:8px;
-  }
-  .price-info{display:flex; flex-direction:column; min-width:0; gap:1px;}
-  .price-label{font-size:11px; font-weight:600; color:var(--text-soft); text-transform:uppercase; letter-spacing:.6px;}
-  .price-break{font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--text-soft); line-height:1.4;}
-  .price-amt{font-family:'Archivo Black', sans-serif; font-size:28px; line-height:1; color:#A9A6A0; white-space:nowrap;}
-  .price-bar.has-price{border-color:var(--magenta); background:#FFF5FA;}
-  .price-bar.has-price .price-amt{color:var(--magenta);}
-  body[data-lang="gu"] .price-label{text-transform:none; letter-spacing:0; font-family:'Hind Vadodara','Work Sans',sans-serif; font-size:12.5px;}
-  body[data-lang="gu"] .price-break{font-family:'Hind Vadodara','IBM Plex Mono',sans-serif; font-size:12px;}
-  .overlay-price{text-align:center; margin:0 0 20px;}
-  .overlay-price .op-label{display:block; font-size:12.5px; color:var(--text-soft); margin-bottom:2px;}
-  .overlay-price b{display:block; font-family:'Archivo Black', sans-serif; font-size:40px; line-height:1.15; color:var(--magenta);}
-  .overlay-price small{display:block; font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--text-soft); margin-top:2px;}
-  body[data-lang="gu"] .overlay-price small{font-family:'Hind Vadodara','IBM Plex Mono',sans-serif;}
-
-  /* ===== "order received" screen: always fills the visible window (not the whole long page) ===== */
-  .overlay{
-    position:fixed; top:0; bottom:0; left:0; right:0; max-width:420px; margin:0 auto;
-    justify-content:flex-start; overflow-y:auto; -webkit-overflow-scrolling:touch;
-    padding:28px 30px;
-  }
-  .overlay > :first-child{margin-top:auto;}
-  .overlay > :last-child{margin-bottom:auto;}
-  .overlay .stamp-wrap{flex-shrink:0;}
-
-  /* the fixed footer (price + Send) must always sit above the preview's floating zoom bar */
-  footer{z-index:10;}
-
 
   /* ===== photo editor ("make it print-friendly") ===== */
   .edit-photos{
@@ -470,140 +104,539 @@
   .ed-root.busy .send-btn{background:var(--panel-2); color:var(--text-soft);}
 
 
-  /* ===== rupee sign: always use the bundled glyph (see @font-face at the top) ===== */
-  body{font-family:'SX Rupee','Work Sans',sans-serif;}
+  :root{
+    --bg:#FFFFFF;
+    --page:#F6F5F1;
+    --panel:#F5F5F3;
+    --panel-2:#EBEBE7;
+    --text:#161513;
+    --text-soft:#726F68;
+    --line:#DEDCD5;
+    --cyan:#00AEEF;
+    --magenta:#EC008C;
+    --magenta-dark:#C30074;
+    --magenta-tint:#FFF5FA;
+    --yellow:#F5C400;
+    --ok:#2E9A50;
+    --err:#D93025;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(22,21,19,.05), 0 6px 20px rgba(22,21,19,.06);
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    background:var(--page);
+    color:var(--text);
+    font-family:'SX Rupee','Work Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
   body[data-lang="gu"]{font-family:'SX Rupee','Hind Vadodara','Work Sans',sans-serif;}
-  .price-break, .overlay-price small{font-family:'SX Rupee','IBM Plex Mono',monospace;}
-  body[data-lang="gu"] .price-break, body[data-lang="gu"] .overlay-price small{font-family:'SX Rupee','Hind Vadodara','IBM Plex Mono',sans-serif;}
-  .price-amt, .overlay-price b{font-family:'SX Rupee Bold','Archivo Black',sans-serif;}
+  button{font-family:inherit;}
+  .app{
+    min-height:100vh;
+    position:relative;
+    padding-bottom:180px;
+  }
+  .wrap{max-width:1120px; margin:0 auto; padding:0 16px;}
+
+  /* ===== top bar ===== */
+  header{background:var(--bg); border-bottom:1px solid var(--line);}
+  header .wrap{display:flex; align-items:center; justify-content:space-between; gap:12px; padding-top:14px; padding-bottom:14px;}
+  .brand-mark{display:flex; align-items:center; gap:12px; min-width:0;}
+  .cmyk-dots{display:grid; grid-template-columns:repeat(2,10px); grid-template-rows:repeat(2,10px); gap:2px; flex-shrink:0;}
+  .cmyk-dots span{border-radius:50%;}
+  .cmyk-dots span:nth-child(1){background:var(--cyan);}
+  .cmyk-dots span:nth-child(2){background:var(--magenta);}
+  .cmyk-dots span:nth-child(3){background:var(--yellow);}
+  .cmyk-dots span:nth-child(4){background:var(--text);}
+  .brand-mark h1{font-family:'Archivo Black', sans-serif; font-size:17px; margin:0; letter-spacing:.2px; line-height:1.15;}
+  .brand-mark p{margin:2px 0 0; font-size:11px; color:var(--text-soft); letter-spacing:.5px; text-transform:uppercase;}
+  .head-right{display:flex; align-items:center; gap:12px;}
+  .lang-toggle{
+    border:1.5px solid var(--text); background:transparent; border-radius:999px;
+    font-family:'Work Sans','Hind Vadodara',sans-serif; font-weight:600; font-size:13px;
+    padding:8px 14px; min-height:40px; cursor:pointer; color:var(--text); white-space:nowrap;
+    transition:background .15s, color .15s;
+  }
+  .lang-toggle:hover{background:var(--text); color:#fff;}
+  .ticket-no{display:none; font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--text-soft); text-align:right;}
+  .ticket-no.has-token{display:block;}
+  .ticket-no b{display:block; color:var(--text); font-size:13px;}
+  .lang-toggle:focus-visible, .pv-viewport:focus-visible, .pv-zoom button:focus-visible, .choice:focus-visible, .btn-ghost:focus-visible,
+  .send-btn:focus-visible, .chip:focus-visible, .pe-btn:focus-visible, .drop:focus-within{outline:3px solid var(--cyan); outline-offset:2px;}
+
+  /* ===== hero + progress ===== */
+  .hero{background:var(--bg); border-bottom:1px solid var(--line);}
+  .hero .wrap{padding-top:22px; padding-bottom:20px;}
+  .hero h2{font-family:'Archivo Black', sans-serif; font-size:26px; line-height:1.15; margin:0 0 6px; letter-spacing:.1px;}
+  .hero p.sub{margin:0 0 14px; color:var(--text-soft); font-size:15px; line-height:1.5; max-width:620px;}
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin:0; padding:0; list-style:none;}
+  .chips li{display:inline-flex; align-items:center; gap:6px; padding:7px 12px; border:1.5px solid var(--line); border-radius:999px; background:var(--panel); font-size:13px; font-weight:500;}
+  .chips li b{font-weight:700;}
+  .chips li i{width:8px; height:8px; border-radius:50%; display:inline-block; background:var(--text);}
+  .chips li.c-color i{background:var(--magenta);}
+  .chips li.c-pay i{background:var(--yellow);}
+  .chips li.c-priv i{background:var(--cyan);}
+  .progress{display:flex; align-items:center; gap:8px; margin:18px 0 0; padding:0; list-style:none;}
+  .progress li{display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:var(--text-soft);}
+  .progress li .dot{
+    width:26px; height:26px; border-radius:50%; border:1.5px solid var(--line); background:var(--bg);
+    display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono', monospace; font-size:12px;
+  }
+  .progress li + li::before{content:''; width:26px; height:2px; background:var(--line); border-radius:2px; margin-right:0;}
+  .progress li.current{color:var(--text);}
+  .progress li.current .dot{background:var(--text); border-color:var(--text); color:#fff;}
+  .progress li.done{color:var(--ok);}
+  .progress li.done .dot{background:var(--ok); border-color:var(--ok); color:#fff;}
+  .progress li.done + li::before, .progress li.current + li::before{background:var(--ok);}
+
+  /* ===== two-column layout (one column on phones) ===== */
+  main.layout{display:grid; grid-template-columns:minmax(0,1fr); gap:16px; padding-top:16px; padding-bottom:8px;}
+  .col{display:flex; flex-direction:column; gap:16px; min-width:0;}
+  .card{background:var(--bg); border:1px solid var(--line); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow);}
+  .step{margin:0;}
+  .step + .step{margin-top:20px; padding-top:18px; border-top:1px solid var(--line);}
+  .step-label{
+    display:flex; align-items:baseline; gap:8px;
+    font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--text-soft);
+    text-transform:uppercase; letter-spacing:.6px; margin-bottom:10px;
+  }
+  .step-label .n{color:var(--magenta); font-weight:600;}
+  .card-title{font-family:'Archivo Black', sans-serif; font-size:15px; margin:0 0 12px; display:flex; align-items:center; gap:8px;}
+
+  /* ===== upload ===== */
+  .drop{
+    display:flex; align-items:center; gap:14px;
+    border:2px dashed #C9C6BD; border-radius:12px; background:var(--panel);
+    padding:22px 16px; cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .drop:hover{border-color:var(--magenta); background:var(--magenta-tint);}
+  .drop:active{background:var(--panel-2);}
+  .drop.over{border-color:var(--magenta); background:var(--magenta-tint);}
+  .drop.has-file{border:2px solid var(--ok); background:#F4FBF6; padding:14px 16px;}
+  .drop.bad-file{border:2px solid var(--err); background:#FFF6F5;}
+  .drop .icon{width:48px; height:48px; border-radius:12px; background:var(--panel-2); display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .drop .icon svg{width:24px; height:24px; stroke:var(--cyan);}
+  .drop.has-file .icon{background:#DDF1E3;} .drop.has-file .icon svg{stroke:var(--ok);}
+  .drop.bad-file .icon{background:#FBE0DD;} .drop.bad-file .icon svg{stroke:var(--err);}
+  .drop-text{min-width:0;}
+  .drop-text p{margin:0; font-size:15px; color:var(--text); font-weight:600;}
+  .drop-text p.file-name{color:var(--ok); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .drop-text p.file-bad{color:var(--err);}
+  .drop-text span{display:block; font-size:12.5px; color:var(--text-soft); margin-top:2px;}
+  .drop-text .drag-hint{display:none; font-size:12px; margin-top:4px;}
+  @media (hover:hover) and (pointer:fine){ .drop-text .drag-hint{display:block;} }
+  .drop.has-file .drag-hint{display:none !important;}
+  input[type=file]{display:none;}
+
+  .edit-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
+  .edit-photos, .edit-pages{
+    display:none; flex:1 1 200px; padding:12px 14px; background:#fff; color:var(--magenta);
+    border:1.5px solid var(--magenta); border-radius:10px; font-weight:600; font-size:14px; cursor:pointer; min-height:46px;
+    font-family:'Work Sans','Hind Vadodara',sans-serif;
+  }
+  .edit-photos:hover, .edit-pages:hover{background:var(--magenta-tint);}
+  body[data-lang="gu"] .edit-photos, body[data-lang="gu"] .edit-pages{font-family:'Hind Vadodara','Work Sans',sans-serif; font-size:15px;}
+
+  .tips{margin-top:12px; display:grid; gap:6px;}
+  .limit-note{font-size:12.5px; color:var(--text-soft); margin:0; line-height:1.55;}
+  .limit-note b{color:var(--text); font-weight:600;}
+
+  .preview{display:none; margin-top:14px; border:1px solid var(--line); border-radius:12px; background:var(--panel); padding:10px;}
+  .preview.show{display:block;}
+  .preview canvas{display:block; margin:0 auto; max-width:100%; border:1px solid var(--line); border-radius:4px; background:#fff;}
+  .pv-bar{display:flex; align-items:center; justify-content:space-between; margin-top:10px; gap:8px;}
+  .pv-bar button{width:40px; height:40px; border-radius:8px; border:1.5px solid var(--line); background:#fff; color:var(--text); font-size:18px; cursor:pointer;}
+  .pv-bar button:disabled{opacity:.35; cursor:default;}
+  .pv-bar span{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--text-soft);}
+
+  /* ===== choices ===== */
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .choice{
+    border:1.5px solid var(--line); border-radius:12px; background:var(--panel);
+    padding:12px 10px; text-align:center; font-size:14px; font-weight:500;
+    cursor:pointer; user-select:none; color:var(--text); min-height:52px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+    transition:border-color .12s, background .12s;
+  }
+  .choice:hover{border-color:#B9B6AC;}
+  .choice .ci{display:flex; align-items:center; justify-content:center; height:26px;}
+  .choice .ci svg{height:26px; width:auto; display:block;}
+  .choice.active{background:var(--text); color:#fff; border-color:var(--text);}
+  .choice[data-val="color"].active{background:var(--magenta); border-color:var(--magenta); color:#fff;}
+  .choice .sub{display:block; font-size:12px; font-weight:400; opacity:.78; margin-top:2px;}
+  .choice .ct{display:block;}
+  .choice.inline{flex-direction:row; gap:10px; padding:10px 12px; min-height:48px;}
+  .choice.inline .ci{height:22px;} .choice.inline .ci svg{height:22px;}
+
+  .stepper{display:flex; align-items:center; justify-content:space-between; border:1.5px solid var(--line); border-radius:12px; padding:6px 10px; background:var(--panel);}
+  .stepper button{width:44px; height:44px; border-radius:10px; border:1.5px solid var(--line); background:#fff; color:var(--text); font-size:20px; font-family:'IBM Plex Mono', monospace; cursor:pointer;}
+  .stepper button:active{background:var(--cyan); color:#fff; border-color:var(--cyan);}
+  .stepper .count{font-family:'IBM Plex Mono', monospace; font-size:24px; font-weight:500;}
+
+  .phone-input{
+    width:100%; padding:13px 14px; min-height:48px; border-radius:12px; border:1.5px solid var(--line);
+    background:var(--panel); font-family:'Work Sans', sans-serif; font-size:16px; color:var(--text);
+  }
+  .phone-input:focus{outline:none; border-color:var(--cyan); background:#fff;}
+  .phone-input::placeholder{color:#A9A6A0;}
+  .field-hint{font-size:12px; color:var(--text-soft); margin:6px 0 0; line-height:1.5;}
+
+  /* ===== summary: sticky bar on phones, card beside the form on wide screens ===== */
+  footer.summary{
+    position:fixed; left:0; right:0; bottom:0; z-index:10;
+    background:var(--bg); border-top:1px solid var(--line);
+    padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+    box-shadow:0 -8px 24px rgba(22,21,19,.08);
+  }
+  .summary-in{max-width:640px; margin:0 auto;}
+  .err-note{font-size:13px; color:var(--err); margin:0 0 8px; text-align:center; display:none; line-height:1.4;}
+  .err-note.show{display:block;}
+  .price-bar{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    margin:0 0 8px; padding:6px 14px;
+    background:var(--panel); border:1.5px solid var(--line); border-radius:12px;
+  }
+  .price-info{display:flex; flex-direction:column; min-width:0; gap:1px;}
+  .price-label{font-size:11px; font-weight:600; color:var(--text-soft); text-transform:uppercase; letter-spacing:.6px;}
+  .price-break{font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--text-soft); line-height:1.4;}
+  .price-amt{font-family:'Archivo Black', sans-serif; font-size:26px; line-height:1; color:#A9A6A0; white-space:nowrap;}
+  .price-bar.has-price{border-color:var(--magenta); background:var(--magenta-tint);}
+  .price-bar.has-price .price-amt{color:var(--magenta);}
+  .send-btn{
+    width:100%; padding:14px; min-height:50px; background:var(--magenta); color:#fff; border:none; border-radius:12px;
+    font-family:'Archivo Black', sans-serif; font-size:14px; letter-spacing:.4px; text-transform:uppercase; cursor:pointer;
+    transition:background .12s;
+  }
+  .send-btn:hover{background:#d4007f;}
+  .send-btn:active{background:var(--magenta-dark);}
+  .send-btn:disabled{background:var(--panel-2); color:#A9A6A0; cursor:not-allowed;}
+  .send-btn.sending{background:var(--panel-2); color:var(--text-soft); cursor:progress;}
+  .send-hint{font-size:12px; color:var(--text-soft); margin:6px 0 0; text-align:center; line-height:1.4;}
+  .send-hint:empty{display:none;}
+  .trust{display:none; margin:12px 0 0; padding:0; list-style:none; font-size:12.5px; color:var(--text-soft); line-height:1.5; gap:6px;}
+  .trust li::before{content:'✓'; color:var(--ok); font-weight:700; margin-right:6px;}
+
+  .chips li.c-pay span::first-letter{text-transform:uppercase;}
+  @media (max-width:899px){
+    .hero .wrap{padding-top:14px; padding-bottom:14px;}
+    .hero h2{font-size:22px;}
+    body[data-lang="gu"] .hero h2{font-size:22px;}
+    .hero p.sub{font-size:14px; margin-bottom:10px;}
+    .chips{gap:6px;} .chips li{padding:5px 10px; font-size:12.5px;} .chips li.c-priv{display:none;}
+    .progress{margin-top:12px;}
+  }
+  @media (min-width:900px){
+    .app{padding-bottom:40px;}
+    .hero h2{font-size:32px;}
+    .hero .wrap{padding-top:30px; padding-bottom:26px;}
+    main.layout{grid-template-columns:minmax(0,1.25fr) minmax(340px,1fr); gap:20px; padding-top:20px; align-items:start;}
+    .card{padding:20px;}
+    footer.summary{
+      order:-1; position:sticky; top:16px; bottom:auto; z-index:5;
+      border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px 20px 20px;
+    }
+    .summary-in{max-width:none;}
+    .trust{display:grid;}
+    .pv-viewport{height:min(66vh, 620px) !important;}
+  }
+
+  /* ===== Gujarati typography ===== */
+  body[data-lang="gu"] .send-btn,
+  body[data-lang="gu"] .stamp-wrap h2,
+  body[data-lang="gu"] .card-title,
+  body[data-lang="gu"] .hero h2{font-family:'Hind Vadodara','Archivo Black',sans-serif; font-weight:700; letter-spacing:0;}
+  body[data-lang="gu"] .brand-mark p,
+  body[data-lang="gu"] .ticket-no,
+  body[data-lang="gu"] .step-label,
+  body[data-lang="gu"] .rate-note,
+  body[data-lang="gu"] .stamp-wrap p{font-family:'Hind Vadodara','IBM Plex Mono',sans-serif; letter-spacing:0; text-transform:none;}
+  body[data-lang="gu"] .step-label{font-size:13px; font-weight:600;}
+  body[data-lang="gu"] .send-btn{font-size:15px;}
+  body[data-lang="gu"] .hero h2{font-size:25px; line-height:1.3;}
+  @media (min-width:900px){ body[data-lang="gu"] .hero h2{font-size:30px;} }
+  body[data-lang="gu"] .price-label{text-transform:none; letter-spacing:0; font-family:'Hind Vadodara','Work Sans',sans-serif; font-size:12.5px;}
+  body[data-lang="gu"] .price-break{font-family:'Hind Vadodara','IBM Plex Mono',sans-serif; font-size:12px;}
+  body[data-lang="gu"] .progress li, body[data-lang="gu"] .chips li{font-size:13.5px;}
+
+  /* ===== "order received" screen ===== */
+  .overlay{
+    position:fixed; top:0; bottom:0; left:0; right:0; background:var(--page);
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+    padding:24px 16px; overflow-y:auto; -webkit-overflow-scrolling:touch; z-index:20;
+    opacity:0; pointer-events:none; transition:opacity .25s ease;
+  }
+  .overlay.show{opacity:1; pointer-events:all;}
+  .ov-card{
+    width:100%; max-width:460px; margin:auto; background:var(--bg); border:1px solid var(--line); border-radius:18px;
+    box-shadow:var(--shadow); padding:26px 22px; text-align:center;
+  }
+  .stamp-wrap{
+    display:inline-block; border:3px solid var(--cyan); border-radius:10px; color:var(--cyan);
+    padding:14px 24px; transform:rotate(-4deg) scale(.6); opacity:0; margin-bottom:20px;
+  }
+  .overlay.show .stamp-wrap{animation:stampdown .45s cubic-bezier(.36,1.4,.4,1) .15s forwards;}
+  @keyframes stampdown{
+    0%{transform:rotate(-4deg) scale(2.2); opacity:0;}
+    60%{transform:rotate(-4deg) scale(.92); opacity:1;}
+    100%{transform:rotate(-4deg) scale(1); opacity:1;}
+  }
+  .stamp-wrap h2{font-family:'Archivo Black', sans-serif; font-size:20px; margin:0 0 4px; letter-spacing:1px; color:var(--text);}
+  .stamp-wrap p{margin:0; font-family:'IBM Plex Mono', monospace; font-size:14px; letter-spacing:1px;}
+  .overlay-price{text-align:center; margin:0 0 16px; padding:12px; background:var(--magenta-tint); border:1.5px solid var(--magenta); border-radius:12px;}
+  .overlay-price .op-label{display:block; font-size:12.5px; color:var(--text-soft); margin-bottom:2px;}
+  .overlay-price b{display:block; font-family:'Archivo Black', sans-serif; font-size:40px; line-height:1.15; color:var(--magenta);}
+  .overlay-price small{display:block; font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--text-soft); margin-top:2px;}
+  body[data-lang="gu"] .overlay-price small{font-family:'Hind Vadodara','IBM Plex Mono',sans-serif;}
+  .next-title{font-size:13px; font-weight:700; margin:0 0 8px; text-align:left;}
+  .next-steps{margin:0 0 14px; padding:0; list-style:none; text-align:left; counter-reset:n; display:grid; gap:8px;}
+  .next-steps li{counter-increment:n; display:flex; gap:10px; align-items:flex-start; font-size:14px; line-height:1.45; color:var(--text);}
+  .next-steps li::before{content:counter(n); flex:0 0 24px; height:24px; border-radius:50%; background:var(--text); color:#fff; font-size:12px; font-family:'IBM Plex Mono', monospace; display:flex; align-items:center; justify-content:center; margin-top:1px;}
+  .overlay-detail{font-size:13.5px; color:var(--text-soft); line-height:1.6; margin:0 0 14px; text-align:left;}
+  .overlay-detail b{color:var(--text);}
+  .shop-info{border-top:1px solid var(--line); padding-top:14px; margin-bottom:16px; text-align:left; font-size:13px; color:var(--text-soft); line-height:1.6;}
+  .shop-info b{color:var(--text);}
+  .shop-btns{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;}
+  .btn-ghost{
+    display:flex; align-items:center; justify-content:center; gap:6px; text-decoration:none; text-align:center; cursor:pointer;
+    padding:11px 10px; min-height:46px; border:1.5px solid var(--line); border-radius:10px; background:#fff; color:var(--text); font-size:14px; font-weight:600;
+  }
+  .btn-ghost.wa{border-color:#25D366; color:#128C4A;}
+  .btn-ghost:hover{background:var(--panel);}
+  .close-overlay{width:100%; background:var(--text); color:#fff; border:none; border-radius:12px; padding:14px; min-height:50px; font-size:15px; font-weight:600; cursor:pointer;}
+  .close-overlay:hover{background:#2c2a27;}
+
+  /* ===== PDF page editor (rotate / remove / reorder) ===== */
+  .pe-root{position:fixed; top:0; right:0; bottom:0; left:0; z-index:40; display:none; background:rgba(22,21,19,.55); overflow-y:auto; -webkit-overflow-scrolling:touch;}
+  .pe-root.show{display:block;}
+  .pe-card{
+    background:#fff; max-width:920px; min-height:100%; margin:0 auto; padding:14px 16px 0; position:relative;
+    font-family:'Work Sans','Hind Vadodara',sans-serif; color:var(--text);
+  }
+  body[data-lang="gu"] .pe-card{font-family:'Hind Vadodara','Work Sans',sans-serif;}
+  @media (min-width:960px){ .pe-card{min-height:calc(100% - 48px); margin:24px auto; border-radius:16px;} }
+  .pe-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px;}
+  .pe-head b{font-family:'Archivo Black','Hind Vadodara',sans-serif; font-size:17px; font-weight:400;}
+  body[data-lang="gu"] .pe-head b{font-family:'Hind Vadodara',sans-serif; font-weight:700; font-size:18px;}
+  .pe-count{display:block; font-size:12px; color:var(--text-soft); margin-top:2px;}
+  .pe-x{width:40px; height:40px; border:1.5px solid var(--line); border-radius:50%; background:var(--panel); font-size:15px; cursor:pointer; color:var(--text); flex-shrink:0;}
+  .pe-note{font-size:12.5px; color:var(--text-soft); margin:0 0 12px; line-height:1.5;}
+  .pe-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(138px,1fr)); gap:12px; padding-bottom:12px;}
+  .pe-item{border:1.5px solid var(--line); border-radius:12px; background:var(--panel); padding:8px; display:flex; flex-direction:column; align-items:center; gap:8px;}
+  .pe-thumb{position:relative; width:100%; height:150px; display:flex; align-items:center; justify-content:center; background:var(--panel-2); border-radius:8px; overflow:hidden;}
+  .pe-thumb canvas{max-width:100%; max-height:100%; background:#fff; box-shadow:0 1px 6px rgba(0,0,0,.22);}
+  .pe-no{position:absolute; left:6px; top:6px; min-width:22px; height:22px; padding:0 6px; border-radius:11px; background:rgba(22,21,19,.84); color:#fff; font-size:11px; line-height:22px; text-align:center; font-family:'IBM Plex Mono',monospace;}
+  .pe-btns{display:grid; grid-template-columns:repeat(5,1fr); gap:4px; width:100%;}
+  .pe-btn{height:36px; border:1.5px solid var(--line); border-radius:8px; background:#fff; color:var(--text); font-size:15px; cursor:pointer; padding:0;}
+  .pe-btn:hover:not(:disabled){background:var(--panel);}
+  .pe-btn:disabled{opacity:.3; cursor:default;}
+  .pe-btn.rm{color:var(--err);}
+  .pe-err{color:var(--err); font-size:12.5px; margin:6px 0 0; text-align:center; min-height:0;}
+  .pe-actions{position:sticky; bottom:0; background:#fff; padding:10px 0 16px; margin-top:8px; border-top:1px solid var(--line); display:flex; gap:10px; align-items:center;}
+  .pe-actions .send-btn{flex:1;}
+  .pe-actions .link-btn{white-space:nowrap;}
+  .pe-root.busy .pe-card{cursor:progress;}
 </style>
 </head>
 <body data-lang="gu">
 <div class="app">
 
   <header>
-    <div class="brand-mark">
-      <div class="cmyk-dots"><span></span><span></span><span></span><span></span></div>
-      <div>
-        <h1>Sona Xerox</h1>
-        <p data-i18n="tagline">વાલોડ · ઓનલાઇન પ્રિન્ટ</p>
+    <div class="wrap">
+      <div class="brand-mark">
+        <div class="cmyk-dots"><span></span><span></span><span></span><span></span></div>
+        <div>
+          <h1>Sona Xerox</h1>
+          <p data-i18n="tagline">વાલોડ · ઓનલાઇન પ્રિન્ટ</p>
+        </div>
       </div>
-    </div>
-    <div class="head-right">
-      <button class="lang-toggle" id="langBtn" type="button" aria-label="Language">English</button>
-      <div class="ticket-no"><span data-i18n="token">ટોકન</span><b id="tokenNo">#—</b></div>
+      <div class="head-right">
+        <div class="ticket-no" id="ticketNo"><span data-i18n="token">ટોકન</span><b id="tokenNo">#—</b></div>
+        <button class="lang-toggle" id="langBtn" type="button" aria-label="Language">English</button>
+      </div>
     </div>
   </header>
 
-  <main>
+  <section class="hero">
+    <div class="wrap">
+      <h2 data-i18n="heroTitle">મોબાઇલથી પ્રિન્ટ ઓર્ડર કરો</h2>
+      <p class="sub" data-i18n="heroSub">ફાઇલ અપલોડ કરો, પસંદગી કરો અને મોકલો — દુકાને આવીને લઈ જાઓ.</p>
+      <ul class="chips">
+        <li><i></i><span data-i18n="bw">બ્લેક &amp; વ્હાઇટ</span> <b data-i18n="per2">₹2/પેજ</b></li>
+        <li class="c-color"><i></i><span data-i18n="colour">કલર</span> <b data-i18n="per10">₹10/પેજ</b></li>
+        <li class="c-pay"><i></i><span data-i18n="payAtPickup">લેતી વખતે ચૂકવો</span></li>
+        <li class="c-priv"><i></i><span data-i18n="chipPrivate">ફાઇલ તમારા ફોનમાં રહે છે</span></li>
+      </ul>
+      <ol class="progress" id="progress" aria-label="Progress">
+        <li class="current" data-st="1"><span class="dot">1</span><span data-i18n="st1">અપલોડ</span></li>
+        <li data-st="2"><span class="dot">2</span><span data-i18n="st2">પસંદગી</span></li>
+        <li data-st="3"><span class="dot">3</span><span data-i18n="st3">મોકલો</span></li>
+      </ol>
+    </div>
+  </section>
 
-    <div class="step">
-      <div class="step-label"><span class="n">01</span> <span data-i18n="s1">PDF અપલોડ કરો</span></div>
-      <label class="drop" id="dropZone">
-        <input type="file" id="fileInput" accept=".pdf,application/pdf,image/jpeg,image/png,image/webp" multiple>
-        <div class="icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
-        </div>
-        <div class="drop-text">
-          <p id="dropText"></p>
-          <span id="dropSub"></span>
-        </div>
-      </label>
+  <main class="layout wrap">
 
-      <button class="edit-photos" id="editPhotosBtn" type="button" style="display:none" data-i18n="editPhotos">✏️</button>
-
-      <div class="preview" id="preview">
-        <div class="pv-wrap">
-          <div class="pv-viewport" id="pvVp" tabindex="0" aria-label="PDF preview">
-            <div class="pv-stage" id="pvStage"><canvas id="pvCanvas"></canvas></div>
+    <div class="col">
+      <div class="step card">
+        <div class="step-label"><span class="n">01</span> <span data-i18n="s1">ફાઇલ અપલોડ કરો</span></div>
+        <label class="drop" id="dropZone">
+          <input type="file" id="fileInput" accept=".pdf,application/pdf,image/jpeg,image/png,image/webp" multiple>
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
           </div>
-          <div class="pv-zoom">
-            <button id="pvZoomOut" type="button" aria-label="Zoom out">&minus;</button>
-            <span id="pvZoomLabel">100%</span>
-            <button id="pvZoomIn" type="button" aria-label="Zoom in">+</button>
-            <button id="pvFit" type="button" class="txt" data-i18n="fit">ફિટ</button>
+          <div class="drop-text">
+            <p id="dropText"></p>
+            <span id="dropSub"></span>
+            <span class="drag-hint" data-i18n="dragHint">અથવા ફાઇલ અહીં ખેંચીને છોડો</span>
+          </div>
+        </label>
+
+        <div class="edit-row">
+          <button class="edit-photos" id="editPhotosBtn" type="button" style="display:none" data-i18n="editPhotos">✏️</button>
+          <button class="edit-pages" id="editPagesBtn" type="button" style="display:none" data-i18n="editPages">✏️</button>
+        </div>
+
+        <div class="preview" id="preview">
+          <div class="pv-wrap">
+            <div class="pv-viewport" id="pvVp" tabindex="0" aria-label="PDF preview">
+              <div class="pv-stage" id="pvStage"><canvas id="pvCanvas"></canvas></div>
+            </div>
+            <div class="pv-zoom">
+              <button id="pvZoomOut" type="button" aria-label="Zoom out">&minus;</button>
+              <span id="pvZoomLabel">100%</span>
+              <button id="pvZoomIn" type="button" aria-label="Zoom in">+</button>
+              <button id="pvFit" type="button" class="txt" data-i18n="fit">ફિટ</button>
+            </div>
+          </div>
+          <div class="pv-bar">
+            <button id="pvPrev" type="button" aria-label="Previous page">&lsaquo;</button>
+            <span id="pvLabel"></span>
+            <button id="pvNext" type="button" aria-label="Next page">&rsaquo;</button>
+          </div>
+          <p class="pv-hint" data-i18n="pvHint"></p>
+        </div>
+
+        <div class="tips">
+          <p class="limit-note" data-i18n-html="limitNote"></p>
+          <p class="limit-note" data-i18n-html="waTip"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card">
+        <h3 class="card-title" data-i18n="optTitle">પ્રિન્ટની પસંદગી</h3>
+
+        <div class="step">
+          <div class="step-label"><span class="n">02</span> <span data-i18n="s2">પેજ</span></div>
+          <div class="row2">
+            <div class="choice active" data-group="pagemode" data-val="all" role="button" tabindex="0" data-i18n="allPages">બધા પેજ</div>
+            <div class="choice" data-group="pagemode" data-val="select" role="button" tabindex="0" data-i18n="selPages">અમુક પેજ પસંદ કરો</div>
+          </div>
+          <div id="rangeBox" style="display:none; margin-top:10px;">
+            <input class="phone-input" id="rangeInput" type="text" data-i18n-ph="rangePh" placeholder="1-5, 8, 11">
+          </div>
+          <p class="limit-note" id="rangeHint" style="margin-top:8px"></p>
+        </div>
+
+        <div class="step">
+          <div class="step-label"><span class="n">03</span> <span data-i18n="s3">રંગ</span></div>
+          <div class="row2">
+            <div class="choice active" data-group="color" data-val="bw" role="button" tabindex="0">
+              <span class="ci"><svg viewBox="0 0 26 26" fill="none"><circle cx="13" cy="13" r="10" stroke="currentColor" stroke-width="2"/><path d="M13 3a10 10 0 0 1 0 20z" fill="currentColor"/></svg></span>
+              <span class="ct"><span data-i18n="bw">બ્લેક &amp; વ્હાઇટ</span><span class="sub" data-i18n="per2">₹2/પેજ</span></span>
+            </div>
+            <div class="choice" data-group="color" data-val="color" role="button" tabindex="0">
+              <span class="ci"><svg viewBox="0 0 30 26" fill="none"><circle cx="10" cy="10" r="7" fill="#00AEEF" fill-opacity=".9"/><circle cx="20" cy="10" r="7" fill="#F5C400" fill-opacity=".9"/><circle cx="15" cy="17" r="7" fill="#EC008C" fill-opacity=".85"/></svg></span>
+              <span class="ct"><span data-i18n="colour">કલર</span><span class="sub" data-i18n="per10">₹10/પેજ</span></span>
+            </div>
           </div>
         </div>
-        <div class="pv-bar">
-          <button id="pvPrev" type="button" aria-label="Previous page">&lsaquo;</button>
-          <span id="pvLabel"></span>
-          <button id="pvNext" type="button" aria-label="Next page">&rsaquo;</button>
+
+        <div class="step">
+          <div class="step-label"><span class="n">04</span> <span data-i18n="s4">બાજુ</span></div>
+          <div class="row2">
+            <div class="choice inline active" data-group="side" data-val="single" role="button" tabindex="0">
+              <span class="ci"><svg viewBox="0 0 18 22" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="1.5" width="14" height="19" rx="2"/><path d="M5.5 7h7M5.5 11h7M5.5 15h4" stroke-linecap="round"/></svg></span>
+              <span data-i18n="single">એક બાજુ</span>
+            </div>
+            <div class="choice inline" data-group="side" data-val="double" role="button" tabindex="0">
+              <span class="ci"><svg viewBox="0 0 26 22" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1.5" y="1.5" width="12" height="19" rx="2"/><rect x="12.5" y="1.5" width="12" height="19" rx="2" fill="#fff" fill-opacity=".001"/><path d="M4.5 7h6M4.5 11h6M15.5 7h6M15.5 11h6" stroke-linecap="round"/></svg></span>
+              <span data-i18n="double">બંને બાજુ</span>
+            </div>
+          </div>
         </div>
-        <p class="pv-hint" data-i18n="pvHint"></p>
+
+        <div class="step">
+          <div class="step-label"><span class="n">05</span> <span data-i18n="s5">કોપી</span></div>
+          <div class="stepper">
+            <button id="minus" type="button" aria-label="Decrease copies">–</button>
+            <span class="count" id="copyCount">1</span>
+            <button id="plus" type="button" aria-label="Increase copies">+</button>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-label"><span class="n">06</span> <span data-i18n="s6">તમારો ફોન નંબર</span></div>
+          <input class="phone-input" id="phoneInput" type="tel" data-i18n-ph="phonePh" placeholder="10" maxlength="10" inputmode="numeric" autocomplete="tel">
+          <p class="field-hint" data-i18n="phoneHint">ઓર્ડર તૈયાર થાય ત્યારે દુકાન આ નંબર પર સંપર્ક કરી શકે છે.</p>
+        </div>
       </div>
 
-      <p class="limit-note" data-i18n-html="limitNote"></p>
-      <p class="limit-note" data-i18n-html="waTip"></p>
-    </div>
-
-    <div class="step">
-      <div class="step-label"><span class="n">02</span> <span data-i18n="s2">પેજ</span></div>
-      <div class="row2">
-        <div class="choice active" data-group="pagemode" data-val="all" data-i18n="allPages">બધા પેજ</div>
-        <div class="choice" data-group="pagemode" data-val="select" data-i18n="selPages">અમુક પેજ પસંદ કરો</div>
-      </div>
-      <div id="rangeBox" style="display:none; margin-top:10px;">
-        <input class="phone-input" id="rangeInput" type="text" data-i18n-ph="rangePh" placeholder="1-5, 8, 11">
-      </div>
-      <p class="limit-note" id="rangeHint"></p>
-    </div>
-
-    <div class="step">
-      <div class="step-label"><span class="n">03</span> <span data-i18n="s3">રંગ</span></div>
-      <div class="row2">
-        <div class="choice active" data-group="color" data-val="bw"><span data-i18n="bw">બ્લેક &amp; વ્હાઇટ</span><span class="sub" data-i18n="per2">₹2/પેજ</span></div>
-        <div class="choice" data-group="color" data-val="color"><span data-i18n="colour">કલર</span><span class="sub" data-i18n="per10">₹10/પેજ</span></div>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="step-label"><span class="n">04</span> <span data-i18n="s4">બાજુ</span></div>
-      <div class="row2">
-        <div class="choice active" data-group="side" data-val="single" data-i18n="single">એક બાજુ</div>
-        <div class="choice" data-group="side" data-val="double" data-i18n="double">બંને બાજુ</div>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="step-label"><span class="n">05</span> <span data-i18n="s5">કોપી</span></div>
-      <div class="stepper">
-        <button id="minus" aria-label="Decrease copies">–</button>
-        <span class="count" id="copyCount">1</span>
-        <button id="plus" aria-label="Increase copies">+</button>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="step-label"><span class="n">06</span> <span data-i18n="s6">તમારો ફોન નંબર</span></div>
-      <input class="phone-input" id="phoneInput" type="tel" data-i18n-ph="phonePh" placeholder="10" maxlength="10" inputmode="numeric">
+      <footer class="summary">
+        <div class="summary-in">
+          <p class="err-note" id="errNote" role="alert"></p>
+          <div class="price-bar" id="priceBar">
+            <div class="price-info">
+              <span class="price-label" data-i18n="priceLabel">કુલ કિંમત</span>
+              <span class="price-break" id="priceBreak"></span>
+            </div>
+            <div class="price-amt" id="priceAmt">₹—</div>
+          </div>
+          <button class="send-btn" id="sendBtn" disabled></button>
+          <p class="send-hint" id="sendHint"></p>
+          <ul class="trust">
+            <li data-i18n="trust1">કોઈ ઓનલાઇન પેમેન્ટ નહીં — દુકાને રોકડ કે UPI</li>
+            <li data-i18n="trust2">ઓર્ડર મોકલો ત્યાં સુધી ફાઇલ તમારા ફોનમાં જ રહે છે</li>
+            <li data-i18n="trust3">તમારી ફાઇલ 24 કલાકમાં કાઢી નાખવામાં આવે છે</li>
+          </ul>
+        </div>
+      </footer>
     </div>
 
   </main>
 
-  <footer>
-    <p class="err-note" id="errNote"></p>
-    <div class="price-bar" id="priceBar">
-      <div class="price-info">
-        <span class="price-label" data-i18n="priceLabel">કુલ કિંમત</span>
-        <span class="price-break" id="priceBreak"></span>
-      </div>
-      <div class="price-amt" id="priceAmt">₹—</div>
-    </div>
-    <button class="send-btn" id="sendBtn" disabled></button>
-  </footer>
-
   <div class="overlay" id="overlay">
-    <div class="stamp-wrap">
-      <h2 data-i18n="orderReceived">ઓર્ડર મળી ગયો</h2>
-      <p id="overlayToken"></p>
+    <div class="ov-card">
+      <div class="stamp-wrap">
+        <h2 data-i18n="orderReceived">ઓર્ડર મળી ગયો</h2>
+        <p id="overlayToken"></p>
+      </div>
+      <div class="overlay-price">
+        <span class="op-label" data-i18n="amountToPay">લેતી વખતે ચૂકવવાની રકમ</span>
+        <b id="overlayAmt">₹0</b>
+        <small id="overlayBreak"></small>
+      </div>
+      <p class="next-title" data-i18n="nextTitle">હવે શું કરવું</p>
+      <ol class="next-steps">
+        <li data-i18n="next1">તમારો ઓર્ડર કાઉન્ટર પર મોકલાઈ ગયો છે — સામાન્ય રીતે એક મિનિટમાં પ્રિન્ટ થઈ જાય છે.</li>
+        <li data-i18n="next2">દુકાને આવો અને તમારો ટોકન નંબર બતાવો.</li>
+        <li data-i18n="next3">રોકડ ચૂકવો અને પ્રિન્ટ લઈ જાઓ.</li>
+      </ol>
+      <div class="overlay-detail" data-i18n-html="sentNote"></div>
+      <div class="shop-info">
+        <b>Sona Xerox</b> · <span data-i18n="shopAddr">વાલોડ, ગુજરાત ૩૯૪૬૪૦</span><br>
+        <span data-i18n="shopHours">રોજ સવારે 7:30 થી સાંજે 7:00</span>
+        <div class="shop-btns">
+          <a class="btn-ghost wa" href="https://wa.me/917778805780" target="_blank" rel="noopener">WhatsApp</a>
+          <a class="btn-ghost" href="tel:+917778805780" data-i18n="callShop">📞 ફોન કરો</a>
+        </div>
+      </div>
+      <button class="close-overlay" id="closeOverlay" data-i18n="newOrder">નવો ઓર્ડર</button>
     </div>
-    <div class="overlay-price">
-      <span class="op-label" data-i18n="amountToPay">લેતી વખતે ચૂકવવાની રકમ</span>
-      <b id="overlayAmt">₹0</b>
-      <small id="overlayBreak"></small>
-    </div>
-    <div class="overlay-detail" data-i18n-html="sentNote"></div>
-    <button class="close-overlay" id="closeOverlay" data-i18n="newOrder">નવો ઓર્ડર</button>
   </div>
 
 </div>
@@ -651,6 +684,22 @@
   </div>
 </div>
 
+<div class="pe-root" id="peRoot" role="dialog" aria-modal="true" aria-labelledby="peTitle">
+  <div class="pe-card">
+    <div class="pe-head">
+      <div><b id="peTitle" data-i18n="peTitle">પેજ સુધારો</b><span class="pe-count" id="peCount"></span></div>
+      <button type="button" id="peClose" class="pe-x" aria-label="Close">✕</button>
+    </div>
+    <p class="pe-note" data-i18n="peNote"></p>
+    <div class="pe-grid" id="peGrid"></div>
+    <p class="pe-err" id="peErr"></p>
+    <div class="pe-actions">
+      <button type="button" class="link-btn" id="peReset" data-i18n="peReset"></button>
+      <button type="button" class="send-btn" id="peDone"></button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
   'use strict';
@@ -674,7 +723,7 @@
     title:      {en:'Sona Xerox — Order Print', gu:'Sona Xerox — પ્રિન્ટ ઓર્ડર'},
     tagline:    {en:'Valod · Online Print', gu:'વાલોડ · ઓનલાઇન પ્રિન્ટ'},
     token:      {en:'Token', gu:'ટોકન'},
-    s1:         {en:'Upload PDF', gu:'PDF અપલોડ કરો'},
+    s1:         {en:'Upload your file', gu:'ફાઇલ અપલોડ કરો'},
     tapChoose:  {en:'Tap to choose a PDF or photo', gu:'PDF અથવા ફોટો પસંદ કરવા દબાવો'},
     fileTypes:  {en:'PDF, JPG or PNG — photos get a print clean-up', gu:'PDF, JPG કે PNG — ફોટાને પ્રિન્ટ માટે સાફ કરી શકાય'},
     chooseOther:{en:'Tap to choose a different PDF', gu:'બીજી PDF પસંદ કરવા દબાવો'},
@@ -758,8 +807,8 @@
     sending:    {en:'Sending…', gu:'મોકલી રહ્યા છીએ…'},
     orderReceived:{en:'Order received', gu:'ઓર્ડર મળી ગયો'},
     tokenWord:  {en:'TOKEN', gu:'ટોકન'},
-    sentNote:   {en:'Sent straight to the counter at <b>Sona Xerox, Valod</b>. Show your token number at pickup and pay in cash.',
-                 gu:'સીધો <b>Sona Xerox, વાલોડ</b> ના કાઉન્ટર પર મોકલાયો છે. લેતી વખતે તમારો ટોકન નંબર બતાવો અને રોકડ ચૂકવો.'},
+    sentNote:   {en:'Questions about your order? WhatsApp or call the shop.',
+                 gu:'ઓર્ડર વિશે પ્રશ્ન છે? દુકાને WhatsApp કે ફોન કરો.'},
     newOrder:   {en:'New order', gu:'નવો ઓર્ડર'},
     orderFailed:{en:'Order failed — please try again', gu:'ઓર્ડર નિષ્ફળ ગયો — ફરી પ્રયત્ન કરો'},
     noConn:     {en:'No connection — check internet and try again', gu:'ઇન્ટરનેટ નથી — તપાસીને ફરી પ્રયત્ન કરો'},
@@ -771,7 +820,37 @@
     pageOf:     {en:'Page {n} / {total}', gu:'પેજ {n} / {total}'},
     willPrint:  {en:'will print', gu:'પ્રિન્ટ થશે'},
     notPrinting:{en:'not printing', gu:'પ્રિન્ટ નહીં થાય'},
-    pvHint:     {en:'Zoom with + / − or pinch · drag to move · ‹ › for pages', gu:'ઝૂમ માટે + / − દબાવો અથવા બે આંગળીથી પિંચ કરો · ખસેડવા ખેંચો · પેજ બદલવા ‹ › દબાવો'}
+    pvHint:     {en:'Zoom with + / − or pinch · drag to move · ‹ › for pages', gu:'ઝૂમ માટે + / − દબાવો અથવા બે આંગળીથી પિંચ કરો · ખસેડવા ખેંચો · પેજ બદલવા ‹ › દબાવો'},
+    heroTitle:  {en:'Order prints from your phone', gu:'મોબાઇલથી પ્રિન્ટ ઓર્ડર કરો'},
+    heroSub:    {en:'Upload a file, choose your options and send — then collect it at the shop.', gu:'ફાઇલ અપલોડ કરો, પસંદગી કરો અને મોકલો — પછી દુકાને આવીને લઈ જાઓ.'},
+    chipPrivate:{en:'File stays on your phone until you send', gu:'મોકલો ત્યાં સુધી ફાઇલ તમારા ફોનમાં રહે છે'},
+    st1:        {en:'Upload', gu:'અપલોડ'},
+    st2:        {en:'Choose', gu:'પસંદગી'},
+    st3:        {en:'Send', gu:'મોકલો'},
+    dragHint:   {en:'or drag and drop a file here', gu:'અથવા ફાઇલ અહીં ખેંચીને છોડો'},
+    optTitle:   {en:'Print options', gu:'પ્રિન્ટની પસંદગી'},
+    phoneHint:  {en:'Used only to identify your order at the shop.', gu:'દુકાનમાં તમારો ઓર્ડર ઓળખવા માટે જ વપરાય છે.'},
+    trust1:     {en:'No online payment — pay at the shop', gu:'ઓનલાઇન પેમેન્ટ નહીં — દુકાને ચૂકવો'},
+    trust2:     {en:'Your file stays on your phone until you press Send', gu:'તમે મોકલો ત્યાં સુધી ફાઇલ તમારા ફોનમાં જ રહે છે'},
+    trust3:     {en:'Files are deleted from our system 24 hours after printing', gu:'પ્રિન્ટ થયાના 24 કલાક પછી ફાઇલ અમારી સિસ્ટમમાંથી કાઢી નાખવામાં આવે છે'},
+    editPages:  {en:'✏️ Edit pages (rotate, remove, reorder)', gu:'✏️ પેજ સુધારો (ફેરવો, કાઢો, ક્રમ બદલો)'},
+    peTitle:    {en:'Edit pages', gu:'પેજ સુધારો'},
+    peNote:     {en:'Rotate, remove or move pages. Your file stays on your phone.', gu:'પેજ ફેરવો, કાઢો કે ખસેડો. ફાઇલ તમારા ફોનમાં જ રહે છે.'},
+    peReset:    {en:'Reset', gu:'ફરી શરૂ કરો'},
+    peDone:     {en:'Done · {pages}', gu:'થઈ ગયું · {pages}'},
+    peSaving:   {en:'Saving…', gu:'સાચવી રહ્યા છીએ…'},
+    peKeep:     {en:'Keep at least one page', gu:'ઓછામાં ઓછું એક પેજ રાખો'},
+    peFail:     {en:'Could not update the PDF — please try again', gu:'PDF સુધારી શકાઈ નહીં — ફરી પ્રયત્ન કરો'},
+    nextTitle:  {en:'What to do next', gu:'હવે શું કરવું'},
+    next1:      {en:'Your order is at our counter — it usually prints within a minute.', gu:'તમારો ઓર્ડર કાઉન્ટર પર પહોંચી ગયો છે — સામાન્ય રીતે એક મિનિટમાં પ્રિન્ટ થઈ જાય છે.'},
+    next2:      {en:'Come to the shop and show your token number.', gu:'દુકાને આવો અને તમારો ટોકન નંબર બતાવો.'},
+    next3:      {en:'Pay in cash and collect your prints.', gu:'રોકડ ચૂકવો અને પ્રિન્ટ લઈ જાઓ.'},
+    shopAddr:   {en:'Valod, Gujarat 394640', gu:'વાલોડ, ગુજરાત ૩૯૪૬૪૦'},
+    shopHours:  {en:'Open daily 7:30 AM – 7:00 PM', gu:'રોજ સવારે 7:30 થી સાંજે 7:00 સુધી'},
+    callShop:   {en:'📞 Call the shop', gu:'📞 દુકાને ફોન કરો'},
+    needFile:   {en:'Choose a file to print first', gu:'પહેલા પ્રિન્ટ માટે ફાઇલ પસંદ કરો'},
+    needRange:  {en:'Check the page numbers', gu:'પેજ નંબર તપાસો'},
+    needPhone:  {en:'Enter your 10-digit phone number to send', gu:'મોકલવા માટે તમારો 10 અંકનો ફોન નંબર લખો'}
   };
   var SERVER_ERR = {
     'No file received':'e_nofile',
@@ -852,6 +931,7 @@
     checkReady();
     updatePvLabel();
     if(ed && ed.sess && E.root.classList.contains('show')) edSync();
+    if(typeof peRender === 'function' && PE && PE.root.classList.contains('show')) peRender();
     try{ localStorage.setItem(LS_KEY, l); }catch(e){}
   }
   langBtn.addEventListener('click', function(){ applyLang(lang === 'gu' ? 'en' : 'gu'); });
@@ -1077,6 +1157,7 @@
     setHint({key:'uploadFirst'}, false);
     dropZone.classList.remove('has-file');
     dropZone.classList.add('bad-file');
+    updateEditBtn();
     view.drop = { main:{key:key, params:params}, sub:{key:'chooseOther'}, cls:'file-bad' };
     renderDrop();
     checkReady();
@@ -1119,8 +1200,7 @@
     reader.readAsArrayBuffer(f);
   }
 
-  fileInput.addEventListener('change', function(){
-    var files = Array.prototype.slice.call(fileInput.files || []);
+  function handleFiles(files){
     if(!files.length) return;
     var pdfs = files.filter(isPdf), imgs = files.filter(isImg);
     if(pdfs.length + imgs.length !== files.length){ showFileError('badType'); return; }
@@ -1128,7 +1208,17 @@
     if(pdfs.length > 1){ showFileError('onePdf'); return; }
     if(pdfs.length === 1){ ed.committed = null; ed.sess = null; handlePdf(pdfs[0]); return; }
     startPhotos(imgs);
+  }
+  fileInput.addEventListener('change', function(){ handleFiles(Array.prototype.slice.call(fileInput.files || [])); });
+  // drag & drop a file onto the upload box (computers); a file dropped elsewhere must not leave the page
+  ['dragenter', 'dragover'].forEach(function(n){ dropZone.addEventListener(n, function(e){ e.preventDefault(); dropZone.classList.add('over'); }); });
+  ['dragleave', 'drop'].forEach(function(n){ dropZone.addEventListener(n, function(){ dropZone.classList.remove('over'); }); });
+  dropZone.addEventListener('drop', function(e){
+    e.preventDefault();
+    if(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) handleFiles(Array.prototype.slice.call(e.dataTransfer.files));
   });
+  window.addEventListener('dragover', function(e){ e.preventDefault(); });
+  window.addEventListener('drop', function(e){ e.preventDefault(); });
 
   /* ============================================================
      PHOTOS  ->  print-friendly A4 PDF   (all inside the browser — nothing is uploaded until you send the order)
@@ -1357,7 +1447,10 @@
   function defaults(doc){ return { mode: doc ? 'doc' : 'photo', bri:0, con:0, sharp:0, rot:0, fit:'fit' }; }
   function cloneSettings(s){ return { mode:s.mode, bri:s.bri, con:s.con, sharp:s.sharp, rot:s.rot, fit:s.fit }; }
   function cloneItem(it){ return { file:it.file, name:it.name, work:it.work, doc:it.doc, auto:false, settings:cloneSettings(it.settings), cache:null, cacheKey:'' }; }
-  function updateEditBtn(){ editBtn.style.display = (ed.committed && state.file && state.file.fromPhotos) ? 'block' : 'none'; }
+  function updateEditBtn(){
+    editBtn.style.display = (ed.committed && state.file && state.file.fromPhotos) ? 'block' : 'none';
+    editPagesBtn.style.display = (state.file && state.origBuf && !state.file.fromPhotos) ? 'block' : 'none';
+  }
   function restoreDrop(){
     if(state.file){ view.drop = { main:{raw:state.file.name}, sub:{fileInfoLive:true}, cls:'file-name' }; }
     else { view.drop = { main:{key:'tapChoose'}, sub:{key:'fileTypes'}, cls:'' }; }
@@ -1560,6 +1653,118 @@
     });
   });
 
+
+  /* ============================================================
+     PDF PAGE EDITOR — rotate, remove and reorder pages (all inside the browser)
+     ============================================================ */
+  var PE = { root:$('peRoot'), grid:$('peGrid'), count:$('peCount'), err:$('peErr'), done:$('peDone'), reset:$('peReset'), close:$('peClose') };
+  var pe = { items:[], doc:null, cache:{}, cards:[], token:0, building:false, dirty:false, total:0 };
+  var editPagesBtn = $('editPagesBtn');
+
+  function peClose(){
+    pe.token++;
+    if(pe.doc){ try{ pe.doc.destroy(); }catch(e){} }
+    pe.doc = null; pe.cache = {}; pe.cards = [];
+    PE.root.classList.remove('show'); document.body.style.overflow = '';
+  }
+  function peInit(){
+    pe.items = [];
+    for(var i = 0; i < pe.total; i++) pe.items.push({ src:i, rot:0 });
+    pe.dirty = false;
+  }
+  function peDrawCard(item, cv){
+    var c = pe.cache[item.src], g = cv.getContext('2d');
+    if(!c){ cv.width = 100; cv.height = 140; g.fillStyle = '#fff'; g.fillRect(0, 0, 100, 140); return; }
+    var r = rotateCanvas(c, item.rot);
+    cv.width = r.width; cv.height = r.height; g.drawImage(r, 0, 0);
+  }
+  function peRender(){
+    PE.grid.innerHTML = ''; pe.cards = [];
+    var n = pe.items.length;
+    pe.items.forEach(function(it, idx){
+      var box = document.createElement('div'); box.className = 'pe-item';
+      var th = document.createElement('div'); th.className = 'pe-thumb';
+      var cv = document.createElement('canvas'); peDrawCard(it, cv); th.appendChild(cv);
+      var no = document.createElement('span'); no.className = 'pe-no'; no.textContent = idx + 1; th.appendChild(no);
+      box.appendChild(th);
+      var bt = document.createElement('div'); bt.className = 'pe-btns';
+      function mk(txt, label, cls, fn, off){
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'pe-btn ' + cls; b.textContent = txt;
+        b.setAttribute('aria-label', label + ' ' + (idx + 1)); b.disabled = !!off || pe.building;
+        b.addEventListener('click', function(){ if(!pe.building){ fn(); pe.dirty = true; PE.err.textContent = ''; peRender(); } });
+        bt.appendChild(b);
+      }
+      mk('⟲', 'Rotate left, page', 'rl', function(){ it.rot = (it.rot + 270) % 360; });
+      mk('⟳', 'Rotate right, page', 'rr', function(){ it.rot = (it.rot + 90) % 360; });
+      mk('←', 'Move earlier, page', 'mu', function(){ var x = pe.items[idx]; pe.items[idx] = pe.items[idx - 1]; pe.items[idx - 1] = x; }, idx === 0);
+      mk('→', 'Move later, page', 'md', function(){ var x = pe.items[idx]; pe.items[idx] = pe.items[idx + 1]; pe.items[idx + 1] = x; }, idx === n - 1);
+      mk('✕', 'Remove page', 'rm', function(){ pe.items.splice(idx, 1); });
+      box.appendChild(bt);
+      PE.grid.appendChild(box);
+      pe.cards.push({ item:it, cv:cv });
+    });
+    PE.count.textContent = (n !== pe.total) ? pe.total + ' → ' + pagesText(n) : pagesText(n);
+    if(!pe.building) PE.done.textContent = t('peDone', { pages:pagesText(n) });
+  }
+  // small thumbnails, drawn one after another so a long PDF never freezes the phone
+  function peThumbs(tok){
+    var i = 0;
+    (function next(){
+      if(tok !== pe.token || !pe.doc || i >= pe.total) return;
+      var src = i++;
+      pe.doc.getPage(src + 1).then(function(page){
+        var v1 = page.getViewport({ scale:1 }), k = Math.min(2, 260/Math.max(v1.width, v1.height)), vp = page.getViewport({ scale:k });
+        var c = document.createElement('canvas'); c.width = Math.max(1, Math.round(vp.width)); c.height = Math.max(1, Math.round(vp.height));
+        return page.render({ canvasContext:c.getContext('2d'), viewport:vp }).promise.then(function(){
+          if(tok !== pe.token) return;
+          pe.cache[src] = c;
+          pe.cards.forEach(function(cd){ if(cd.item.src === src) peDrawCard(cd.item, cd.cv); });
+        });
+      }).catch(function(){}).then(next);
+    })();
+  }
+  function openPageEditor(){
+    if(!state.origBuf || !window.pdfjsLib) return;
+    var tok = ++pe.token;
+    pdfjsLib.getDocument({ data:new Uint8Array(state.origBuf.slice(0)) }).promise.then(function(doc){
+      if(tok !== pe.token){ try{ doc.destroy(); }catch(e){} return; }
+      pe.doc = doc; pe.cache = {}; pe.total = doc.numPages; peInit();
+      PE.err.textContent = ''; PE.root.classList.add('show'); document.body.style.overflow = 'hidden'; PE.root.scrollTop = 0;
+      peRender(); peThumbs(tok);
+    }).catch(function(){ showError({key:'cantOpen'}); });
+  }
+  function peBusy(b){
+    pe.building = b; PE.root.classList.toggle('busy', b);
+    PE.root.querySelectorAll('button').forEach(function(el){ el.disabled = b; });
+    if(b) PE.done.textContent = t('peSaving'); else peRender();
+  }
+  PE.done.addEventListener('click', function(){
+    if(pe.building) return;
+    if(!pe.items.length){ PE.err.textContent = t('peKeep'); return; }
+    if(!pe.dirty){ peClose(); return; }
+    peBusy(true); PE.err.textContent = '';
+    var order = pe.items.map(function(i){ return i.src; }), rots = pe.items.map(function(i){ return i.rot; });
+    PDFLib.PDFDocument.load(state.origBuf).then(function(src){
+      return PDFLib.PDFDocument.create().then(function(out){
+        return out.copyPages(src, order).then(function(pgs){
+          pgs.forEach(function(pg, k){
+            pg.setRotation(PDFLib.degrees(((pg.getRotation().angle || 0) + rots[k]) % 360));
+            out.addPage(pg);
+          });
+          return out.save();
+        });
+      });
+    }).then(function(bytes){
+      var buf = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+      return acceptPdf({ name:state.file.name, size:bytes.length }, buf, 0);
+    }).then(function(){ peBusy(false); peClose(); })
+    .catch(function(){ peBusy(false); PE.err.textContent = t('peFail'); });
+  });
+  PE.reset.addEventListener('click', function(){ if(pe.building) return; peInit(); PE.err.textContent = ''; peRender(); });
+  PE.close.addEventListener('click', function(){ if(!pe.building) peClose(); });
+  editPagesBtn.addEventListener('click', openPageEditor);
+  window.addEventListener('keydown', function(e){ if(e.key === 'Escape' && PE.root.classList.contains('show') && !pe.building) peClose(); });
+
   /* ============================================================
      PAGE RANGE
      ============================================================ */
@@ -1648,6 +1853,9 @@
       checkReady();
     });
   });
+  document.querySelectorAll('.choice').forEach(function(el){
+    el.addEventListener('keydown', function(e){ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); el.click(); } });
+  });
   $('plus').addEventListener('click', function(){
     if(state.copies < 30){ state.copies++; copyCount.textContent = state.copies; checkReady(); }
   });
@@ -1678,6 +1886,14 @@
   function checkReady(){
     var ready = state.fileB64All && state.rangeOk && state.pages >= 1 && state.phone.length === 10 && !sending;
     sendBtn.disabled = !ready;
+    var sh = $('sendHint');
+    sh.textContent = (ready || sending || view.err) ? '' : (!state.fileB64All ? t('needFile') : (!(state.rangeOk && state.pages >= 1) ? t('needRange') : t('needPhone')));
+    var stage = !state.fileB64All ? 1 : (ready || sending ? 3 : 2);
+    document.querySelectorAll('#progress li').forEach(function(li){
+      var n = +li.getAttribute('data-st');
+      li.className = n < stage ? 'done' : (n === stage ? 'current' : '');
+      li.querySelector('.dot').textContent = n < stage ? '✓' : n;
+    });
     var pr = currentPrice();
     if(pr){
       priceAmt.textContent = '₹' + pr.total;
@@ -1728,6 +1944,7 @@
         view.order = sentPrice;
         renderOverlayPrice();
         $('tokenNo').textContent = '#' + out.token;
+        $('ticketNo').classList.add('has-token');
         $('overlayToken').textContent = t('tokenWord') + ' #' + out.token;
         $('overlay').classList.add('show');
       } else {
@@ -1761,6 +1978,7 @@
     document.querySelector('.choice[data-val="single"]').classList.add('active');
     view.token = null; view.order = null; renderOverlayPrice();
     $('tokenNo').textContent = '#—';
+    $('ticketNo').classList.remove('has-token');
     clearError();
     checkReady();
     updatePvLabel();

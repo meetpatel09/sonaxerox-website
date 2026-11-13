@@ -15,7 +15,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 SUITES = [  # (file, needs a browser)
     ("test_site_structure.py", False), ("test_tools.py", False), ("test_listener.py", False),
-    ("test_smoke_pages.py", True), ("test_print_pdf.py", True), ("test_print_photos.py", True), ("test_print_layout.py", True),
+    ("test_smoke_pages.py", True), ("test_print_pdf.py", True), ("test_print_photos.py", True), ("test_print_layout.py", True), ("test_print_pageedit.py", True),
     ("test_scan_corners.py", True), ("test_scan_vertical.py", True), ("test_scan_open.py", True), ("test_aadhaar.py", True),
 ]
 

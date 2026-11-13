@@ -12,8 +12,8 @@ shop-pc/listener.log
 shop-pc/listener.log.old
 
 # --- tests / tooling ---
-tests/node_modules/
-tests/.fixtures/
+tests/node_modules
+tests/.fixtures
 tests/.artifacts/
 __pycache__/
 *.pyc
@@ -27,5 +27,5 @@ Thumbs.db
 .vscode/
 
 # --- local development ---
-.venv/
+.venv
 .claude/settings.local.json
