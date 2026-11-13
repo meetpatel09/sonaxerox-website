@@ -1,0 +1,18 @@
+# GitHub Pages builds this repo with Jekyll. The website itself is plain HTML (nothing here changes how pages look).
+# This list keeps developer-only material OFF the public website (sonaxerox.in/docs, /tests, ... would otherwise be served).
+exclude:
+  - backend
+  - shop-pc
+  - tools
+  - tests
+  - docs
+  - assets-src
+  - node_modules
+  - README.md
+  - CLAUDE.md
+  - package.json
+  - package-lock.json
+  - requirements.txt
+  - Gemfile
+  - .claude
+  - .github
