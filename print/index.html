@@ -361,11 +361,6 @@
   body[data-lang="gu"] .price-break{font-family:'Hind Vadodara','IBM Plex Mono',sans-serif; font-size:12px;}
   body[data-lang="gu"] .progress li, body[data-lang="gu"] .chips li{font-size:13.5px;}
 
-  /* ===== rupee sign: always use the bundled glyph (see @font-face at the top) ===== */
-  .price-break, .overlay-price small{font-family:'SX Rupee','IBM Plex Mono',monospace;}
-  body[data-lang="gu"] .price-break, body[data-lang="gu"] .overlay-price small{font-family:'SX Rupee','Hind Vadodara','IBM Plex Mono',sans-serif;}
-  .price-amt, .overlay-price b{font-family:'SX Rupee Bold','Archivo Black',sans-serif;}
-
   /* ===== "order received" screen ===== */
   .overlay{
     position:fixed; top:0; bottom:0; left:0; right:0; background:var(--page);
@@ -443,6 +438,11 @@
   .pe-actions .send-btn{flex:1;}
   .pe-actions .link-btn{white-space:nowrap;}
   .pe-root.busy .pe-card{cursor:progress;}
+
+  /* ===== rupee sign: always use the bundled glyph (see @font-face at the top) ===== */
+  .price-break, .overlay-price small{font-family:'SX Rupee','IBM Plex Mono',monospace;}
+  body[data-lang="gu"] .price-break, body[data-lang="gu"] .overlay-price small{font-family:'SX Rupee','Hind Vadodara','IBM Plex Mono',sans-serif;}
+  .price-amt, .overlay-price b{font-family:'SX Rupee Bold','Archivo Black',sans-serif;}
 </style>
 </head>
 <body data-lang="gu">
