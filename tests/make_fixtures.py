@@ -26,7 +26,7 @@ def font(size):
 
 def pdfs():
     import pymupdf
-    for name, n in (("p6.pdf", 6), ("p35.pdf", 35)):
+    for name, n in (("p2.pdf", 2), ("p6.pdf", 6), ("p35.pdf", 35)):
         d = pymupdf.open()
         for i in range(1, n + 1):
             pg = d.new_page(width=595, height=842)

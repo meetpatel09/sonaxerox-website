@@ -107,13 +107,13 @@ with browser() as b:
     upload(p, "p6.pdf"); bad = []
     for col, rate in (("bw", 2), ("color", 10)):
         p.click(f"[data-val={col}]")
-        while int(txt(p, "#copyCount")) > 1: p.click("#minus")
+        while int(p.input_value("#copyCount")) > 1: p.click("#minus")
         for copies in (1, 2, 3, 5):
-            while int(txt(p, "#copyCount")) < copies: p.click("#plus")
+            while int(p.input_value("#copyCount")) < copies: p.click("#plus")
             if txt(p, "#priceAmt") != f"₹{6 * rate * copies}": bad.append((col, copies, txt(p, "#priceAmt")))
     rep.check("price is right for B&W/colour x 1, 2, 3, 5 copies", not bad, bad or "8 combinations")
     p.click("[data-val=bw]")
-    while int(txt(p, "#copyCount")) > 1: p.click("#minus")
+    while int(p.input_value("#copyCount")) > 1: p.click("#minus")
     p.click("[data-val=select]"); p.fill("#rangeInput", "3")
     rep.check("single page: '1 પેજ × ₹2' = ₹2", txt(p, "#priceAmt") == "₹2" and txt(p, "#priceBreak") == "1 પેજ × ₹2 · લેતી વખતે ચૂકવો")
     p.fill("#rangeInput", "9"); rep.check("invalid page numbers: no price (₹—)", txt(p, "#priceAmt") == "₹—")

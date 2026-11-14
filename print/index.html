@@ -275,7 +275,10 @@
   .stepper button{width:44px; height:44px; border-radius:10px; border:1.5px solid var(--line); background:#fff; color:var(--text); font-size:20px; font-family:'IBM Plex Mono', monospace; cursor:pointer;}
   .stepper button:active{background:var(--cyan); color:#fff; border-color:var(--cyan);}
   .stepper button:disabled{opacity:.35; cursor:default; background:#fff; color:var(--text); border-color:var(--line);}
-  .stepper .count{font-family:'IBM Plex Mono', monospace; font-size:24px; font-weight:500;}
+  .stepper .count{font-family:'IBM Plex Mono', monospace; font-size:24px; font-weight:500; width:96px; text-align:center; border:1.5px solid transparent; border-radius:10px; background:transparent; color:var(--text); padding:6px 4px; min-height:44px;}
+  .stepper .count:hover{border-color:var(--line); background:#fff;}
+  .stepper .count:focus{outline:none; border-color:var(--cyan); background:#fff;}
+  .field-hint.warn{color:var(--err); font-weight:600;}
 
   .phone-input{
     width:100%; padding:13px 14px; min-height:48px; border-radius:12px; border:1.5px solid var(--line);
@@ -580,7 +583,7 @@
           <div class="step-label"><span class="n">05</span> <span data-i18n="s5">કોપી</span></div>
           <div class="stepper">
             <button id="minus" type="button" aria-label="Decrease copies">–</button>
-            <span class="count" id="copyCount">1</span>
+            <input class="count" id="copyCount" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" value="1" autocomplete="off" aria-label="Copies" placeholder="1">
             <button id="plus" type="button" aria-label="Increase copies">+</button>
           </div>
           <p class="field-hint" id="copyHint"></p>
@@ -778,6 +781,7 @@
     nPage1:     {en:'1 page', gu:'1 પેજ'},
     nPages:     {en:'{n} pages', gu:'{n} પેજ'},
     nCopies:    {en:'{n} copies', gu:'{n} કોપી'},
+    copyOver:   {en:'Maximum {max} copies for this file', gu:'આ ફાઇલ માટે વધુમાં વધુ {max} કોપી જ થઈ શકે'},
     copyHint:   {en:'Up to {max} copies for this file · max 30 pages in total per order (2 pages on both sides count as 1)', gu:'આ ફાઇલ માટે વધુમાં વધુ {max} કોપી · એક ઓર્ડરમાં કુલ 30 પેજ સુધી (બંને બાજુના 2 પેજ = 1 ગણાય)'},
     limitNote:  {en:'Max <b>30 pages</b> and <b>15 MB</b> per order, and <b>30 pages in total including copies</b> (2 pages on both sides count as 1). Larger jobs — please call the shop directly.',
                  gu:'એક ઓર્ડરમાં વધુમાં વધુ <b>30 પેજ</b> અને <b>15 MB</b>, અને <b>કોપી સહિત કુલ 30 પેજ</b> (બંને બાજુના 2 પેજ = 1 ગણાય). મોટા કામ માટે કૃપા કરીને દુકાને ફોન કરો.'},
@@ -1871,11 +1875,29 @@
     var per = state.side === 'double' ? Math.ceil(state.pages / 2) : state.pages;
     return Math.max(1, Math.min(30, Math.floor(MAX_SHEETS / per)));
   }
+  // typing the number of copies: digits only, never above what is allowed for this file
+  var copyWarnTimer = null;
+  copyCount.addEventListener('input', function(){
+    var v = copyCount.value.replace(/\D/g, '').slice(0, 2);
+    if(copyCount.value !== v) copyCount.value = v;
+    if(v === '' || +v === 0) return;                          // still typing: keep the last good number until the box is left
+    var n = +v, mx = maxCopies();
+    if(n > mx){
+      n = mx; copyCount.value = mx;
+      var h = $('copyHint'); h.textContent = t('copyOver', { max:mx }); h.classList.add('warn');
+      clearTimeout(copyWarnTimer); copyWarnTimer = setTimeout(function(){ h.classList.remove('warn'); checkReady(); }, 2500);
+    }
+    state.copies = n; checkReady();
+  });
+  function copyFix(){ if(copyCount.value === '' || +copyCount.value < 1) copyCount.value = state.copies; }
+  copyCount.addEventListener('blur', copyFix);
+  copyCount.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); copyCount.blur(); } });
+  copyCount.addEventListener('focus', function(){ try{ copyCount.select(); }catch(e){} });
   $('plus').addEventListener('click', function(){
-    if(state.copies < maxCopies()){ state.copies++; copyCount.textContent = state.copies; checkReady(); }
+    if(state.copies < maxCopies()){ state.copies++; copyCount.value = state.copies; checkReady(); }
   });
   $('minus').addEventListener('click', function(){
-    if(state.copies > 1){ state.copies--; copyCount.textContent = state.copies; checkReady(); }
+    if(state.copies > 1){ state.copies--; copyCount.value = state.copies; checkReady(); }
   });
   phoneInput.addEventListener('input', function(){
     phoneInput.value = phoneInput.value.replace(/\D/g,'').slice(0,10);
@@ -1900,9 +1922,10 @@
 
   function checkReady(){
     var mx = maxCopies();                                   // changing pages / sides can lower the limit: pull copies down with it
-    if(state.copies > mx){ state.copies = mx; copyCount.textContent = mx; }
+    if(state.copies > mx){ state.copies = mx; copyCount.value = mx; }
     $('plus').disabled = state.copies >= mx;
-    $('copyHint').textContent = (state.rangeOk && state.pages >= 1) ? t('copyHint', { max:mx }) : '';
+    var ch = $('copyHint');
+    if(!ch.classList.contains('warn')) ch.textContent = (state.rangeOk && state.pages >= 1) ? t('copyHint', { max:mx }) : '';   // the red "maximum" message stays for a moment
     var ready = state.fileB64All && state.rangeOk && state.pages >= 1 && state.phone.length === 10 && !sending;
     sendBtn.disabled = !ready;
     var sh = $('sendHint');
@@ -1989,7 +2012,7 @@
     view.drop = { main:{key:'tapChoose'}, sub:{key:'fileTypes'}, cls:'' }; renderDrop();
     setHint({key:'uploadFirst'}, false);
     dropZone.classList.remove('has-file','bad-file');
-    copyCount.textContent = '1';
+    copyCount.value = '1';
     phoneInput.value = '';
     document.querySelectorAll('.choice').forEach(function(el){ el.classList.remove('active'); });
     document.querySelector('.choice[data-val="all"]').classList.add('active');
