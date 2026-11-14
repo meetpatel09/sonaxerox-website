@@ -92,6 +92,41 @@ with browser() as b:
     rep.check("dropping a PDF on the upload box loads it", txt(p, "#dropText") == "dropped.pdf" and txt(p, "#dropSub").startswith("6 પેજ"))
     ctx.close()
 
+    # ---------- copies limit: pages x copies <= 30 (double-sided: 2 pages = 1) ----------
+    ctx = new_context(b, be, (1280, 900)); be.mode = "ok"; p = open_page(ctx, "print/index.html", errors)
+    upload(p, "p6.pdf")
+    def copies_up(n=60):
+        for _ in range(n):
+            if p.is_disabled("#plus"): break
+            p.click("#plus")
+        return int(txt(p, "#copyCount"))
+    rep.check("6 pages, single-sided: copies stop at 5 (6 x 5 = 30), '+' is disabled", copies_up() == 5 and p.is_disabled("#plus") and txt(p, "#priceAmt") == "₹60")
+    rep.check("the hint says how many copies are allowed (Gujarati)", "વધુમાં વધુ 5 કોપી" in txt(p, "#copyHint") and "કુલ 30 પેજ" in txt(p, "#copyHint"))
+    p.click("[data-val=double]")
+    rep.check("switching to double-sided: 6 pages = 3 sheets → allowed copies rise to 10, '+' works again", not p.is_disabled("#plus") and "વધુમાં વધુ 10 કોપી" in txt(p, "#copyHint"))
+    rep.check("…and 10 copies double-sided is accepted (3 x 10 = 30)", copies_up() == 10 and p.is_disabled("#plus"))
+    p.click("[data-val=single]")
+    rep.check("back to single-sided: copies are pulled down to 5 automatically (never more than the limit)", txt(p, "#copyCount") == "5" and p.is_disabled("#plus"))
+    p.click("[data-val=select]"); p.fill("#rangeInput", "1")
+    rep.check("choosing just 1 page: up to 30 copies", "વધુમાં વધુ 30 કોપી" in txt(p, "#copyHint") and not p.is_disabled("#plus"))
+    rep.check("1 page x 30 copies is allowed, and '+' stops there", copies_up() == 30 and p.is_disabled("#plus"))
+    p.fill("#rangeInput", "1-5")
+    rep.check("then choosing 5 pages: copies drop to 6 (5 x 6 = 30)", txt(p, "#copyCount") == "6" and p.is_disabled("#plus"))
+    p.fill("#rangeInput", "1-3")
+    rep.check("odd pages double-sided round up: 3 pages = 2 sheets → max 15 copies", (p.click("[data-val=double]") or True) and "વધુમાં વધુ 15 કોપી" in txt(p, "#copyHint"))
+    p.click("#langBtn")
+    rep.check("English hint", txt(p, "#copyHint").startswith("Up to 15 copies for this file") and "30 pages in total" in txt(p, "#copyHint")); p.click("#langBtn")
+    p.click("[data-val=all]"); p.click("[data-val=single]"); upload(p, "p35.pdf")
+    p.click("[data-val=select]"); p.fill("#rangeInput", "1-30")
+    rep.check("a 30-page file single-sided: only 1 copy; double-sided (15 sheets): 2 copies", p.is_disabled("#plus") and txt(p, "#copyCount") == "1" and (p.click("[data-val=double]") or True) and copies_up() == 2)
+    p.click("[data-val=single]")
+    p.fill("#phoneInput", "9876543210"); p.click("#sendBtn"); p.wait_for_selector("#overlay.show", timeout=15000)
+    o = be.sent[-1]
+    rep.check("the order sent never exceeds the limit (pages x copies <= 30)", o["pages"] * o["copies"] <= 30, (o["pages"], o["copies"]))
+    p.click("#closeOverlay")
+    rep.check("'New order' resets copies to 1", txt(p, "#copyCount") == "1" and txt(p, "#copyHint") == "")
+    ctx.close()
+
     # ---------- phone: page editor fits the screen ----------
     ctx = new_context(b, be, "phone"); p = open_page(ctx, "print/index.html", errors); upload(p)
     p.click("#editPagesBtn"); p.wait_for_function("document.querySelectorAll('#peGrid .pe-item').length==6"); p.wait_for_timeout(600)

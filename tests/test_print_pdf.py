@@ -108,10 +108,10 @@ with browser() as b:
     for col, rate in (("bw", 2), ("color", 10)):
         p.click(f"[data-val={col}]")
         while int(txt(p, "#copyCount")) > 1: p.click("#minus")
-        for copies in (1, 2, 5, 12):
+        for copies in (1, 2, 3, 5):
             while int(txt(p, "#copyCount")) < copies: p.click("#plus")
             if txt(p, "#priceAmt") != f"₹{6 * rate * copies}": bad.append((col, copies, txt(p, "#priceAmt")))
-    rep.check("price is right for B&W/colour x 1, 2, 5, 12 copies", not bad, bad or "8 combinations")
+    rep.check("price is right for B&W/colour x 1, 2, 3, 5 copies", not bad, bad or "8 combinations")
     p.click("[data-val=bw]")
     while int(txt(p, "#copyCount")) > 1: p.click("#minus")
     p.click("[data-val=select]"); p.fill("#rangeInput", "3")
