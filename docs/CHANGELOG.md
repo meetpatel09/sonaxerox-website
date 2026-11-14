@@ -2,6 +2,14 @@
 
 Newest first. Dates come from git where the file is in the repository, otherwise from when the work was done.
 
+## 2026-11-14 — `/print/` redesign
+* **New layout:** hero strip (prices, pay at pickup), 3-step progress (Upload → Choose → Send), two columns on computers (upload + preview left, price/Send + options right), sticky price/Send bar on phones.
+* **New:** *Edit pages* for PDFs — rotate, remove and reorder pages in the browser; only the edited PDF is sent.
+* **New:** drag & drop a file onto the upload box; the Send button says why it is disabled; token appears in the header only after ordering.
+* **New:** order-received screen with "what to do next", shop address/hours, WhatsApp and call buttons.
+* Colour and sides choices have icons; photo editor, preview/zoom, prices, limits and the order sent to the backend are unchanged.
+* **Tests:** new `test_print_pageedit` suite (28+ checks); one header check in `test_print_pdf` updated for the new token behaviour.
+
 ## 2026-11-13 — Project setup
 * Repository organised: `backend/`, `shop-pc/`, `tools/`, `tests/`, `docs/`, project skills, CI, pull-request template.
 * **New:** `sitemap.xml` and `robots.txt` (were missing); `_config.yml` keeps developer folders off the public site.

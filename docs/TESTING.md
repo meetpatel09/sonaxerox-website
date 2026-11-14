@@ -30,6 +30,7 @@ Linux/CI also needs `fonts-liberation` for the ₹ test (it skips itself politel
 | `test_smoke_pages` | every page | opens, title, no JS errors, no sideways scroll on a phone, dashboard toggle |
 | `test_print_pdf` | /print/ | Gujarati⇄English, preview + zoom, page selection, **price maths**, the order that is sent (only chosen pages), errors, phone |
 | `test_print_photos` | /print/ | photo editor: EXIF rotation, styles, A4 PDF, multi-photo, edit-again, cancel, errors, phone |
+| `test_print_pageedit` | /print/ | PDF page editor (rotate / remove / reorder, only the result is sent), drag & drop upload, progress steps, wide-screen two-column layout |
 | `test_print_layout` | /print/ | order-received screen on tiny phones, footer never covering Send, **₹ glyph on a PC with no ₹ in its fonts** |
 | `test_scan_corners` | /scan/ | turn buttons, Straighten line, dots follow the photo, the scan follows what you see, laptop + phone |
 | `test_scan_vertical` | /scan/ | the upright Vertical slider: straightens a squeezed page (ratio → 1.00), frame behaviour, speed |
