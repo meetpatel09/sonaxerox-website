@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """shop-pc/listener.py end to end — with a fake Apps Script server and a fake 'SumatraPDF' (nothing is really printed)."""
-import base64, http.server, json, os, shutil, stat, subprocess, sys, tempfile, threading, time, urllib.parse
+import base64, http.server, json, os, shutil, socket, stat, subprocess, sys, tempfile, threading, time, urllib.parse
 from pathlib import Path
 from common import REPO, Report
 import make_fixtures
@@ -12,7 +12,7 @@ PDF = (REPO / "tests/.fixtures/p6.pdf").read_bytes()
 
 
 class State:
-    orders = []; calls = []; done = []; errors = []
+    orders = []; calls = []; done = []; errors = []; fail_done = False
 
 
 class Handler(http.server.BaseHTTPRequestHandler):
@@ -26,7 +26,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
         a = q.get("action")
         if a == "pending": return out({"ok": True, "orders": [o for o in State.orders if o["token"] not in State.done and o["token"] not in State.errors]})
         if a == "file": return out({"ok": True, "name": "x.pdf", "data": base64.b64encode(PDF).decode()})
-        if a == "done": State.done.append(q["token"]); return out({"ok": True})
+        if a == "done":
+            if State.fail_done: return out({"ok": False, "error": "boom"})
+            State.done.append(q["token"]); return out({"ok": True})
         if a == "error": State.errors.append(q["token"]); return out({"ok": True})
         out({"ok": False, "error": "Unknown action"})
 
@@ -40,10 +42,14 @@ def fake_sumatra(folder, exit_code=0):
     p.write_text(f'#!/bin/sh\necho "$@" >> "{folder}/printed.log"\nexit {exit_code}\n'); p.chmod(p.stat().st_mode | stat.S_IEXEC); return p
 
 
+def free_port():
+    s = socket.socket(); s.bind(("127.0.0.1", 0)); p = s.getsockname()[1]; s.close(); return p
+
+
 def setup_folder(srv, exit_code=0, key=KEY, poll=1, bom=False):
     d = Path(tempfile.mkdtemp()); shutil.copy(REPO / "shop-pc/listener.py", d / "listener.py")
     cfg = {"BACKEND_URL": f"http://127.0.0.1:{srv.server_address[1]}/script.google.com/exec", "SECRET": key, "PRINTER_BW": "BW Xerox", "PRINTER_COLOR": "Colour Xerox",
-           "SUMATRA_PATH": str(fake_sumatra(d, exit_code)), "POLL_SECONDS": poll}
+           "SUMATRA_PATH": str(fake_sumatra(d, exit_code)), "POLL_SECONDS": poll, "LOCK_PORT": free_port()}
     (d / "listener.config.json").write_bytes((b"\xef\xbb\xbf" if bom else b"") + json.dumps(cfg).encode()); return d
 
 
@@ -88,5 +94,31 @@ d = Path(tempfile.mkdtemp()); shutil.copy(REPO / "shop-pc/listener.py", d / "lis
 proc = subprocess.run([sys.executable, "listener.py"], cwd=d, capture_output=True, text=True, timeout=30)
 rep.check("a broken listener.config.json gives a clear message (not a crash trace)", proc.returncode == 1 and "could not be read" in proc.stdout and "Traceback" not in proc.stderr)
 rep.check("the example config is valid JSON with every key the listener understands", set(json.loads((REPO / "shop-pc/listener.config.example.json").read_text())) <= {"BACKEND_URL", "SECRET", "PRINTER_BW", "PRINTER_COLOR", "SUMATRA_PATH", "POLL_SECONDS", "CLEANUP_HOURS", "ORDERS_DIR"})
+
+# ---- the bug that printed one PDF again and again ----
+# 1) two listeners at the same time (e.g. auto-start + a window someone opened) must never both run
+State.orders = [order("S401")]; State.done.clear(); State.errors.clear(); State.fail_done = False
+d = setup_folder(srv, poll=1)
+procs = [subprocess.Popen([sys.executable, "listener.py"], cwd=d, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) for _ in range(4)]
+time.sleep(5)
+alive = [pr for pr in procs if pr.poll() is None]
+for pr in alive: pr.terminate()
+outs = [pr.communicate(timeout=10)[0] for pr in procs]
+printed = (d / "printed.log").read_text().splitlines() if (d / "printed.log").exists() else []
+rep.check("4 listeners started together → only ONE keeps running; the others close with 'already running'", len(alive) == 1 and sum("already running" in o for o in outs) == 3, (len(alive), [pr.returncode for pr in procs]))
+rep.check("…and the order is printed exactly once", len(printed) == 1 and State.done == ["S401"], (len(printed), State.done))
+rep.check("the extra copies leave listener.log alone (no spam every minute)", (d / "listener.log").read_text().count("listener started") == 1)
+
+# 2) the backend does not accept 'done' → the order must NOT be printed again and again
+State.orders = [order("S402")]; State.done.clear(); State.errors.clear(); State.fail_done = True
+d = setup_folder(srv, poll=1); out = run_listener(d, 14)
+printed = (d / "printed.log").read_text().splitlines() if (d / "printed.log").exists() else []
+rep.check("backend refuses 'done' → printed ONCE only, not on every check", len(printed) == 1, len(printed))
+rep.check("…and the log says it is printed but the backend was not told", "IS printed, but the backend was not told" in (d / "listener.log").read_text())
+rep.check("…the order is NOT marked ERROR just because telling the backend failed", State.errors == [])
+State.fail_done = False; out = run_listener(d, 5)
+printed = (d / "printed.log").read_text().splitlines()
+rep.check("after a restart it still does not print again, and tells the backend once it works", len(printed) == 1 and State.done == ["S402"], (len(printed), State.done))
+
 srv.shutdown()
 sys.exit(rep.finish())

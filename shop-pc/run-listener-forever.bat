@@ -7,6 +7,12 @@ echo.
 :loop
 echo [%date% %time%] Starting listener...
 python listener.py
+if errorlevel 3 (
+  echo.
+  echo Another listener is already running on this PC. Not starting a second one.
+  pause
+  exit /b 3
+)
 echo.
 echo [%date% %time%] Listener stopped. Restarting in 5 seconds...
 timeout /t 5 /nobreak >nul

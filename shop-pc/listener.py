@@ -17,6 +17,7 @@ No extra Python packages needed — uses only built-in modules.
 import base64
 import json
 import os
+import socket
 import subprocess
 import sys
 import time
@@ -50,6 +51,10 @@ POLL_SECONDS = 15
 # Delete downloaded PDFs from this PC after this many hours
 CLEANUP_HOURS = 24
 
+# Only ONE listener may run on this PC (a second copy would print every order twice).
+# It holds this local port while it runs; a second copy finds the port taken and exits quietly.
+LOCK_PORT = 47651
+
 # Folder where downloaded PDFs are kept (created automatically)
 ORDERS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "orders")
 
@@ -70,7 +75,7 @@ def _load_local_config():
         sys.exit(1)
     g = globals()
     for key in ("BACKEND_URL", "SECRET", "PRINTER_BW", "PRINTER_COLOR", "SUMATRA_PATH",
-                "POLL_SECONDS", "CLEANUP_HOURS", "ORDERS_DIR"):
+                "POLL_SECONDS", "CLEANUP_HOURS", "ORDERS_DIR", "LOCK_PORT"):
         if key in data:
             g[key] = data[key]
 
@@ -78,6 +83,59 @@ def _load_local_config():
 _load_local_config()
 
 # ============================================================
+
+
+# ------------------------------------------------------------
+# Safety 1: never run twice.  Safety 2: never print the same order twice.
+# ------------------------------------------------------------
+_lock_socket = None
+PRINTED_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "listener.printed.txt")
+PRINTED = set()
+
+
+def acquire_single_instance_lock():
+    """True if this is the only listener on the PC. Works for normal and 'Run as administrator' copies alike."""
+    global _lock_socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        if os.name == "nt":
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        s.bind(("127.0.0.1", int(LOCK_PORT)))
+        s.listen(1)
+    except OSError:
+        s.close()
+        return False
+    _lock_socket = s            # keep it open for as long as the program runs
+    return True
+
+
+def printed_key(order):
+    return "%s:%s" % (order["token"], order.get("fileId", ""))
+
+
+def load_printed():
+    """Orders already printed on this PC (survives a restart), so a failed 'done' call can never cause a re-print."""
+    try:
+        with open(PRINTED_FILE, encoding="utf-8") as fh:
+            keys = fh.read().split()
+    except OSError:
+        return set()
+    keys = keys[-500:]
+    try:
+        with open(PRINTED_FILE, "w", encoding="utf-8") as fh:
+            fh.write("\n".join(keys) + ("\n" if keys else ""))
+    except OSError:
+        pass
+    return set(keys)
+
+
+def remember_printed(key):
+    PRINTED.add(key)
+    try:
+        with open(PRINTED_FILE, "a", encoding="utf-8") as fh:
+            fh.write(key + "\n")
+    except OSError:
+        pass
 
 
 def api(params):
@@ -139,6 +197,10 @@ def print_settings(order):
 
 def handle_order(order):
     token = order["token"]
+    if printed_key(order) in PRINTED:
+        log("Order %s was already printed on this PC - only telling the backend again (no second print)." % token)
+        mark_done(token)
+        return
     log("New order %s: %s pages, %s, %s, %s cop%s (phone %s)" % (
         token, order["pages"], order["color"], order["side"],
         order["copies"], "y" if str(order["copies"]) == "1" else "ies",
@@ -164,9 +226,24 @@ def handle_order(order):
     if result.returncode != 0:
         raise RuntimeError("SumatraPDF exited with code %d" % result.returncode)
 
-    # 3) mark as printed
-    api({"action": "done", "token": token, "key": SECRET})
-    log("  order %s -> PRINTED" % token)
+    # 3) remember it here FIRST, then tell the backend (so a failed call can never cause a second print)
+    remember_printed(printed_key(order))
+    mark_done(token)
+
+
+def mark_done(token):
+    for attempt in range(3):
+        try:
+            r = api({"action": "done", "token": token, "key": SECRET})
+            if r.get("ok") is not False:
+                log("  order %s -> PRINTED" % token)
+                return True
+            log("  backend refused 'done' for %s: %s" % (token, r.get("error")))
+        except Exception as ex:
+            log("  could not mark %s as PRINTED (try %d of 3): %s" % (token, attempt + 1, ex))
+        time.sleep(2)
+    log("  order %s IS printed, but the backend was not told. It will NOT be printed again; will retry telling it." % token)
+    return False
 
 
 def cleanup_old_files():
@@ -189,7 +266,12 @@ def cleanup_old_files():
 
 
 def main():
+    if not acquire_single_instance_lock():
+        # silent in the log on purpose: the auto-start check runs every minute
+        print("Another Sona Xerox listener is already running on this PC - this copy is not needed and will close.", flush=True)
+        sys.exit(3)
     check_config()
+    PRINTED.update(load_printed())
     os.makedirs(ORDERS_DIR, exist_ok=True)
     log("Sona Xerox listener started. Checking every %ds. Press Ctrl+C to stop." % POLL_SECONDS)
 

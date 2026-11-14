@@ -2,6 +2,10 @@
 
 Newest first. Dates come from git where the file is in the repository, otherwise from when the work was done.
 
+## 2026-11-14 — Shop PC: listener auto-restart + no double printing
+* **New:** `install-autostart.bat` (Windows checks every minute and starts the listener if it is not running), `run-listener-forever.bat`, `remove-autostart.bat`.
+* **Fixed (found while using it):** one order could print again and again. The listener now allows **only one copy** on the PC (local port lock), and remembers printed orders in `listener.printed.txt`, so a failed "mark PRINTED" call can no longer cause a re-print. Tests reproduce both cases.
+
 ## 2026-11-14 — `/print/` redesign
 * **New layout:** hero strip (prices, pay at pickup), 3-step progress (Upload → Choose → Send), two columns on computers (upload + preview left, price/Send + options right), sticky price/Send bar on phones.
 * **New:** *Edit pages* for PDFs — rotate, remove and reorder pages in the browser; only the edited PDF is sent.
