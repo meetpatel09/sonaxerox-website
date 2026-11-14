@@ -16,7 +16,7 @@ Two visual styles exist on purpose:
 
 ## 2. Online printing (`/print/` → Apps Script → shop PC)
 1. **Page** (`print/index.html`): the customer picks a PDF *or photos*. Photos go through a client-side editor (see §4) and become an A4 PDF.
-   The page checks ≤ 30 pages and ≤ 15 MB, lets the customer print only some pages (a new PDF containing just those pages is built in the browser),
+   The page checks ≤ 30 pages, ≤ 15 MB and pages × copies ≤ 30 in total (double-sided: 2 pages = 1; page only, not in the backend), lets the customer print only some pages (a new PDF containing just those pages is built in the browser),
    shows the price live (`RATE_BW = ₹2`, `RATE_COLOR = ₹10` per page × copies — double-sided costs the same per page) and `POST`s JSON to the Apps Script URL:
    `{fileName, fileData(base64), pages, color: bw|color, side: single|double, copies, phone}`.
 2. **Backend** (`backend/orders-backend.gs`): validates (10-digit phone, ≤ 30 pages, ≤ 30 copies), stores the PDF in Drive folder *SonaXerox-Orders*,

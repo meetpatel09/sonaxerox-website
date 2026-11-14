@@ -274,6 +274,7 @@
   .stepper{display:flex; align-items:center; justify-content:space-between; border:1.5px solid var(--line); border-radius:12px; padding:6px 10px; background:var(--panel);}
   .stepper button{width:44px; height:44px; border-radius:10px; border:1.5px solid var(--line); background:#fff; color:var(--text); font-size:20px; font-family:'IBM Plex Mono', monospace; cursor:pointer;}
   .stepper button:active{background:var(--cyan); color:#fff; border-color:var(--cyan);}
+  .stepper button:disabled{opacity:.35; cursor:default; background:#fff; color:var(--text); border-color:var(--line);}
   .stepper .count{font-family:'IBM Plex Mono', monospace; font-size:24px; font-weight:500;}
 
   .phone-input{
@@ -582,6 +583,7 @@
             <span class="count" id="copyCount">1</span>
             <button id="plus" type="button" aria-label="Increase copies">+</button>
           </div>
+          <p class="field-hint" id="copyHint"></p>
         </div>
 
         <div class="step">
@@ -715,6 +717,7 @@
   var BACKEND_URL = "https://script.google.com/macros/s/AKfycbwoNpxnHM8PwyGV90xdcgkut8md988byKOvALWYWFX3pdaSD7NqHWQdN0Jexnxr-hHw/exec";
 
   var MAX_PAGES = 30;
+  var MAX_SHEETS = 30;   // pages x copies in one order (2 pages on both sides count as 1)
   var MAX_MB = 15;
   var RATE_BW = 2;       // ₹ per page, black & white
   var RATE_COLOR = 10;   // ₹ per page, colour
@@ -775,8 +778,9 @@
     nPage1:     {en:'1 page', gu:'1 પેજ'},
     nPages:     {en:'{n} pages', gu:'{n} પેજ'},
     nCopies:    {en:'{n} copies', gu:'{n} કોપી'},
-    limitNote:  {en:'Max <b>30 pages</b> and <b>15 MB</b> per order. Larger jobs — please call the shop directly.',
-                 gu:'એક ઓર્ડરમાં વધુમાં વધુ <b>30 પેજ</b> અને <b>15 MB</b>. મોટા કામ માટે કૃપા કરીને દુકાને ફોન કરો.'},
+    copyHint:   {en:'Up to {max} copies for this file · max 30 pages in total per order (2 pages on both sides count as 1)', gu:'આ ફાઇલ માટે વધુમાં વધુ {max} કોપી · એક ઓર્ડરમાં કુલ 30 પેજ સુધી (બંને બાજુના 2 પેજ = 1 ગણાય)'},
+    limitNote:  {en:'Max <b>30 pages</b> and <b>15 MB</b> per order, and <b>30 pages in total including copies</b> (2 pages on both sides count as 1). Larger jobs — please call the shop directly.',
+                 gu:'એક ઓર્ડરમાં વધુમાં વધુ <b>30 પેજ</b> અને <b>15 MB</b>, અને <b>કોપી સહિત કુલ 30 પેજ</b> (બંને બાજુના 2 પેજ = 1 ગણાય). મોટા કામ માટે કૃપા કરીને દુકાને ફોન કરો.'},
     waTip:      {en:'📱 <b>PDF on WhatsApp?</b> Open the PDF once inside WhatsApp, then come back and tap upload — it will appear in <b>“Recent”</b> at the top.',
                  gu:'📱 <b>PDF WhatsApp માં છે?</b> પહેલા WhatsApp માં PDF એક વાર ખોલો, પછી અહીં પાછા આવીને અપલોડ દબાવો — તે ઉપર <b>“Recent”</b> માં દેખાશે.'},
     s2:         {en:'Pages', gu:'પેજ'},
@@ -1861,8 +1865,14 @@
   document.querySelectorAll('.choice').forEach(function(el){
     el.addEventListener('keydown', function(e){ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); el.click(); } });
   });
+  // most copies allowed for what is chosen now: pages x copies <= 30 (double-sided: 2 pages = 1)
+  function maxCopies(){
+    if(!(state.rangeOk && state.pages >= 1)) return 30;
+    var per = state.side === 'double' ? Math.ceil(state.pages / 2) : state.pages;
+    return Math.max(1, Math.min(30, Math.floor(MAX_SHEETS / per)));
+  }
   $('plus').addEventListener('click', function(){
-    if(state.copies < 30){ state.copies++; copyCount.textContent = state.copies; checkReady(); }
+    if(state.copies < maxCopies()){ state.copies++; copyCount.textContent = state.copies; checkReady(); }
   });
   $('minus').addEventListener('click', function(){
     if(state.copies > 1){ state.copies--; copyCount.textContent = state.copies; checkReady(); }
@@ -1889,6 +1899,10 @@
   }
 
   function checkReady(){
+    var mx = maxCopies();                                   // changing pages / sides can lower the limit: pull copies down with it
+    if(state.copies > mx){ state.copies = mx; copyCount.textContent = mx; }
+    $('plus').disabled = state.copies >= mx;
+    $('copyHint').textContent = (state.rangeOk && state.pages >= 1) ? t('copyHint', { max:mx }) : '';
     var ready = state.fileB64All && state.rangeOk && state.pages >= 1 && state.phone.length === 10 && !sending;
     sendBtn.disabled = !ready;
     var sh = $('sendHint');

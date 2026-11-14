@@ -13,7 +13,7 @@ Repo: page `print/index.html`, backend `backend/orders-backend.gs` + `backend/dr
 
 ## What the page sends (POST, `Content-Type: text/plain`, JSON)
 `{fileName, fileData (base64 PDF), pages, color: "bw"|"color", side: "single"|"double", copies, phone (10 digits)}` → `{ok:true, token:"S105"}` or `{ok:false, error}`. Errors the page maps to Gujarati: `No file received`, `Invalid phone number`, `Max 30 pages per order`.
-Limits: ≤ 30 pages, ≤ 30 copies, PDF ≤ 15 MB (page side). When the customer prints only some pages, the page **builds a new PDF with just those pages** — what is stored is exactly what is printed.
+Limits: ≤ 30 pages, PDF ≤ 15 MB, and **pages × copies ≤ 30** in total (double-sided: 2 pages count as 1, so 6 pages double-sided = 3 → up to 10 copies) — all enforced **only on the page** (`MAX_SHEETS`, `maxCopies()`); the Apps Script still only checks ≤ 30 pages and ≤ 30 copies, so the total is not enforced server-side (a known gap, decided 2026-11-14). When the customer prints only some pages, the page **builds a new PDF with just those pages** — what is stored is exactly what is printed.
 
 ## Status lifecycle
 `NEW → PRINTED | ERROR → "(file deleted)"` after 24 h (hourly trigger on the **Head** deployment). **`NEW` is never deleted** (PC may have been off). Token = `S` + (100 + sheet row). Sheet columns: Time, Token, Phone, Colour, Sides, Copies, Pages, File URL, File ID, Status.

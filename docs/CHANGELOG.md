@@ -2,6 +2,9 @@
 
 Newest first. Dates come from git where the file is in the repository, otherwise from when the work was done.
 
+## 2026-11-14 — `/print/` copies limit
+* One order is now limited to **30 pages in total including copies** (pages × copies ≤ 30; double-sided counts 2 pages as 1). The "+" button stops at the allowed number, copies are lowered automatically if pages/sides change, and a hint shows the maximum. Enforced on the page only (not in the Apps Script).
+
 ## 2026-11-14 — Shop PC: listener auto-restart + no double printing
 * **New:** `install-autostart.bat` (Windows checks every minute and starts the listener if it is not running), `run-listener-forever.bat`, `remove-autostart.bat`.
 * **Fixed (found while using it):** one order could print again and again. The listener now allows **only one copy** on the PC (local port lock), and remembers printed orders in `listener.printed.txt`, so a failed "mark PRINTED" call can no longer cause a re-print. Tests reproduce both cases.
