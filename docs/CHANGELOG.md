@@ -2,6 +2,9 @@
 
 Newest first. Dates come from git where the file is in the repository, otherwise from when the work was done.
 
+## 2026-11-15 — Shop PC: sound + message when an order prints
+* The listener plays a tune and shows a Gujarati Windows message (token, pages, colour, sides, copies) when an order has printed, and a different alert when a print fails. Settings `SOUND`, `NOTIFY`, `SOUND_REPEAT`. Not tested on real Windows (written on a Mac) — see `shop-pc/README.md`.
+
 ## 2026-11-14 — `/print/` copies limit
 * One order is now limited to **30 pages in total including copies** (pages × copies ≤ 30; double-sided counts 2 pages as 1). The "+" button stops at the allowed number, copies are lowered automatically if pages/sides change, and a hint shows the maximum. Enforced on the page only (not in the Apps Script).
 * **Copies box:** you can now type the number of copies (digits only; a number above the limit is cut to the maximum with a red message; empty or 0 goes back to the last number). The − / + buttons still work.

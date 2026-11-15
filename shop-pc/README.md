@@ -31,6 +31,13 @@ sends it to the right printer with the right settings (colour/B&W, single/double
 6. The listener now **allows only ONE copy on the PC**: a second copy (auto-start + an open window, or a copy started with "Run as administrator") closes by itself, so an order can never print twice because of that.
    To stop it for real, run `remove-autostart.bat` first (otherwise it restarts within a minute).
 
+## Sound + message when an order prints
+When an order has been printed the PC plays a short tune (two rising notes; three low beeps if a print **fails**) twice, and Windows shows a message in Gujarati such as *નવો ઓર્ડર S105 પ્રિન્ટ થયો — 6 પેજ · કલર · એક બાજુ · 1 કોપી*.
+- The sound plays through the PC's **default speaker** — set the Bluetooth speaker as the default output (Windows → Settings → System → Sound). A Bluetooth speaker often sleeps and misses the first moment, which is why the tune plays twice (`SOUND_REPEAT` in `listener.config.json`, default 2).
+- Switch off with `"SOUND": false` and/or `"NOTIFY": false` in `listener.config.json`.
+- No message? Windows *Focus assist / Do not disturb* hides it — the sound still plays. A failed sound never stops the printing.
+- On a Mac or Linux the listener only writes a line starting with `[alert]` in `listener.log` (that is how it is tested).
+
 ## Updating the listener
 Stop every running listener first (`remove-autostart.bat`, or end all `python.exe` / `pythonw.exe` in Task Manager), then replace `listener.py` with the new version from GitHub. Your `listener.config.json` is untouched, so nothing to re-enter. Start again with `install-autostart.bat`.
 

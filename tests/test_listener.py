@@ -75,11 +75,17 @@ rep.check("B&W single-sided → black & white printer, 'simplex,monochrome,fit'"
 rep.check("colour double-sided ×3 → colour printer, 'duplexlong,color,3x,fit'", "-print-to Colour Xerox" in printed[1] and "duplexlong,color,3x,fit" in printed[1], printed[1:])
 rep.check("an order is only printed once (not again on the next check)", len(printed) == 2 and State.calls.count("done") == 2)
 rep.check("everything is written to listener.log", (d / "listener.log").exists() and "S102 -> PRINTED" in (d / "listener.log").read_text())
+lg = (d / "listener.log").read_text()
+rep.check("an alert (sound + Windows message) is raised for each printed order, in Gujarati, with what was printed",
+          "[alert] નવો ઓર્ડર S101 પ્રિન્ટ થયો — 6 પેજ · બ્લેક & વ્હાઇટ · એક બાજુ · 1 કોપી" in lg and "[alert] નવો ઓર્ડર S102 પ્રિન્ટ થયો — 6 પેજ · કલર · બંને બાજુ · 3 કોપી" in lg)
+rep.check("the alert comes right after printing and before the order is reported PRINTED", lg.index("[alert] નવો ઓર્ડર S101") < lg.index("S101 -> PRINTED"))
+rep.check("each order raises its alert only once", lg.count("[alert] નવો ઓર્ડર S101") == 1 and lg.count("[alert] નવો ઓર્ડર S102") == 1)
 
 # ---- printer fails → ERROR ----
 State.orders = [order("S201")]; State.done.clear(); State.errors.clear()
 d = setup_folder(srv, exit_code=1); out = run_listener(d, 3)
 rep.check("if SumatraPDF fails the order is marked ERROR (and not PRINTED)", State.errors == ["S201"] and State.done == [], (State.errors, State.done))
+rep.check("a failed print raises a different (error) alert so staff look at it", "[alert] ઓર્ડર S201 પ્રિન્ટ ન થયો — તપાસો!" in (d / "listener.log").read_text() and "નવો ઓર્ડર S201" not in (d / "listener.log").read_text())
 
 # ---- wrong secret ----
 State.orders = [order("S301")]; State.done.clear(); State.errors.clear()
@@ -119,6 +125,7 @@ rep.check("…the order is NOT marked ERROR just because telling the backend fai
 State.fail_done = False; out = run_listener(d, 5)
 printed = (d / "printed.log").read_text().splitlines()
 rep.check("after a restart it still does not print again, and tells the backend once it works", len(printed) == 1 and State.done == ["S402"], (len(printed), State.done))
+rep.check("no alert is repeated for an order that is only being re-reported (no second sound)", (d / "listener.log").read_text().count("[alert] નવો ઓર્ડર S402") == 1)
 
 srv.shutdown()
 sys.exit(rep.finish())
