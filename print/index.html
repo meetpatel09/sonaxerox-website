@@ -409,6 +409,19 @@
   }
   .btn-ghost.wa{border-color:#25D366; color:#128C4A;}
   .btn-ghost:hover{background:var(--panel);}
+  .keep{margin:0 0 14px; text-align:left;}
+  .keep-title{font-size:13px; font-weight:700; margin:0 0 8px;}
+  .btn-ghost.big{width:100%; margin-top:8px; font-family:inherit;}
+  #waToken{background:#25D366; border-color:#25D366; color:#fff;}
+  #waToken:hover{background:#1fba5a;}
+  .btn-ghost:disabled{opacity:.6; cursor:progress;}
+  .keep-note{font-size:12.5px; color:var(--text-soft); line-height:1.5; margin:8px 0 0;}
+  .recent{order:-1;}
+  .recent-list{list-style:none; margin:0 0 6px; padding:0; display:grid; gap:8px;}
+  .recent-list li{display:flex; align-items:center; justify-content:space-between; gap:10px; border:1.5px solid var(--line); border-radius:12px; background:var(--panel); padding:9px 12px;}
+  .recent-list .tk{font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:17px; color:var(--magenta);}
+  .recent-list .meta{font-size:12.5px; color:var(--text-soft); text-align:right; line-height:1.4;}
+  .recent-list .meta b{color:var(--text);}
   .close-overlay{width:100%; background:var(--text); color:#fff; border:none; border-radius:12px; padding:14px; min-height:50px; font-size:15px; font-weight:600; cursor:pointer;}
   .close-overlay:hover{background:#2c2a27;}
 
@@ -533,6 +546,13 @@
           <p class="limit-note" data-i18n-html="waTip"></p>
         </div>
       </div>
+
+      <div class="card recent" id="recentCard" style="display:none">
+        <h3 class="card-title" data-i18n="recentTitle">તમારા તાજેતરના ઓર્ડર</h3>
+        <ul class="recent-list" id="recentList"></ul>
+        <p class="field-hint" data-i18n="recentNote">દુકાને ટોકન નંબર બતાવો. આ યાદી ફક્ત આ ફોનમાં સચવાય છે.</p>
+        <button class="link-btn" id="recentClear" type="button" data-i18n="recentClear">યાદી સાફ કરો</button>
+      </div>
     </div>
 
     <div class="col">
@@ -629,6 +649,12 @@
         <span class="op-label" data-i18n="amountToPay">લેતી વખતે ચૂકવવાની રકમ</span>
         <b id="overlayAmt">₹0</b>
         <small id="overlayBreak"></small>
+      </div>
+      <div class="keep">
+        <p class="keep-title" data-i18n="keepTitle">ટોકન સાચવી લો — ભૂલી ન જાઓ</p>
+        <a class="btn-ghost big wa" id="waToken" href="https://wa.me/917778805780" target="_blank" rel="noopener" data-i18n="waToken">💬 WhatsApp પર ટોકન મોકલો</a>
+        <button class="btn-ghost big" id="saveToken" type="button" data-i18n="saveToken">⬇ ટોકન ફોટો સેવ કરો</button>
+        <p class="keep-note" data-i18n="keepNote"></p>
       </div>
       <p class="next-title" data-i18n="nextTitle">હવે શું કરવું</p>
       <ol class="next-steps">
@@ -861,6 +887,13 @@
     shopAddr:   {en:'Valod, Gujarat 394640', gu:'વાલોડ, ગુજરાત ૩૯૪૬૪૦'},
     shopHours:  {en:'Open daily 7:30 AM – 7:00 PM', gu:'રોજ સવારે 7:30 થી સાંજે 7:00 સુધી'},
     callShop:   {en:'📞 Call the shop', gu:'📞 દુકાને ફોન કરો'},
+    keepTitle:  {en:'Save your token so you do not forget it', gu:'ટોકન સાચવી લો — ભૂલી ન જાઓ'},
+    waToken:    {en:'💬 Send token on WhatsApp', gu:'💬 WhatsApp પર ટોકન મોકલો'},
+    saveToken:  {en:'⬇ Save token as a picture', gu:'⬇ ટોકન ફોટો સેવ કરો'},
+    keepNote:   {en:'The message is ready in WhatsApp — just press Send. The token stays in your chat and the shop knows your order is coming.', gu:'WhatsApp માં સંદેશ તૈયાર હશે — બસ “Send” દબાવો. ટોકન તમારી ચેટમાં રહેશે અને દુકાનને પણ ખબર પડશે.'},
+    recentTitle:{en:'Your recent orders', gu:'તમારા તાજેતરના ઓર્ડર'},
+    recentNote: {en:'Show the token number at the shop. This list is saved only on this phone.', gu:'દુકાને ટોકન નંબર બતાવો. આ યાદી ફક્ત આ ફોનમાં સચવાય છે.'},
+    recentClear:{en:'Clear list', gu:'યાદી સાફ કરો'},
     needFile:   {en:'Choose a file to print first', gu:'પહેલા પ્રિન્ટ માટે ફાઇલ પસંદ કરો'},
     needRange:  {en:'Check the page numbers', gu:'પેજ નંબર તપાસો'},
     needPhone:  {en:'Enter your 10-digit phone number to send', gu:'મોકલવા માટે તમારો 10 અંકનો ફોન નંબર લખો'}
@@ -943,6 +976,7 @@
     renderOverlayPrice();
     checkReady();
     updatePvLabel();
+    if(typeof renderRecent === 'function') renderRecent();
     if(ed && ed.sess && E.root.classList.contains('show')) edSync();
     if(typeof peRender === 'function' && PE && PE.root.classList.contains('show')) peRender();
     try{ localStorage.setItem(LS_KEY, l); }catch(e){}
@@ -1957,6 +1991,7 @@
     if(BACKEND_URL.indexOf('script.google.com') === -1){ showError({key:'noBackend'}); return; }
 
     var sentPrice = currentPrice();
+    var sentOpts = { color:state.color, side:state.side, phone:state.phone };
     sending = true;
     sendBtn.classList.add('sending');
     sendBtn.textContent = t('sending');
@@ -1988,6 +2023,7 @@
         $('tokenNo').textContent = '#' + out.token;
         $('ticketNo').classList.add('has-token');
         $('overlayToken').textContent = t('tokenWord') + ' #' + out.token;
+        afterOrder(out.token, sentPrice, sentOpts);
         $('overlay').classList.add('show');
       } else {
         var k = out && out.error ? SERVER_ERR[out.error] : null;
@@ -2025,6 +2061,114 @@
     checkReady();
     updatePvLabel();
     $('overlay').classList.remove('show');
+  });
+
+
+  /* ============================================================
+     AFTER THE ORDER — keep the token: WhatsApp message (Gujarati), token picture, recent-orders list
+     ============================================================ */
+  var SHOP_WA = '917778805780';
+  var LS_ORDERS = 'sx_orders', RECENT_KEEP = 5, RECENT_DAYS = 7;
+  var lastOrder = null;
+
+  // the message the shop receives — always Gujarati (the shop reads Gujarati), whatever language the page is in
+  function waMessage(o){
+    return 'નમસ્તે Sona Xerox, મેં ઓનલાઇન પ્રિન્ટ ઓર્ડર આપ્યો છે.\n' +
+           'ટોકન: ' + o.token + '\n' +
+           o.pages + ' પેજ · ' + (o.color === 'color' ? 'કલર' : 'બ્લેક & વ્હાઇટ') + ' · ' + (o.side === 'double' ? 'બંને બાજુ' : 'એક બાજુ') + ' · ' + o.copies + ' કોપી\n' +
+           'રકમ: ₹' + o.total + ' (દુકાને ચૂકવીશ)\n' +
+           'મોબાઇલ: ' + o.phone;
+  }
+  function waLink(o){ return 'https://wa.me/' + SHOP_WA + '?text=' + encodeURIComponent(waMessage(o)); }
+
+  function loadRecent(){
+    var list = [];
+    try{ list = JSON.parse(localStorage.getItem(LS_ORDERS) || '[]'); }catch(e){ list = []; }
+    if(!Array.isArray(list)) list = [];
+    var cutoff = Date.now() - RECENT_DAYS*86400000;
+    return list.filter(function(x){ return x && x.token && x.ts > cutoff; }).slice(0, RECENT_KEEP);
+  }
+  function saveRecent(list){ try{ localStorage.setItem(LS_ORDERS, JSON.stringify(list)); }catch(e){} }
+  function renderRecent(){
+    var card = $('recentCard'), ul = $('recentList'), list = loadRecent();
+    card.style.display = list.length ? '' : 'none';
+    ul.innerHTML = '';
+    list.forEach(function(o){
+      var li = document.createElement('li'), tk = document.createElement('span'), meta = document.createElement('span');
+      tk.className = 'tk'; tk.textContent = o.token; meta.className = 'meta';
+      var when = '';
+      try{ when = new Date(o.ts).toLocaleString(lang === 'gu' ? 'gu-IN' : 'en-IN', { day:'numeric', month:'short', hour:'numeric', minute:'2-digit' }); }catch(e){}
+      meta.innerHTML = '<b></b><br><span></span>';
+      meta.firstChild.textContent = pagesText(o.pages) + ' · ₹' + o.total;
+      meta.lastChild.textContent = when;
+      li.appendChild(tk); li.appendChild(meta); ul.appendChild(li);
+    });
+  }
+  $('recentClear').addEventListener('click', function(){ saveRecent([]); renderRecent(); });
+
+  function afterOrder(token, price, opts){
+    lastOrder = { token:token, pages:price ? price.pages : state.pages, copies:price ? price.copies : state.copies,
+                  total:price ? price.total : 0, color:opts.color, side:opts.side, phone:opts.phone, ts:Date.now() };
+    $('waToken').setAttribute('href', waLink(lastOrder));
+    var list = loadRecent().filter(function(x){ return x.token !== token; });
+    list.unshift(lastOrder); saveRecent(list.slice(0, RECENT_KEEP));
+    renderRecent();
+  }
+
+  // a picture of the token (opens the phone's share sheet where available, otherwise downloads it)
+  function wrapText(g, text, x, y, maxW, lh){
+    var words = text.split(' '), line = '';
+    for(var i = 0; i < words.length; i++){
+      var test = line ? line + ' ' + words[i] : words[i];
+      if(g.measureText(test).width > maxW && line){ g.fillText(line, x, y); line = words[i]; y += lh; } else line = test;
+    }
+    if(line){ g.fillText(line, x, y); y += lh; }
+    return y;
+  }
+  function tokenCard(o){
+    var load = (document.fonts && document.fonts.load) ? Promise.all([document.fonts.load('700 40px "Hind Vadodara"'), document.fonts.load('400 40px "Hind Vadodara"'),
+                 document.fonts.load('40px "SX Rupee"'), document.fonts.load('600 40px "IBM Plex Mono"')]).catch(function(){}) : Promise.resolve();
+    return load.then(function(){
+      var W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H;
+      var g = c.getContext('2d'), F = '"SX Rupee","Hind Vadodara","Work Sans",sans-serif';
+      g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
+      ['#00AEEF', '#EC008C', '#F5C400', '#161513'].forEach(function(col, i){ g.fillStyle = col; g.fillRect(i*W/4, 0, W/4, 26); });
+      g.textBaseline = 'alphabetic'; g.textAlign = 'left';
+      [['#00AEEF', 70, 90], ['#EC008C', 106, 90], ['#F5C400', 70, 126], ['#161513', 106, 126]].forEach(function(d){ g.fillStyle = d[0]; g.beginPath(); g.arc(d[1], d[2], 15, 0, 7); g.fill(); });
+      g.fillStyle = '#161513'; g.font = '700 58px ' + F; g.fillText('Sona Xerox', 150, 112);
+      g.fillStyle = '#726F68'; g.font = '400 34px ' + F; g.fillText('સોના ઝેરોક્ષ · વાલોડ', 150, 156);
+      g.textAlign = 'center';
+      g.fillStyle = '#726F68'; g.font = '400 44px ' + F; g.fillText('તમારો ઓર્ડર ટોકન', W/2, 290);
+      g.strokeStyle = '#EC008C'; g.lineWidth = 12; g.beginPath(); g.roundRect ? g.roundRect(130, 330, W - 260, 330, 40) : g.rect(130, 330, W - 260, 330); g.stroke();
+      g.fillStyle = '#161513'; g.font = '700 230px "IBM Plex Mono","Hind Vadodara",monospace'; g.fillText(o.token, W/2, 560);
+      g.fillStyle = '#161513'; g.font = '600 50px ' + F;
+      var what = o.pages + ' પેજ · ' + (o.color === 'color' ? 'કલર' : 'બ્લેક & વ્હાઇટ') + ' · ' + (o.side === 'double' ? 'બંને બાજુ' : 'એક બાજુ') + ' · ' + o.copies + ' કોપી';
+      var y = wrapText(g, what, W/2, 770, W - 200, 70);
+      g.fillStyle = '#EC008C'; g.font = '700 84px ' + F; g.fillText('₹' + o.total, W/2, y + 50);
+      g.fillStyle = '#726F68'; g.font = '400 42px ' + F; g.fillText('દુકાને ચૂકવવાના', W/2, y + 115);
+      var when = '';
+      try{ when = new Date(o.ts).toLocaleString('gu-IN', { day:'numeric', month:'short', year:'numeric', hour:'numeric', minute:'2-digit' }); }catch(e){}
+      g.fillText(when, W/2, y + 175);
+      g.fillStyle = '#161513'; g.font = '700 46px ' + F;
+      wrapText(g, 'દુકાને આવો અને આ ટોકન બતાવો', W/2, 1130, W - 200, 62);
+      g.fillStyle = '#161513'; g.fillRect(0, H - 110, W, 110);
+      g.fillStyle = '#fff'; g.font = '600 36px "Work Sans","Hind Vadodara",sans-serif'; g.fillText('sonaxerox.in/print   ·   WhatsApp 77788 05780', W/2, H - 42);
+      return new Promise(function(res, rej){ c.toBlob(function(b){ b ? res(b) : rej(new Error('png')); }, 'image/png'); });
+    });
+  }
+  $('saveToken').addEventListener('click', function(){
+    if(!lastOrder) return;
+    var btn = $('saveToken'); btn.disabled = true;
+    tokenCard(lastOrder).then(function(blob){
+      var name = 'sonaxerox-token-' + lastOrder.token + '.png', file = null;
+      try{ file = new File([blob], name, { type:'image/png' }); }catch(e){}
+      if(file && navigator.canShare && navigator.canShare({ files:[file] }) && navigator.share){
+        return navigator.share({ files:[file] }).catch(function(e){ if(e && e.name === 'AbortError') return; throw e; });
+      }
+      var url = URL.createObjectURL(blob), a = document.createElement('a');
+      a.href = url; a.download = name; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+    }).catch(function(){}).then(function(){ btn.disabled = false; });
   });
 
   /* ============================================================
