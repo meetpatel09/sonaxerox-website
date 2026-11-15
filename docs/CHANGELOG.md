@@ -2,6 +2,10 @@
 
 Newest first. Dates come from git where the file is in the repository, otherwise from when the work was done.
 
+## 2026-11-15 — `/print/` token keepsake
+* **After ordering:** a green *WhatsApp પર ટોકન મોકલો* button opens a chat with the shop (77788 05780) with a ready Gujarati message (token, pages, colour, sides, copies, amount, mobile) — the customer only taps Send, and the shop learns that an order was placed. *ટોકન ફોટો સેવ કરો* makes a picture of the token (phone share sheet, or a download on a computer).
+* **Recent orders:** the last 5 orders (up to 7 days) are listed at the top of the page on that phone, so a forgotten token can be found. Stored only on the phone (`localStorage`), nothing new is sent to the backend.
+
 ## 2026-11-15 — Shop PC: sound + message when an order prints
 * The listener plays a tune and shows a Gujarati Windows message (token, pages, colour, sides, copies) when an order has printed, and a different alert when a print fails. Settings `SOUND`, `NOTIFY`, `SOUND_REPEAT`. Not tested on real Windows (written on a Mac) — see `shop-pc/README.md`.
 
