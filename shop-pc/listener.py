@@ -20,6 +20,7 @@ import os
 import socket
 import subprocess
 import sys
+import threading
 import time
 import urllib.parse
 import urllib.request
@@ -51,6 +52,12 @@ POLL_SECONDS = 15
 # Delete downloaded PDFs from this PC after this many hours
 CLEANUP_HOURS = 24
 
+# Sound + Windows message when an order has been printed (so the shop notices it).
+# Sound plays through the PC's default speaker (e.g. the Bluetooth speaker). Set to false to switch off.
+SOUND = True
+NOTIFY = True
+SOUND_REPEAT = 2        # plays the sound this many times (a Bluetooth speaker often misses the first moment of a sound)
+
 # Only ONE listener may run on this PC (a second copy would print every order twice).
 # It holds this local port while it runs; a second copy finds the port taken and exits quietly.
 LOCK_PORT = 47651
@@ -75,7 +82,7 @@ def _load_local_config():
         sys.exit(1)
     g = globals()
     for key in ("BACKEND_URL", "SECRET", "PRINTER_BW", "PRINTER_COLOR", "SUMATRA_PATH",
-                "POLL_SECONDS", "CLEANUP_HOURS", "ORDERS_DIR", "LOCK_PORT"):
+                "POLL_SECONDS", "CLEANUP_HOURS", "ORDERS_DIR", "LOCK_PORT", "SOUND", "NOTIFY", "SOUND_REPEAT"):
         if key in data:
             g[key] = data[key]
 
@@ -136,6 +143,68 @@ def remember_printed(key):
             fh.write(key + "\n")
     except OSError:
         pass
+
+
+# ------------------------------------------------------------
+# Order alert: sound + Windows message (Windows only; elsewhere it just writes a line in the log)
+# ------------------------------------------------------------
+GU = {"Colour": "કલર", "B&W": "બ્લેક & વ્હાઇટ", "Single": "એક બાજુ", "Double": "બંને બાજુ"}
+
+
+def alert_text(order, ok=True):
+    what = "%s પેજ · %s · %s · %s કોપી" % (order.get("pages"), GU.get(order.get("color"), order.get("color")),
+                                          GU.get(order.get("side"), order.get("side")), order.get("copies"))
+    if ok:
+        return "નવો ઓર્ડર %s પ્રિન્ટ થયો", what
+    return "ઓર્ડર %s પ્રિન્ટ ન થયો — તપાસો!", what
+
+
+def _play(kind):
+    """A short tune through the default speaker. Plain tones (not the Windows sound scheme), so it also works if
+    Windows sounds are switched off. 'ok' = two rising notes, 'error' = three low beeps."""
+    import winsound
+    tune = [(880, 220), (1320, 380)] if kind == "ok" else [(300, 350), (300, 350), (300, 350)]
+    for i in range(max(1, int(SOUND_REPEAT))):
+        try:
+            for hz, ms in tune:
+                winsound.Beep(hz, ms)
+        except RuntimeError:                                    # no tone device: fall back to the Windows sound
+            winsound.PlaySound("SystemExclamation" if kind == "ok" else "SystemHand", winsound.SND_ALIAS)
+        time.sleep(0.5)
+
+
+def _toast(title, body):
+    script = ("Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; "
+              "$n = New-Object System.Windows.Forms.NotifyIcon; $n.Icon = [System.Drawing.SystemIcons]::Information; "
+              "$n.Visible = $true; $n.ShowBalloonTip(12000, $env:SX_TITLE, $env:SX_BODY, [System.Windows.Forms.ToolTipIcon]::Info); "
+              "Start-Sleep -Seconds 13; $n.Dispose()")
+    env = dict(os.environ, SX_TITLE=title, SX_BODY=body)
+    subprocess.Popen(["powershell", "-NoProfile", "-WindowStyle", "Hidden", "-Command", script], env=env,
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=0x08000000)   # no console window
+
+
+def alert(order, ok=True):
+    """Never lets a sound/notification problem stop the printing."""
+    try:
+        title_fmt, body = alert_text(order, ok)
+        title = title_fmt % order.get("token")
+        if os.name != "nt":
+            log("  [alert] %s — %s (sound + Windows message play on the shop PC)" % (title, body))
+            return
+        if SOUND:
+            threading.Thread(target=lambda: _safe(_play, "ok" if ok else "error"), daemon=True).start()
+        if NOTIFY:
+            _safe(_toast, title, body)
+        log("  [alert] %s — %s" % (title, body))
+    except Exception as ex:
+        log("  alert failed (printing is not affected): %s" % ex)
+
+
+def _safe(fn, *a):
+    try:
+        fn(*a)
+    except Exception as ex:
+        log("  alert failed (printing is not affected): %s" % ex)
 
 
 def api(params):
@@ -228,6 +297,7 @@ def handle_order(order):
 
     # 3) remember it here FIRST, then tell the backend (so a failed call can never cause a second print)
     remember_printed(printed_key(order))
+    alert(order, True)
     mark_done(token)
 
 
@@ -294,6 +364,7 @@ def main():
                         handle_order(order)
                     except Exception as ex:
                         log("  ERROR on order %s: %s" % (order.get("token"), ex))
+                        alert(order, False)
                         try:
                             api({"action": "error", "token": order["token"], "key": SECRET})
                         except Exception:
